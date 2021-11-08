@@ -29,17 +29,21 @@ class AppServiceProvider extends ServiceProvider
 
   protected function loadBusinessConfig()
   {
-    $data = BusinessConfig::first(['name', 'favicon']);
-    if ($data) {
-      if ($data->name) {
-        config(['app.name' => $data->name]);
-      }
+    try {
+      $data = BusinessConfig::first(['name', 'favicon']);
+      if ($data) {
+        if ($data->name) {
+          config(['app.name' => $data->name]);
+        }
 
-      if($data->favicon){
-        $path = asset('storage/' . $data->favicon);
-        config(['app.favicon' => $path]);
+        if ($data->favicon) {
+          $path = asset('storage/' . $data->favicon);
+          config(['app.favicon' => $path]);
+        }
       }
-
+    } catch (\Throwable $th) {
+      config(['app.name' => env('APP_NAME', 'APP')]);
+      config(['app.favicon' => env('APP_FAVICON', '')]);
     }
   }
 }
