@@ -374,7 +374,7 @@
               </jet-responsive-nav-link>
               
               <jet-responsive-nav-link
-                :href="route('users.index')"
+                :href="route('config.index')"
                 :active="route().current('config.index')"
               >
                 Configuración
@@ -466,7 +466,7 @@
 </template>
 
 <script>
-import JetApplicationMark from "@/Jetstream/ApplicationMark.vue";
+import JetApplicationMark from "@/Components/ApplicationMark.vue";
 import JetBanner from "@/Jetstream/Banner.vue";
 import JetDropdown from "@/Jetstream/Dropdown.vue";
 import JetDropdownLink from "@/Jetstream/DropdownLink.vue";
