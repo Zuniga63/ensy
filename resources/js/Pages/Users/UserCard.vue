@@ -87,9 +87,6 @@ export default {
     dayjs.locale(locale_es_do);
     dayjs.extend(relativeTime);
   },
-  mounted() {
-    console.log(this.user);
-  },
   computed: {
     createdAt() {
       return dayjs(this.user.created_at).fromNow();
