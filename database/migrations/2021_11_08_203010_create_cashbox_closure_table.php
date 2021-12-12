@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateCashboxRegisterTable extends Migration
+class CreateCashboxClosureTable extends Migration
 {
   /**
    * Run the migrations.
@@ -13,7 +13,7 @@ class CreateCashboxRegisterTable extends Migration
    */
   public function up()
   {
-    Schema::create('cashbox_register', function (Blueprint $table) {
+    Schema::create('cashbox_closure', function (Blueprint $table) {
       $table->id();
       $table->foreignId('cashbox_id')->constrained('cashbox')->cascadeOnDelete();
       $table->dateTime('closing_date');
@@ -34,6 +34,6 @@ class CreateCashboxRegisterTable extends Migration
    */
   public function down()
   {
-    Schema::dropIfExists('cashbox_register');
+    Schema::dropIfExists('cashbox_closure');
   }
 }
