@@ -23,10 +23,12 @@
               <!-- Navigation Links -->
               <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
                 <jet-nav-link
-                  :href="route('dashboard')"
-                  :active="route().current('dashboard')"
+                  v-for="link in navLinks"
+                  :key="link.id"
+                  :href="route(link.routeName)"
+                  :active="route().current(link.routeName)"
                 >
-                  Panel
+                  {{link.name}}
                 </jet-nav-link>
               </div>
             </div>
@@ -55,10 +57,8 @@
                           rounded-md
                           text-gray-500
                           bg-white
-                          hover:bg-gray-50
-                          hover:text-gray-700
-                          focus:outline-none
-                          focus:bg-gray-50
+                          hover:bg-gray-50 hover:text-gray-700
+                          focus:outline-none focus:bg-gray-50
                           active:bg-gray-50
                           transition
                         "
@@ -157,8 +157,7 @@
                         text-sm
                         border-2 border-transparent
                         rounded-full
-                        focus:outline-none
-                        focus:border-gray-300
+                        focus:outline-none focus:border-gray-300
                         transition
                       "
                     >
@@ -261,11 +260,8 @@
                   p-2
                   rounded-md
                   text-gray-400
-                  hover:text-gray-500
-                  hover:bg-gray-100
-                  focus:outline-none
-                  focus:bg-gray-100
-                  focus:text-gray-500
+                  hover:text-gray-500 hover:bg-gray-100
+                  focus:outline-none focus:bg-gray-100 focus:text-gray-500
                   transition
                 "
               >
@@ -311,10 +307,12 @@
         >
           <div class="pt-2 pb-3 space-y-1">
             <jet-responsive-nav-link
-              :href="route('dashboard')"
-              :active="route().current('dashboard')"
+              v-for="link in navLinks"
+              :key="link.id"
+              :href="route(link.routeName)"
+              :active="route().current(link.routeName)"
             >
-              Panel
+              {{link.name}}
             </jet-responsive-nav-link>
           </div>
 
@@ -372,7 +370,7 @@
               >
                 Usuarios
               </jet-responsive-nav-link>
-              
+
               <jet-responsive-nav-link
                 :href="route('config.index')"
                 :active="route().current('config.index')"
@@ -493,6 +491,9 @@ export default {
   data() {
     return {
       showingNavigationDropdown: false,
+      navLinks: [
+        { id: 1, name: "Panel", routeName: "dashboard" },
+      ],
     };
   },
 
