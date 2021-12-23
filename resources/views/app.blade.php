@@ -20,6 +20,7 @@
   <!-- Scripts -->
   @routes
   <script src="{{ mix('js/app.js') }}" defer></script>
+  <script src="https://kit.fontawesome.com/db0bba2760.js" crossorigin="anonymous" defer></script>
 </head>
 
 <body class="font-sans antialiased">
