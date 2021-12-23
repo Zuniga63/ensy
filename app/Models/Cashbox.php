@@ -32,7 +32,7 @@ class Cashbox extends Model
    */
   public function closures()
   { 
-    $this->hasMany(CashboxClosure::class);
+    return $this->hasMany(CashboxClosure::class);
   }
 
   /**
@@ -40,6 +40,6 @@ class Cashbox extends Model
    */
   public function transactions()
   {
-    $this->hasMany(CashboxTransaction::class);
+    return $this->hasMany(CashboxTransaction::class);
   }
 }
