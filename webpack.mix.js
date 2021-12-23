@@ -2,7 +2,7 @@ const mix = require('laravel-mix');
 
 mix.options({
   hmrOptions: {
-    host: 'admin.test',
+    host: 'ensy.test',
     port: 8080
   }
 });
