@@ -28,7 +28,7 @@
                   :href="route(link.routeName)"
                   :active="route().current(link.routeName)"
                 >
-                  {{link.name}}
+                  {{ link.name }}
                 </jet-nav-link>
               </div>
             </div>
@@ -312,7 +312,7 @@
               :href="route(link.routeName)"
               :active="route().current(link.routeName)"
             >
-              {{link.name}}
+              {{ link.name }}
             </jet-responsive-nav-link>
           </div>
 
@@ -493,6 +493,7 @@ export default {
       showingNavigationDropdown: false,
       navLinks: [
         { id: 1, name: "Panel", routeName: "dashboard" },
+        { id: 2, name: "Cajas", routeName: "cashbox.index" },
       ],
     };
   },
