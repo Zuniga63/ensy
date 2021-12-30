@@ -39,6 +39,9 @@ class HandleInertiaRequests extends Middleware
   {
     return array_merge(parent::share($request), [
       'businessConfig' => $this->getBusinessConfig(),
+      'flash' => [
+        'message' => fn () => $request->session()->get("message")
+      ],
     ]);
   }
 
@@ -51,10 +54,10 @@ class HandleInertiaRequests extends Middleware
   {
     //Se recupera el objeto
     $config = BusinessConfig::first();
-    if(!$config){
+    if (!$config) {
       return;
     }
-    
+
     return [
       'id' => $config->id,
       'name' => $config->name,
