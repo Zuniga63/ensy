@@ -24,7 +24,6 @@ class Cashbox extends Model
     'slug',
     'code',
     'order',
-    'base'
   ];
 
   /**

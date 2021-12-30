@@ -15,11 +15,10 @@ class CreateCashboxTable extends Migration
   {
     Schema::create('cashbox', function (Blueprint $table) {
       $table->id();
-      $table->string('name', 50);
-      $table->string('slug', 50);
-      $table->string('code', 20)->nullable();
+      $table->string('name', 50)->unique();
+      $table->string('slug', 50)->unique();
+      $table->string('code', 20)->nullable()->unique();
       $table->unsignedTinyInteger('order')->default(1);
-      $table->decimal('base', 8, 0)->default(0);
       $table->timestamps();
     });
   }
