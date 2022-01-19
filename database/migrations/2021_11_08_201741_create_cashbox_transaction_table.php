@@ -20,8 +20,8 @@ class CreateCashboxTransactionTable extends Migration
       $table->string('description');
       $table->decimal('amount', 10, 2);
       $table->string('code')->nullable();
-      $table->boolean('transfer');
-      $table->boolean('blocked');
+      $table->boolean('transfer')->default(0);
+      $table->boolean('blocked')->default(0);
       $table->timestamps();
     });
   }
