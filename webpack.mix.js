@@ -7,7 +7,7 @@ mix.options({
   }
 });
 
-mix.browserSync('admin.test');
+mix.browserSync('ensy.test');
 /*
  |--------------------------------------------------------------------------
  | Mix Asset Management
