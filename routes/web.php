@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\BusinessConfigController;
+use App\Http\Controllers\Cashbox\CashboxController;
 use App\Http\Controllers\UserController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -37,15 +38,30 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
   //USERS
   Route::resource('usuarios', UserController::class)->names([
     'index' => 'users.index',
-    // 'create' => 'users.create',
-    // 'store' => 'users.store',
-    // 'show' => 'users.show',
-    // 'edit' => 'users.edit',
-    // 'update' => 'users.update',
-    // 'destroy' => 'users.destroy'
   ])->parameters([
     'usuarios' => 'user'
   ])->only('index');
+
+  //CASHBOX
+  Route::resource('cajas', CashboxController::class)->names([
+    'index' => 'cashbox.index',
+    'create' => 'cashbox.create',
+    'store' => 'cashbox.store',
+    'update' => 'cashbox.update',
+    'destroy' => 'cashbox.destroy',
+  ])->parameters([
+    'cajas' => 'cashbox',
+  ])->except(['show', 'edit']);
+
+  Route::resource('cajas', CashboxController::class)->names([
+    'show' => 'cashbox.show',
+    'edit' => 'cashbox.edit',
+  ])->parameters([
+    'cajas' => 'cashbox:slug'
+  ])->only(['show', 'edit']);
+
+  Route::post('/cajas/{cashbox}/registrar-transaccion', [CashboxController::class, 'storeTransaction'])->name('cashbox.storeTransaction');
+  Route::delete('/cajas/{cashbox}/{cashbox_transaction}', [CashboxController::class, 'destroyTransaction'])->name('cashbox.destroyTransaction');
 
   //RUTA PARA CONFIGURAR SITIO
   // Route::resource('configuracion', BusinessConfigController::class)

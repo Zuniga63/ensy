@@ -37,6 +37,7 @@ class CashboxTransaction extends Model
     protected $casts = [
       'transfer' => 'boolean',
       'blocked' => 'boolean',
+      'amount' => 'decimal:2',
   ];
 
   /**
