@@ -179,6 +179,8 @@ class CashboxController extends Controller
 
   public function storeTransaction(Request $request, Cashbox $cashbox)
   {
+    $type = 'ingreso';
+    //Se recuperan los campos dl formulario
     $inputs = $request->all();
     $rules = [
       'description' => 'required|string|min:3|max:255',
@@ -188,6 +190,7 @@ class CashboxController extends Controller
       'setTime' => 'required|boolean'
     ];
 
+    //Se establecen los nombres de los atributos
     $attributes = [
       'date' => 'fecha',
       'time' => 'hora',
@@ -224,11 +227,14 @@ class CashboxController extends Controller
     
     if($inputs['type'] === 'expense'){
       $transaction->amount = $transaction->amount * -1;
+      $type = "egreso";
     }
 
     $cashbox->transactions()->save($transaction);
-    
-    return Redirect::route('cashbox.show', $cashbox->slug)->with('message', $inputs);
+
+
+    $message = "Se ha guardado el $type en la caja \"$cashbox->name\"";                            //Mensaje para el usuario
+    return Redirect::route('cashbox.show', $cashbox->slug)->with('message', $message);
   }
 
   /**
@@ -263,21 +269,6 @@ class CashboxController extends Controller
       $balance += $item->amount;
       return $item;
     });
-    // dd($cashbox->toArray(), $balance);
-    // $transactions = CashboxTransaction::where('cashbox_id', $cashbox->id)
-    //   ->orderBy('date')
-    //   ->get([
-    //     'id',
-    //     'cashbox_id as cashboxId',
-    //     'transaction_date as date',
-    //     'description',
-    //     'amount',
-    //     'code',
-    //     'transfer',
-    //     'blocked',
-    //     'created_at as createdAt',
-    //     'updated_at as updatedAt'
-    //   ]);
     return Inertia::render('Cashbox/Show', compact('cashbox'));
   }
 

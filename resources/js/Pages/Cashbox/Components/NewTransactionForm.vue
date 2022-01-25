@@ -238,6 +238,7 @@
   </form>
 </template>
 <script>
+import Swal from "sweetalert2";
 import JetButton from "@/Jetstream/Button.vue";
 import JetDangerButton from "@/Jetstream/DangerButton.vue";
 import JetInputError from "@/Jetstream/InputError.vue";
@@ -298,6 +299,14 @@ export default {
         },
         onSuccess: (page) => {
           this.hiddenForm();
+          let message = page.props.flash.message;
+          if (message) {
+            Swal.fire({
+              icon: "success",
+              title: '¡Registro Exitoso!',
+              text: message
+            });
+          }
         },
         onFinish: () => {
           this.buttonMessage = "Registrar";
