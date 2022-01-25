@@ -165,13 +165,14 @@
       </div>
 
       <div class="flex justify-between">
-        <JetDangerButton @click="destroy">Eliminar</JetDangerButton>
+        <JetDangerButton @click="deleteTransaction">Eliminar</JetDangerButton>
         <JetButton>Editar</JetButton>
       </div>
     </div>
   </div>
 </template>
 <script>
+import Swal from "sweetalert2";
 import JetButton from "@/Jetstream/Button.vue";
 import JetDangerButton from "@/Jetstream/DangerButton.vue";
 import { Inertia } from "@inertiajs/inertia";
@@ -211,14 +212,49 @@ export default {
     showDetails() {
       this.showingDetails = !this.showingDetails;
     },
+    deleteTransaction() {
+      Swal.fire({
+        title: "¿Está seguro?",
+        text: "Está acción no puede revertirse y eleminará la transacción de la base de datos.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "¡Si, Eliminala!",
+        cancelButtonText: "Cancelar",
+      }).then((result) => {
+        if (result.isConfirmed) {
+          this.destroy();
+        }
+      });
+    },
     destroy() {
       let name = "cashbox.destroyTransaction";
       let parameters = [this.transaction.cashbox_id, this.transaction.id];
       let url = route(name, parameters);
-      console.log(url);
       Inertia.delete(url, {
         preserveScroll: true,
         preserveState: true,
+        onSuccess: (page) => {
+          let result = page.props.flash.message;
+          let title = "¡Transacción Eliminada!";
+          let message = result.message;
+          let icon = 'success';
+          if(result.ok){
+            Swal.fire({
+              title,
+              icon,
+            })
+          }else{
+            icon = 'error';
+            title = '¡Oops!';
+            Swal.fire({
+              icon,
+              title,
+              text: message,
+            })
+          }
+        }
       });
     },
   },

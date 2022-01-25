@@ -380,7 +380,24 @@ class CashboxController extends Controller
   }
 
   public function destroyTransaction(Cashbox $cashbox, CashboxTransaction $cashbox_transaction){
-    $cashbox_transaction->delete();
-    return Redirect::route('cashbox.show', $cashbox->slug);
+    $ok = false;
+    $message = null;
+
+    if($cashbox_transaction->blocked){
+      $message = "Esta transacción no se puede eliminar porque está bloqueda.";
+    }else{
+      try {
+        $cashbox_transaction->delete();
+        $ok = true;
+      } catch (\Throwable $th) {
+        $message = "Por problemas internos no se pudo eliminar. Intentelo nuevamente mas tarde.";
+      }
+
+    }
+    $result = [
+      'ok' => $ok,
+      'message' => $message
+    ];
+    return Redirect::route('cashbox.show', $cashbox->slug)->with('message', $result);
   }
 }
