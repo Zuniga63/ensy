@@ -89,7 +89,11 @@
         v-show="modal"
         @click.self="hiddenModal"
       >
-        <new-transaction-form @hidden-form="hiddenModal" :cashbox-id="cashbox.id" :max-date="maxDate"/>
+        <new-transaction-form
+          @hidden-form="hiddenModal"
+          :cashbox-id="cashbox.id"
+          :max-date="maxDate"
+        />
       </div>
 
       <!-- Button for show modal  -->
@@ -114,7 +118,18 @@
             focus:outline-transparent focus:outline-hidden focus:bg-blue-800
           "
         >
-          <i class="fas fa-plus"></i>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-8 w-8"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+          >
+            <path
+              fill-rule="evenodd"
+              d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+              clip-rule="evenodd"
+            />
+          </svg>
         </a>
       </div>
     </div>
@@ -192,45 +207,45 @@ export default {
     hiddenModal() {
       this.modal = false;
     },
-    deleteTransaction(){
-      console.log('El evento fue escuchado');
+    deleteTransaction() {
+      console.log("El evento fue escuchado");
     },
     /**
-     * Se encarga de agregar los propiedades necesarias 
-     * a las transacciones y transformar las fechas a 
+     * Se encarga de agregar los propiedades necesarias
+     * a las transacciones y transformar las fechas a
      * instancias de Dayjs
      */
-    transformTransactions(){
-      this.cashbox.transactions.map(item => {
+    transformTransactions() {
+      this.cashbox.transactions.map((item) => {
         item.amount = parseFloat(item.amount);
         item.balance = null;
         this.createDayjsInstances(item);
 
         return item;
-      })
+      });
 
       this.calculateBalance();
     },
     /**
-     * Se encarga de establece el saldo en el 
+     * Se encarga de establece el saldo en el
      * momento de latransación.
      */
-    calculateBalance(){
+    calculateBalance() {
       let balance = 0;
-      this.cashbox.transactions.forEach(item => {
+      this.cashbox.transactions.forEach((item) => {
         balance += item.amount;
         item.balance = balance;
       });
     },
     /**
-     * Crea las instancias dayjs a las propiedades 
+     * Crea las instancias dayjs a las propiedades
      * relacionadas a la fecha.
      */
-    createDayjsInstances(trans){
+    createDayjsInstances(trans) {
       trans.date = dayjs(trans.date);
       trans.createdAt = dayjs(trans.createdAt);
       trans.updatedAt = dayjs(trans.updatedAt);
-    }
+    },
   },
   beforeMount() {
     this.transformTransactions();
@@ -253,9 +268,9 @@ export default {
         return "ShowBoxInfo";
       }
     },
-    maxDate(){
-      return dayjs().subtract(1, 'day').format('YYYY-MM-DD');
-    }
+    maxDate() {
+      return dayjs().subtract(1, "day").format("YYYY-MM-DD");
+    },
   },
 };
 </script>

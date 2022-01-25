@@ -27,7 +27,26 @@
         </p>
       </div>
 
-      <Link :href="route('cashbox.edit', box.slug)" class="p-1 text-xl text-gray-800" title="Editar Caja"> <i class="fas fa-edit"></i> </Link>
+      <Link
+        :href="route('cashbox.edit', box.slug)"
+        class="p-1 text-xl text-gray-800"
+        title="Editar Caja"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-6 w-6 font-bold"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+          />
+        </svg>
+      </Link>
     </header>
     <!-- /.end header -->
 
@@ -77,7 +96,9 @@
 
     <!-- Footer -->
     <footer class="flex justify-between p-2 bg-gray-300">
-      <jet-button type="button" class="text-sm" @click="goToBox">Transacciones</jet-button>
+      <jet-button type="button" class="text-sm" @click="goToBox"
+        >Transacciones</jet-button
+      >
       <jet-danger-button
         type="button"
         class="text-sm"
@@ -103,7 +124,7 @@ export default {
     Link,
   },
   props: ["box"],
-  emits:['deleteBox'],
+  emits: ["deleteBox"],
   setup(props) {
     let fractionDigits = 0;
     let style = "currency";
@@ -121,9 +142,9 @@ export default {
     formatCurrency(number) {
       return this.formater.format(number);
     },
-    goToBox(){
-      Inertia.get(route('cashbox.show', this.box.slug));
-    }
+    goToBox() {
+      Inertia.get(route("cashbox.show", this.box.slug));
+    },
   },
 };
 </script>
