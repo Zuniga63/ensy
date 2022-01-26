@@ -13,9 +13,17 @@
     @submit.prevent="submit"
   >
     <header class="border-b-4 border-double border-slate-700 mb-4">
-      <h3 class="text-base text-gray-800 font-bold">Registrar Transacción</h3>
+      <h3 class="text-base text-gray-800 font-bold">
+        <span v-show="!updateForm">Registrar Transacción</span>
+        <span v-show="updateForm">Actualizar Transacción</span>
+      </h3>
       <p class="text-sm text-gray-800 text-opacity-95">
-        Permite guardar una nueva transacción en la base de datos.
+        <span v-show="!updateForm"
+          >Permite guardar una nueva transacción en la base de datos.</span
+        >
+        <span v-show="updateForm"
+          >Actualiza la transacción en la base de datos.</span
+        >
       </p>
     </header>
 
@@ -263,6 +271,10 @@ export default {
     maxDate: {
       type: String,
     },
+    transaction: {
+      type: Object,
+      default: null,
+    },
   },
   setup(props) {
     const form = useForm({
@@ -280,6 +292,7 @@ export default {
   emits: ["hiddenForm"],
   data() {
     return {
+      updateForm: false,
       buttonMessage: "Registrar",
       processing: false,
     };
@@ -288,31 +301,78 @@ export default {
     hiddenForm() {
       this.$emit("hiddenForm");
       this.form.reset("description", "amount", "type", "setDate");
+      this.updateForm = false;
+      this.buttonMessage = "Registrar";
     },
     submit() {
-      this.form.post(route("cashbox.storeTransaction", this.cashboxId), {
-        preserveScroll: true,
-        preserveState: true,
-        onStart: () => {
-          this.buttonMessage = "Registrando...";
-          this.processing = true;
-        },
-        onSuccess: (page) => {
-          this.hiddenForm();
-          let message = page.props.flash.message;
-          if (message) {
-            Swal.fire({
-              icon: "success",
-              title: '¡Registro Exitoso!',
-              text: message
-            });
-          }
-        },
-        onFinish: () => {
-          this.buttonMessage = "Registrar";
-          this.processing = false;
-        },
-      });
+      if (this.updateForm) {
+        let routeName = 'cashbox.updateTransaction';
+        let routeParameters = [this.transaction.cashbox_id, this.transaction.id];
+        let url = route(routeName, routeParameters);
+        console.log(url);
+        this.form.put(url,{
+          preserveScroll: true,
+          preserveState: true,
+          onStart: () => {
+            this.buttonMessage = 'Actualizando...';
+            this.processing = true;
+          },
+          onSuccess: page => {
+            this.hiddenForm();
+            let message = page.props.flash.message;
+            if (message) {
+              Swal.fire({
+                icon: "success",
+                title: "¡Actualización Exitosa!",
+                text: message,
+              });
+            }
+          },
+          onFinish: () => {
+            this.buttonMessage = this.updateForm ? "Actualizar" : "Registrar";
+            this.processing = false;
+          },
+        });
+      } else {
+        this.form.post(route("cashbox.storeTransaction", this.cashboxId), {
+          preserveScroll: true,
+          preserveState: true,
+          onStart: () => {
+            this.buttonMessage = "Registrando...";
+            this.processing = true;
+          },
+          onSuccess: (page) => {
+            this.hiddenForm();
+            let message = page.props.flash.message;
+            if (message) {
+              Swal.fire({
+                icon: "success",
+                title: "¡Registro Exitoso!",
+                text: message,
+              });
+            }
+          },
+          onFinish: () => {
+            this.buttonMessage = "Registrar";
+            this.processing = false;
+          },
+        });
+      }
+    },
+  },
+  watch: {
+    transaction(newTransaction, oldTransaction) {
+      if (newTransaction) {
+        this.form.setDate = true;
+        this.form.date = newTransaction.date.format("YYYY-MM-DD");
+        this.form.setTime = true;
+        this.form.time = newTransaction.date.format("HH:mm");
+        this.form.description = newTransaction.description;
+        this.form.type = newTransaction.amount >= 0 ? "income" : "expense";
+        this.form.amount = Math.abs(newTransaction.amount);
+        this.updateForm = true;
+        this.buttonMessage = "Actualizar";
+      }
     },
   },
 };

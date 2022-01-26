@@ -24,7 +24,7 @@
       </div>
     </div>
     <div class="max-h-screen overflow-scroll">
-      <TransactionCard @delete-transaction="$emit('deleteTransaction')" v-for="item in sortedTransactions" :key="item.id" :transaction="item"/>
+      <TransactionCard @updateTransaction="updateTransaction" v-for="item in sortedTransactions" :key="item.id" :transaction="item"/>
     </div>
   </div>
 </template>
@@ -46,10 +46,16 @@ export default {
       default: [],
     }
   },
+  emits:['updateTransaction'],
   data() {
     return {
       sortBy: 'recentFirst',
       search: "",
+    }
+  },
+  methods: {
+    updateTransaction(data){
+      this.$emit('updateTransaction', data);
     }
   },
   computed: {

@@ -68,7 +68,7 @@
               <ShowTransactions
                 v-show="tab === tabs[1]"
                 :transactions="cashbox.transactions"
-                @delete-transaction="deleteTransaction"
+                @update-transaction="updateTransaction"
               />
               <ShowBoxClosures v-show="tab === tabs[2]" />
             </div>
@@ -93,6 +93,7 @@
           @hidden-form="hiddenModal"
           :cashbox-id="cashbox.id"
           :max-date="maxDate"
+          :transaction="transactionToUpdate"
         />
       </div>
 
@@ -146,7 +147,7 @@ import JetDangerButton from "@/Jetstream/DangerButton.vue";
 import ShowTransactions from "@/Pages/Cashbox/Components/ShowTransactions.vue";
 import ShowBoxInfo from "@/Pages/Cashbox/Components/ShowBoxInfo.vue";
 import ShowBoxClosures from "@/Pages/Cashbox/Components/ShowBoxClosures.vue";
-import NewTransactionForm from "@/Pages/Cashbox/Components/NewTransactionForm.vue";
+import NewTransactionForm from "@/Pages/Cashbox/Components/TransactionForm.vue";
 
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
@@ -195,6 +196,7 @@ export default {
       tabs: ["info", "transacciones", "cierres"],
       tab: "transacciones", //info, transactions, closures
       modal: false,
+      transactionToUpdate: null,
     };
   },
   methods: {
@@ -206,9 +208,13 @@ export default {
     },
     hiddenModal() {
       this.modal = false;
+      if(this.transactionToUpdate){
+        this.transactionToUpdate = null;
+      }
     },
-    deleteTransaction() {
-      console.log("El evento fue escuchado");
+    updateTransaction(data) {
+      this.transactionToUpdate = data;
+      this.showModal();
     },
     /**
      * Se encarga de agregar los propiedades necesarias

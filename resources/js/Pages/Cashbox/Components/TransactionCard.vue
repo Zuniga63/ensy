@@ -166,7 +166,7 @@
 
       <div class="flex justify-between">
         <JetDangerButton @click="deleteTransaction">Eliminar</JetDangerButton>
-        <JetButton>Editar</JetButton>
+        <JetButton @click="$emit('updateTransaction', transaction)" >Editar</JetButton>
       </div>
     </div>
   </div>
@@ -182,7 +182,7 @@ export default {
     JetButton,
     JetDangerButton,
   },
-  emits: ["deleteTransaction"],
+  emits: ["updateTransaction"],
   props: ["transaction"],
   setup(props) {
     //---------------------------------------------------------
