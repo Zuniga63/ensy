@@ -335,6 +335,62 @@ class CashboxController extends Controller
     return Redirect::route('cashbox.index')->with('message', "Caja Actualizada");
   }
 
+  public function updateTransaction(Request $request, Cashbox $cashbox, CashboxTransaction $cashbox_transaction){
+    $type = 'ingreso';
+    //Se recuperan los campos dl formulario
+    $inputs = $request->all();
+    $rules = [
+      'description' => 'required|string|min:3|max:255',
+      'amount' => 'required|numeric|min:100',
+      'type' => 'required|in:expense,income',
+      'setDate' => 'required|boolean',
+      'setTime' => 'required|boolean'
+    ];
+
+    //Se establecen los nombres de los atributos
+    $attributes = [
+      'date' => 'fecha',
+      'time' => 'hora',
+      'description' => 'descripción',
+      'amount' => 'importe',
+      'type' => 'tipo'
+    ];
+
+    if($inputs['setDate']){
+      $rules['date'] = 'required|date_format:Y-m-d';
+      if($inputs['setTime']){
+        $rules['time'] = 'required|date_format:H:s';
+      }
+    }
+
+    $request->validate($rules, [], $attributes);
+
+    $cashbox_transaction->description = $inputs['description'];
+    $cashbox_transaction->amount = floatval($inputs['amount']);
+
+    if($inputs['type'] === 'expense'){
+      $cashbox_transaction->amount = $cashbox_transaction->amount * -1;
+      $type = "egreso";
+    }
+
+    //Se establece la fecha de la transacción
+    if($inputs['setDate']){
+      $date = $inputs['date'];
+      if($inputs['setTime']){
+        $time = $inputs['time'];
+        $cashbox_transaction->transaction_date = Carbon::createFromFormat('Y-m-d H:s', "$date $time");
+      }else{
+        $cashbox_transaction->transaction_date = Carbon::createFromFormat('Y-m-d', $date)->endOfDay();
+      }
+    }else{
+      $cashbox_transaction->transaction_date = Carbon::now();
+    }
+
+    $cashbox_transaction->save();
+    $message = "Transacción Actualizada";
+    return Redirect::route('cashbox.show', $cashbox->slug)->with('message', $message);
+  }
+
   /**
    * Remove the specified resource from storage.
    *
