@@ -16,6 +16,10 @@ use Inertia\Inertia;
 
 class CashboxController extends Controller
 {
+  //-------------------------------------------------------------
+  //    Metodos principales del recurso
+  //-------------------------------------------------------------
+
   /**
    * Display a listing of the resource.
    *
@@ -54,86 +58,6 @@ class CashboxController extends Controller
     });
 
     return Inertia::render('Cashbox/Index', compact('boxs'));
-  }
-
-
-  /**
-   * Este metodo realiza las consultas requeridas para calular
-   * el saldo de la caja, la suma de los ingresos y los egresos
-   * @param \App\Models\Cashbox $box Instacia del modelo a mutar
-   * @return \App\Models\Cashbox
-   */
-  protected function getCashAmount(Cashbox $box)
-  {
-    //Se recupera el saldo global
-    $box->loadSum('transactions as balance', 'amount');
-
-    if ($box->closures->isEmpty()) {
-      /**
-       * Si el arreglo de los cierres está vacío, se suman los
-       * ingresos y los egresos desde el origen de los tiempos.
-       */
-      $box->loadSum([
-        'transactions as incomes' => function (Builder $query) {
-          $query->where('amount', '>=', 0);
-        },
-        'transactions as expenses' => function (Builder $query) {
-          $query->where('amount', '<', 0);
-        }
-      ], 'amount');
-    } else {
-      /**
-       * Si el arreglo no está vacío, entonces solo se recupera la suma
-       * de los ingresos y de los egresos desde la fecha del ultimo cierre.
-       */
-      $box->base = $box->closures[0]->base;
-      $box->lastClosure = $box->closures[0]->closingDate;
-
-      $date = $box->lastClosure;
-
-      $box->loadSum([
-        'transactions as incomes' => function (Builder $query) use ($date) {
-          $query->where('amount', '>=', 0)
-            ->where('transaction_date', '>=', $date);
-        },
-        'transactions as expenses' => function (Builder $query) use ($date) {
-          $query->where('amount', '<', 0)
-            ->where('transaction_date', '>=', $date);;
-        }
-      ], 'amount');
-    }
-
-    return $box;
-  }
-
-  /**
-   * Se encarga de convertir en float los valores del saldo, los ingresos y los egresos
-   * de la caja.
-   * @param \App\Models\Cashbox $box Instacia del modelo a mutar
-   * @return \App\Models\Cashbox
-   */
-  protected function formatCashProperties(Cashbox $box)
-  {
-    $box->base = $box->base ? floatval($box->base) : 0;
-    $box->balance = $box->balance ? floatval($box->balance) : 0;
-    $box->incomes = $box->incomes ? floatval($box->incomes) : 0;
-    $box->expenses = $box->expenses ? floatval($box->expenses) : 0;
-
-    return $box;
-  }
-
-  /**
-   * Verifica que el saldo real de la caja coincida con el saldo calculado.
-   * @param \App\Models\Cashbox $box Instacia del modelo a mutar
-   * @return \App\Models\Cashbox
-   */
-  protected function validateBoxBalance(Cashbox $box)
-  {
-    $balanceCalulated = $box->base + $box->incomes + $box->expenses;
-    $diff = abs($box->balance - $balanceCalulated);
-    $box->balanceIsWrong = $diff > 0.00001;
-
-    return $box;
   }
 
   /**
@@ -175,66 +99,6 @@ class CashboxController extends Controller
     Cashbox::create($inputs);
 
     return Redirect::route('cashbox.index')->with('message', "Caja Creada");
-  }
-
-  public function storeTransaction(Request $request, Cashbox $cashbox)
-  {
-    $type = 'ingreso';
-    //Se recuperan los campos dl formulario
-    $inputs = $request->all();
-    $rules = [
-      'description' => 'required|string|min:3|max:255',
-      'amount' => 'required|numeric|min:100',
-      'type' => 'required|in:expense,income',
-      'setDate' => 'required|boolean',
-      'setTime' => 'required|boolean'
-    ];
-
-    //Se establecen los nombres de los atributos
-    $attributes = [
-      'date' => 'fecha',
-      'time' => 'hora',
-      'description' => 'descripción',
-      'amount' => 'importe',
-      'type' => 'tipo'
-    ];
-
-    if($inputs['setDate']){
-      $rules['date'] = 'required|date_format:Y-m-d';
-      if($inputs['setTime']){
-        $rules['time'] = 'required|date_format:H:s';
-      }
-    }
-
-    $request->validate($rules, [], $attributes);
-
-    $transaction = new CashboxTransaction();
-    //Se establece la fecha de la transacción
-    if($inputs['setDate']){
-      $date = $inputs['date'];
-      if($inputs['setTime']){
-        $time = $inputs['time'];
-        $transaction->transaction_date = Carbon::createFromFormat('Y-m-d H:s', "$date $time");
-      }else{
-        $transaction->transaction_date = Carbon::createFromFormat('Y-m-d', $date)->endOfDay();
-      }
-    }else{
-      $transaction->transaction_date = Carbon::now();
-    }
-
-    $transaction->description = $inputs['description'];
-    $transaction->amount = floatval($inputs['amount']);
-    
-    if($inputs['type'] === 'expense'){
-      $transaction->amount = $transaction->amount * -1;
-      $type = "egreso";
-    }
-
-    $cashbox->transactions()->save($transaction);
-
-
-    $message = "Se ha guardado el $type en la caja \"$cashbox->name\"";                            //Mensaje para el usuario
-    return Redirect::route('cashbox.show', $cashbox->slug)->with('message', $message);
   }
 
   /**
@@ -335,62 +199,6 @@ class CashboxController extends Controller
     return Redirect::route('cashbox.index')->with('message', "Caja Actualizada");
   }
 
-  public function updateTransaction(Request $request, Cashbox $cashbox, CashboxTransaction $cashbox_transaction){
-    $type = 'ingreso';
-    //Se recuperan los campos dl formulario
-    $inputs = $request->all();
-    $rules = [
-      'description' => 'required|string|min:3|max:255',
-      'amount' => 'required|numeric|min:100',
-      'type' => 'required|in:expense,income',
-      'setDate' => 'required|boolean',
-      'setTime' => 'required|boolean'
-    ];
-
-    //Se establecen los nombres de los atributos
-    $attributes = [
-      'date' => 'fecha',
-      'time' => 'hora',
-      'description' => 'descripción',
-      'amount' => 'importe',
-      'type' => 'tipo'
-    ];
-
-    if($inputs['setDate']){
-      $rules['date'] = 'required|date_format:Y-m-d';
-      if($inputs['setTime']){
-        $rules['time'] = 'required|date_format:H:s';
-      }
-    }
-
-    $request->validate($rules, [], $attributes);
-
-    $cashbox_transaction->description = $inputs['description'];
-    $cashbox_transaction->amount = floatval($inputs['amount']);
-
-    if($inputs['type'] === 'expense'){
-      $cashbox_transaction->amount = $cashbox_transaction->amount * -1;
-      $type = "egreso";
-    }
-
-    //Se establece la fecha de la transacción
-    if($inputs['setDate']){
-      $date = $inputs['date'];
-      if($inputs['setTime']){
-        $time = $inputs['time'];
-        $cashbox_transaction->transaction_date = Carbon::createFromFormat('Y-m-d H:s', "$date $time");
-      }else{
-        $cashbox_transaction->transaction_date = Carbon::createFromFormat('Y-m-d', $date)->endOfDay();
-      }
-    }else{
-      $cashbox_transaction->transaction_date = Carbon::now();
-    }
-
-    $cashbox_transaction->save();
-    $message = "Transacción Actualizada";
-    return Redirect::route('cashbox.show', $cashbox->slug)->with('message', $message);
-  }
-
   /**
    * Remove the specified resource from storage.
    *
@@ -435,25 +243,248 @@ class CashboxController extends Controller
     return Redirect::route('cashbox.index')->with('message', $result);
   }
 
-  public function destroyTransaction(Cashbox $cashbox, CashboxTransaction $cashbox_transaction){
+  //-------------------------------------------------------------
+  //    Recursos para administrar las transacciones
+  //-------------------------------------------------------------
+
+  /**
+   * Update the transaction in the database.
+   *
+   * @param  \Illuminate\Http\Request  $request
+   * @param  \App\Models\Cashbox  $cashbox
+   * @return \Illuminate\Http\Response
+   */
+  public function storeTransaction(Request $request, Cashbox $cashbox)
+  {
+    $type = 'ingreso';
+    //Se recuperan los campos dl formulario
+    $inputs = $request->all();
+    $rules = $this->getTransactionRules($inputs['setDate'], $inputs['setTime']);    //Reglas de valicación
+    $attributes = $this->getTransactionAttributes();                                //Atributos de validación
+    $request->validate($rules, [], $attributes);                                    //validación del formulario
+
+
+    $request->validate($rules, [], $attributes);
+
+    $transaction = new CashboxTransaction();
+    //Se establece la fecha de la transacción
+    if ($inputs['setDate']) {
+      $date = $inputs['date'];
+      if ($inputs['setTime']) {
+        $time = $inputs['time'];
+        $transaction->transaction_date = Carbon::createFromFormat('Y-m-d H:s', "$date $time");
+      } else {
+        $transaction->transaction_date = Carbon::createFromFormat('Y-m-d', $date)->endOfDay();
+      }
+    } else {
+      $transaction->transaction_date = Carbon::now();
+    }
+
+    $transaction->description = $inputs['description'];
+    $transaction->amount = floatval($inputs['amount']);
+
+    if ($inputs['type'] === 'expense') {
+      $transaction->amount = $transaction->amount * -1;
+      $type = "egreso";
+    }
+
+    $cashbox->transactions()->save($transaction);
+
+
+    $message = "Se ha guardado el $type en la caja \"$cashbox->name\"";                            //Mensaje para el usuario
+    return Redirect::route('cashbox.show', $cashbox->slug)->with('message', $message);
+  }
+
+
+  /**
+   * Update the transaction in the database.
+   *
+   * @param  \Illuminate\Http\Request  $request
+   * @param  \App\Models\Cashbox  $cashbox
+   * @param  \App\Models\CashboxTransaction $cashbox_transaction
+   * @return \Illuminate\Http\Response
+   */
+  public function updateTransaction(Request $request, Cashbox $cashbox, CashboxTransaction $cashbox_transaction)
+  {
+    $inputs = $request->all();                                                       //Campos del formulario
+    $rules = $this->getTransactionRules($inputs['setDate'], $inputs['setTime']);    //Reglas de valicación
+    $attributes = $this->getTransactionAttributes();                                //Atributos de validación
+    $request->validate($rules, [], $attributes);                                    //validación del formulario
+
+    //Asignación de los nuevos valores
+    $cashbox_transaction->description = $inputs['description'];
+    $cashbox_transaction->amount = floatval($inputs['amount']);
+
+
+    if ($inputs['type'] === 'expense') {
+      $cashbox_transaction->amount = $cashbox_transaction->amount * -1;
+    }
+
+    //Se establece la fecha de la transacción
+    if ($inputs['setDate']) {
+      $date = $inputs['date'];
+      if ($inputs['setTime']) {
+        $time = $inputs['time'];
+        $cashbox_transaction->transaction_date = Carbon::createFromFormat('Y-m-d H:s', "$date $time");
+      } else {
+        $cashbox_transaction->transaction_date = Carbon::createFromFormat('Y-m-d', $date)->endOfDay();
+      }
+    } else {
+      $cashbox_transaction->transaction_date = Carbon::now();
+    }
+
+    $cashbox_transaction->save();
+    $message = "Transacción Actualizada";
+    return Redirect::route('cashbox.show', $cashbox->slug)->with('message', $message);
+  }
+
+
+
+  public function destroyTransaction(Cashbox $cashbox, CashboxTransaction $cashbox_transaction)
+  {
     $ok = false;
     $message = null;
 
-    if($cashbox_transaction->blocked){
+    if ($cashbox_transaction->blocked) {
       $message = "Esta transacción no se puede eliminar porque está bloqueda.";
-    }else{
+    } else {
       try {
         $cashbox_transaction->delete();
         $ok = true;
       } catch (\Throwable $th) {
         $message = "Por problemas internos no se pudo eliminar. Intentelo nuevamente mas tarde.";
       }
-
     }
     $result = [
       'ok' => $ok,
       'message' => $message
     ];
     return Redirect::route('cashbox.show', $cashbox->slug)->with('message', $result);
+  }
+
+  //-------------------------------------------------------------
+  //    UTILIDADES
+  //-------------------------------------------------------------
+
+  /**
+   * Este metodo realiza las consultas requeridas para calular
+   * el saldo de la caja, la suma de los ingresos y los egresos
+   * @param \App\Models\Cashbox $box Instacia del modelo a mutar
+   * @return \App\Models\Cashbox
+   */
+  protected function getCashAmount(Cashbox $box)
+  {
+    //Se recupera el saldo global
+    $box->loadSum('transactions as balance', 'amount');
+
+
+    if ($box->closures->isEmpty()) {
+      /**
+       * Si el arreglo de los cierres está vacío, se suman los
+       * ingresos y los egresos desde el origen de los tiempos.
+       */
+      $box->loadSum([
+        'transactions as incomes' => function (Builder $query) {
+          $query->where('amount', '>=', 0);
+        },
+        'transactions as expenses' => function (Builder $query) {
+          $query->where('amount', '<', 0);
+        }
+      ], 'amount');
+    } else {
+      /**
+       * Si el arreglo no está vacío, entonces solo se recupera la suma
+       * de los ingresos y de los egresos desde la fecha del ultimo cierre.
+       */
+      $box->base = $box->closures[0]->base;
+      $box->lastClosure = $box->closures[0]->closingDate;
+
+      $date = $box->lastClosure;
+
+      $box->loadSum([
+        'transactions as incomes' => function (Builder $query) use ($date) {
+          $query->where('amount', '>=', 0)
+            ->where('transaction_date', '>=', $date);
+        },
+        'transactions as expenses' => function (Builder $query) use ($date) {
+          $query->where('amount', '<', 0)
+            ->where('transaction_date', '>=', $date);;
+        }
+      ], 'amount');
+    }
+
+    return $box;
+  }
+
+  /**
+   * Se encarga de convertir en float los valores del saldo, los ingresos y los egresos
+   * de la caja.
+   * @param \App\Models\Cashbox $box Instacia del modelo a mutar
+   * @return \App\Models\Cashbox
+   */
+  protected function formatCashProperties(Cashbox $box)
+  {
+    $box->base = $box->base ? floatval($box->base) : 0;
+    $box->balance = $box->balance ? floatval($box->balance) : 0;
+    $box->incomes = $box->incomes ? floatval($box->incomes) : 0;
+    $box->expenses = $box->expenses ? floatval($box->expenses) : 0;
+
+    return $box;
+  }
+
+  /**
+   * Verifica que el saldo real de la caja coincida con el saldo calculado.
+   * @param \App\Models\Cashbox $box Instacia del modelo a mutar
+   * @return \App\Models\Cashbox
+   */
+  protected function validateBoxBalance(Cashbox $box)
+  {
+    $balanceCalulated = $box->base + $box->incomes + $box->expenses;
+    $diff = abs($box->balance - $balanceCalulated);
+    $box->balanceIsWrong = $diff > 0.00001;
+
+    return $box;
+  }
+
+  /**
+   * This method build the rule for validate new transaction o
+   * update.
+   * 
+   * @param bool $setDate Si se estable la fecha manualmente
+   * @param bool $setTime Si se establece la hora manualmente.
+   */
+  protected function getTransactionRules($setDate = false, $setTime = false)
+  {
+    $rules = [
+      'description' => 'required|string|min:3|max:255',
+      'amount' => 'required|numeric|min:100',
+      'type' => 'required|in:expense,income',
+      'setDate' => 'required|boolean',
+      'setTime' => 'required|boolean'
+    ];
+
+    if ($setDate) {
+      $rules['date'] = 'required|date_format:Y-m-d';
+      if ($setTime) {
+        $rules['time'] = 'required|date_format:H:s';
+      }
+    }
+
+    return $rules;
+  }
+
+  /**
+   * Define los atributos que se reciben por la peticón
+   * @return array
+   */
+  protected function getTransactionAttributes()
+  {
+    return [
+      'date' => 'fecha',
+      'time' => 'hora',
+      'description' => 'descripción',
+      'amount' => 'importe',
+      'type' => 'tipo'
+    ];
   }
 }
