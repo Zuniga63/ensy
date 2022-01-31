@@ -5,10 +5,10 @@
         {{ cashbox.name }}
       </h2>
 
-      <p class="text-sm lg:text-lg text-gray-400" v-if="cashbox.code">
+      <p class="text-sm lg:text-base text-gray-400" v-if="cashbox.code">
         codigo: {{ cashbox.code }}
       </p>
-      <p class="text-base lg:text-lg text-gray-400">
+      <p class="lg:hidden text-base lg:text-lg text-gray-400">
         Saldo:
         <span class="font-bold"> {{ formatCurrency(cashbox.balance) }} </span>
       </p>
@@ -38,7 +38,7 @@
                 @click.stop="tab = itemTab"
               >
                 <a
-                  href="#"
+                  href="javascript:;"
                   class="
                     block
                     px-3
