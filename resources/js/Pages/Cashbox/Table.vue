@@ -83,9 +83,9 @@
                 v-for="box in boxs"
                 :key="box.id"
                 :class="{
-                  'bg-red-300 bg-opacity-20': box.balanceIsWrong,
+                  'bg-red-200 bg-opacity-20': box.balanceIsWrong,
                 }"
-                class="hover:bg-gray-200"
+                class="hover:bg-indigo-50"
               >
                 <td class="px-6 py-4 whitespace-nowrap text-gray-800">
                   <div class="flex flex-col">
@@ -143,7 +143,7 @@
                 <td
                   class="
                     flex
-                    justify-around
+                    justify-end
                     px-6
                     py-4
                     whitespace-nowrap
@@ -154,11 +154,22 @@
                   <Link
                     :href="route('cashbox.edit', box.slug)"
                     :title="'Actualizar ' + box.name"
-                    class="p-2 text-gray-800 hover:text-opacity-80"
+                    class="
+                      p-2
+                      border border-green-400
+                      mr-2
+                      rounded
+                      hover:bg-green-50
+                      hover:ring
+                      hover:ring-green-400
+                      hover:ring-opacity-40
+                      bg-white
+                      text-green-500
+                    "
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
-                      class="h-5 w-5"
+                      class="h-6 w-6"
                       viewBox="0 0 20 20"
                       fill="currentColor"
                     >
@@ -175,16 +186,33 @@
                   <!-- Link for show Transactions -->
                   <Link
                     :href="route('cashbox.show', box.slug)"
-                    class="p-2 text-gray-800 hover:text-opacity-80"
+                    class="
+                      p-2
+                      border border-gray-200
+                      rounded
+                      bg-white
+                      hover:border-gray-400
+                      hover:ring
+                      hover:ring-gray-500
+                      hover:ring-opacity-30
+                      text-gray-800
+                      hover:text-opacity-80
+                    "
+                    :class="{'mr-2': box.balance === 0}"
+                    title="Ver Transacciones"
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
-                      class="h-5 w-5"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
+                      class="h-6 w-6"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
                     >
                       <path
-                        d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.669 0 3.218.51 4.5 1.385A7.962 7.962 0 0114.5 14c1.255 0 2.443.29 3.5.804v-10A7.968 7.968 0 0014.5 4c-1.255 0-2.443.29-3.5.804V12a1 1 0 11-2 0V4.804z"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
                       />
                     </svg>
                   </Link>
@@ -192,13 +220,23 @@
                   <a
                     href="javascript:;"
                     :title="'Eliminar Caja ' + box.name"
-                    class="p-2 text-red-800 hover:text-opacity-80"
+                    class="
+                      p-2
+                      border border-red-400
+                      rounded
+                      bg-white
+                      hover:bg-red-50
+                      hover:ring
+                      hover:ring-red-400
+                      hover:ring-opacity-40
+                      text-red-500
+                    "
                     @click="$emit('deleteBox', box.id)"
                     v-if="box.balance === 0"
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
-                      class="h-5 w-5"
+                      class="h-6 w-6"
                       viewBox="0 0 20 20"
                       fill="currentColor"
                     >
