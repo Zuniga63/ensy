@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Redirect;
 use Inertia\Inertia;
 
 class UserController extends Controller
@@ -42,7 +44,35 @@ class UserController extends Controller
    */
   public function store(Request $request)
   {
-    //
+    $rules = [
+      'name' => 'required|string|min:3|max:255',
+      'email' => 'required|string|email|max:255|unique:users',
+      'password' => 'required|string|min:8|confirmed'
+    ];
+
+    $parameters = [
+      'name' => 'nombre',
+      'email' => 'correo electronico',
+      'password' => 'contraseña',
+      'password_confirmation' => 'confirmación de contraseña'
+    ];
+
+    $request->validate($rules, [], $parameters);
+    $inputs = $request->all();
+    $user = new User;
+
+    $user->name = $inputs['name'];
+    $user->email = $inputs['email'];
+    $user->password = Hash::make($inputs['password']);
+    $user->save();
+
+    $message = [
+      'userName' => $user->name,
+      'email' => $user->email
+    ];
+    
+    return Redirect::route('users.index')->with('message', $message);
+    
   }
 
   /**

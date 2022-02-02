@@ -8,14 +8,28 @@
 
     <div>
       <!-- Contenedor Principal -->
-      <div class="max-w-7xl pt-5 lg:py-10 sm:px-6 lg:px-8 mx-auto shadow">
+      <div
+        class="
+          block
+          lg:grid lg:grid-cols-12 lg:gap-4
+          max-w-7xl
+          pt-5
+          lg:pb-16
+          sm:px-6
+          lg:px-8 lg:mt-3
+          mx-auto
+        "
+      >
+        <!-- Formulario de nuevo usuario -->
+        <div class="hidden lg:block col-span-4">
+          <new-user-form/>
+        </div>
         <!-- Tarjetas de usuarios -->
         <div
           class="
             relative
+            lg:col-span-8
             max-h-screen
-            sm:rounded
-            lg:rounded-md
             overflow-x-hidden
             overscroll-y-auto
           "
@@ -30,49 +44,33 @@
               sm:items-center
               p-2
               sm:px-4
-              border-b border-blue-300
-              bg-blue-200
-              shadow
+              border border-slate-700
+              sm:rounded-t
+              lg:rounded-t-md
+              bg-zinc-800
             "
           >
-            <p class="hidden sm:block lg:col-span-2 text-gray-800 text-lg">
+            <p class="hidden sm:block lg:col-span-2 text-white text-lg">
               Listado de Usuarios
             </p>
             <!-- Buscador -->
-            <div
+            <input
+              type="text"
               class="
-                grid grid-cols-12
-                border border-gray-400
+                block
+                w-full
+                px-4
+                py-2
+                border border-white
                 rounded
-                overflow-hidden
+                focus:ring
+                focus:border-slate-700
+                focus:ring-slate-400
+                focus:ring-opacity-80
+                focus:outline-none
               "
-            >
-              <div class="col-span-10">
-                <input
-                  type="text"
-                  class="block w-full p-2 focus:outline-none border-none"
-                  placeholder="Buscar usuario"
-                />
-              </div>
-              <div class="col-span-2 bg-gray-300 border-l border-gray-400">
-                <div class="flex flex-col justify-center items-center h-full">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="h-6 w-6 text-gray-600"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                    />
-                  </svg>
-                </div>
-              </div>
-            </div>
+              placeholder="Buscar usuario"
+            />
           </header>
           <!-- Body -->
           <div class="p-3 lg:p-0 bg-white">
@@ -88,16 +86,28 @@
           </div>
 
           <!-- Footer -->
-          <footer class="sticky bottom-0 flex justify-between p-2 sm:p-4 bg-blue-200 border-t border-blue-300">
-            <div class="text-sm text-gray-600">
+          <footer
+            class="
+              sticky
+              bottom-0
+              flex
+              justify-between
+              p-2
+              sm:p-4
+              border border-slate-700
+              sm:rounded-b
+              bg-zinc-800
+            "
+          >
+            <div class="text-sm text-gray-50">
               Usuarios: <span>{{ users.length }}</span>
             </div>
-            <div class="text-sm text-gray-600">
+            <div class="text-sm text-gray-50">
               <span class="lg:hidden">Verificados:</span>
               <span class="hidden lg:inline-block">Usuarios Verificados:</span>
               <span class="font-bold">{{ usersVerified }}</span>
             </div>
-            <div class="text-sm text-gray-600">
+            <div class="text-sm text-gray-50">
               <span class="lg:hidden">Activos:</span>
               <span class="hidden lg:inline-block">Usuarios Activos:</span>
               <span>{{ usersActive }}</span>
@@ -111,10 +121,9 @@
 
 <script>
 import AppLayout from "@/Layouts/AppLayout.vue";
-import JetButton from "@/Jetstream/Button.vue";
-import JetDangerButton from "@/Jetstream/DangerButton.vue";
 import UserCard from "./UserCard.vue";
-import UserTable from "./Table.vue"
+import UserTable from "./Table.vue";
+import NewUserForm from "./Form.vue";
 import dayjs from "dayjs";
 
 export default {
@@ -123,33 +132,31 @@ export default {
   components: {
     AppLayout,
     UserCard,
-    JetButton,
-    JetDangerButton,
-    UserTable
+    UserTable,
+    NewUserForm,
   },
   computed: {
-    usersActive(){
-      let userActives = this.users.filter(user => {
-        if(user.sessions.length > 0){
+    usersActive() {
+      let userActives = this.users.filter((user) => {
+        if (user.sessions.length > 0) {
           let lastActivity = dayjs(user.sessions[0].lastActivity * 1000);
           let now = dayjs();
-          let diff = now.diff(lastActivity, 'hours');
+          let diff = now.diff(lastActivity, "hours");
 
-          if(diff <= 48){
+          if (diff <= 48) {
             return true;
           }
 
           return false;
-
         }
 
         return false;
       });
       return userActives.length;
     },
-    usersVerified(){
-      return this.users.filter(user => user.email_verified_at).length;
-    }
+    usersVerified() {
+      return this.users.filter((user) => user.email_verified_at).length;
+    },
   },
 };
 </script>

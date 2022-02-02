@@ -38,9 +38,10 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
   //USERS
   Route::resource('usuarios', UserController::class)->names([
     'index' => 'users.index',
+    'store' => 'users.store',
   ])->parameters([
     'usuarios' => 'user'
-  ])->only('index');
+  ])->only(['index', 'store']);
 
   //CASHBOX
   Route::resource('cajas', CashboxController::class)->names([
