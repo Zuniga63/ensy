@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Redirect;
 use Inertia\Inertia;
@@ -70,7 +71,7 @@ class UserController extends Controller
       'userName' => $user->name,
       'email' => $user->email
     ];
-    
+
     return Redirect::route('users.index')->with('message', $message);
     
   }
@@ -117,6 +118,19 @@ class UserController extends Controller
    */
   public function destroy(user $user)
   {
-    //
+    $actualUSer = Auth::user();
+    $message = null;
+
+    if($actualUSer->id === 1 && $actualUSer->id !== $user->id){
+      $user->deleteProfilePhoto();
+      $user->tokens->each->delete();
+      $user->delete();
+    }else if($user->id === 1){
+      $message = "Este usaurio no se puede eliminar por este medio.";
+    }else{
+      $message = "No puedes eliminar usuarios.";
+    }
+
+    return Redirect::route('users.index')->with('message', $message);
   }
 }

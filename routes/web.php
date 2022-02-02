@@ -39,9 +39,10 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
   Route::resource('usuarios', UserController::class)->names([
     'index' => 'users.index',
     'store' => 'users.store',
+    'destroy' => 'users.destroy',
   ])->parameters([
     'usuarios' => 'user'
-  ])->only(['index', 'store']);
+  ])->only(['index', 'store', 'destroy']);
 
   //CASHBOX
   Route::resource('cajas', CashboxController::class)->names([

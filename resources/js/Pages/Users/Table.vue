@@ -131,6 +131,7 @@
                   <a
                     href="javascript:;"
                     class="text-red-600 hover:text-red-900"
+                    @click="$emit('destroyUser', user)"
                     >
                       Eliminar
                     </a
@@ -154,6 +155,7 @@ export default {
   props: {
     users: Array,
   },
+  emits: ['destroyUser'],
   setup(props) {
     dayjs.locale(locale_es_do);
     dayjs.extend(relativeTime);

@@ -22,7 +22,7 @@
       >
         <!-- Formulario de nuevo usuario -->
         <div class="hidden lg:block col-span-4">
-          <new-user-form/>
+          <new-user-form />
         </div>
         <!-- Tarjetas de usuarios -->
         <div
@@ -50,9 +50,44 @@
               bg-zinc-800
             "
           >
-            <p class="hidden sm:block lg:col-span-2 text-white text-lg">
-              Listado de Usuarios
-            </p>
+            <div
+              class="
+                hidden
+                sm:flex
+                items-center
+                lg:col-span-2
+                text-white text-lg
+              "
+            >
+              <p class="hidden sm:block lg:col-span-2 text-white text-lg">
+                Listado de Usuarios
+              </p>
+              <a
+                href="javascript:;"
+                class="
+                  inline-block
+                  ml-2
+                  text-white text-opacity-50
+                  hover:text-opacity-100
+                "
+                @click="reload"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-6 w-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                  />
+                </svg>
+              </a>
+            </div>
             <!-- Buscador -->
             <input
               type="text"
@@ -82,7 +117,7 @@
               ></user-card>
             </div>
 
-            <user-table :users="users"></user-table>
+            <user-table :users="users" @destroy-user="confirmDelete"></user-table>
           </div>
 
           <!-- Footer -->
@@ -125,6 +160,8 @@ import UserCard from "./UserCard.vue";
 import UserTable from "./Table.vue";
 import NewUserForm from "./Form.vue";
 import dayjs from "dayjs";
+import { Inertia } from "@inertiajs/inertia";
+import Swal from "sweetalert2";
 
 export default {
   props: ["users"],
@@ -134,6 +171,47 @@ export default {
     UserCard,
     UserTable,
     NewUserForm,
+  },
+  methods: {
+    reload() {
+      Inertia.reload({ only: ["users"] });
+    },
+    confirmDelete(user) {
+      Swal.fire({
+        title: "¿Está seguro?",
+        text: "Está acción no puede revertirse y eliminará todos los datos del usuario.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "¡Si, Eliminalo!",
+        cancelButtonText: "Cancelar",
+      }).then((result) => {
+        if (result.isConfirmed) {
+          this.destroyUser(user);
+        }
+      });
+    },
+    destroyUser(user) {
+      Inertia.delete(route("users.destroy", user.id), {
+        preserveScroll: true,
+        onSuccess: (page) => {
+          let message = page.props.flash.message;
+          if (message) {
+            Swal.fire({
+              title: "Opps, Algo salio mal",
+              icon: "error",
+              text: message,
+            });
+          } else {
+            Swal.fire({
+              title: "Usuario Eliminado.",
+              icon: "success",
+            });
+          }
+        },
+      });
+    },
   },
   computed: {
     usersActive() {
