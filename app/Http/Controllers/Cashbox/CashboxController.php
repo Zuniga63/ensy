@@ -272,7 +272,7 @@ class CashboxController extends Controller
       $date = $inputs['date'];
       if ($inputs['setTime']) {
         $time = $inputs['time'];
-        $transaction->transaction_date = Carbon::createFromFormat('Y-m-d H:s', "$date $time");
+        $transaction->transaction_date = Carbon::createFromFormat('Y-m-d H:i', "$date $time");
       } else {
         $transaction->transaction_date = Carbon::createFromFormat('Y-m-d', $date)->endOfDay();
       }
@@ -325,7 +325,7 @@ class CashboxController extends Controller
       $date = $inputs['date'];
       if ($inputs['setTime']) {
         $time = $inputs['time'];
-        $cashbox_transaction->transaction_date = Carbon::createFromFormat('Y-m-d H:s', "$date $time");
+        $cashbox_transaction->transaction_date = Carbon::createFromFormat('Y-m-d H:i', "$date $time");
       } else {
         $cashbox_transaction->transaction_date = Carbon::createFromFormat('Y-m-d', $date)->endOfDay();
       }
