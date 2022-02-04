@@ -122,8 +122,10 @@ export default {
       });
 
       return filtered.sort((t1, t2) => {
+        let reverse = this.sortBy === 'recentFirst' ? true : false;
+
         if (t1.date.isBefore(t2.date)) {
-          if (this.sortBy === "recentFirst") {
+          if (reverse) {
             return 1;
           }
 
@@ -131,11 +133,31 @@ export default {
         }
 
         if (t1.date.isAfter(t2.date)) {
-          if (this.sortBy === "recentFirst") {
+          if (reverse) {
             return -1;
           }
 
           return 1;
+        }
+
+        if(t1.date.isSame(t2.date)){
+          if(t1.createdAt.isBefore(t2.createdAt)){
+            if(reverse){
+              return 1;
+            }
+
+            return -1;
+          }
+
+          if(t1.createdAt.isAfter(t2.createdAt)){
+            if(reverse){
+              return -1
+            }
+
+            return 1;
+          }
+
+          return 0;
         }
 
         return 0;

@@ -122,6 +122,7 @@ class CashboxController extends Controller
         'created_at as createdAt',
         'updated_at as updatedAt',
       ])
+        ->orderBy('id')
         ->orderBy('transaction_date', 'asc')
         ->orderBy('created_at', 'asc');
     }])->loadSum('transactions as balance', 'amount');
