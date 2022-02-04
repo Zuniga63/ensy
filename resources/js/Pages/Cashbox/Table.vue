@@ -150,44 +150,12 @@
                     text-gray-800
                   "
                 >
-                  <!-- Link for Edit -->
-                  <Link
-                    :href="route('cashbox.edit', box.slug)"
-                    :title="'Actualizar ' + box.name"
-                    class="
-                      p-2
-                      border border-green-400
-                      mr-2
-                      rounded
-                      hover:bg-green-50
-                      hover:ring
-                      hover:ring-green-400
-                      hover:ring-opacity-40
-                      bg-white
-                      text-green-500
-                    "
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      class="h-6 w-6"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                    >
-                      <path
-                        d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z"
-                      />
-                      <path
-                        fill-rule="evenodd"
-                        d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"
-                        clip-rule="evenodd"
-                      />
-                    </svg>
-                  </Link>
                   <!-- Link for show Transactions -->
                   <Link
                     :href="route('cashbox.show', box.slug)"
                     class="
                       p-2
+                      mr-2
                       border border-gray-200
                       rounded
                       bg-white
@@ -198,7 +166,6 @@
                       text-gray-800
                       hover:text-opacity-80
                     "
-                    :class="{'mr-2': box.balance === 0}"
                     title="Ver Transacciones"
                   >
                     <svg
@@ -216,6 +183,40 @@
                       />
                     </svg>
                   </Link>
+                  <!-- Link for Edit -->
+                  <Link
+                    :href="route('cashbox.edit', box.slug)"
+                    :title="'Actualizar ' + box.name"
+                    class="
+                      p-2
+                      border border-green-400
+                      rounded
+                      hover:bg-green-50
+                      hover:ring
+                      hover:ring-green-400
+                      hover:ring-opacity-40
+                      bg-white
+                      text-green-500
+                    "
+                    :class="{ 'mr-2': box.balance === 0 }"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      class="h-6 w-6"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path
+                        d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z"
+                      />
+                      <path
+                        fill-rule="evenodd"
+                        d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"
+                        clip-rule="evenodd"
+                      />
+                    </svg>
+                  </Link>
+
                   <!-- Link for delete box -->
                   <a
                     href="javascript:;"
