@@ -62,9 +62,12 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     'cajas' => 'cashbox:slug'
   ])->only(['show', 'edit']);
 
+  //Rutas para menejar transacciones
   Route::post('/cajas/{cashbox}/registrar-transaccion', [CashboxController::class, 'storeTransaction'])->name('cashbox.storeTransaction');
   Route::put('/cajas/{cashbox}/{cashbox_transaction}', [CashboxController::class, 'updateTransaction'])->name('cashbox.updateTransaction');
   Route::delete('/cajas/{cashbox}/{cashbox_transaction}', [CashboxController::class, 'destroyTransaction'])->name('cashbox.destroyTransaction');
+  //Rutas para manejar transferencia
+  Route::post('/cajas/{cashbox}/registrar-transferencia', [CashboxController::class, 'storeTransfer'])->name('cashbox.storeTransfer');
 
   //RUTA PARA CONFIGURAR SITIO
   // Route::resource('configuracion', BusinessConfigController::class)

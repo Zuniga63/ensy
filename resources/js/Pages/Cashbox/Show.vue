@@ -94,44 +94,93 @@
           :cashbox-id="cashbox.id"
           :max-date="maxDate"
           :transaction="transactionToUpdate"
+          v-show="transactionFormActive"
+        />
+
+        <transfer-form
+          @hidden-form="hiddenModal"
+          :cashbox-id="cashbox.id"
+          :max-date="maxDate"
+          :balance="cashbox.balance"
+          :boxs="boxs"
+          v-show="transferFormActive"
         />
       </div>
 
       <!-- Button for show modal  -->
-      <div class="fixed bottom-4 right-4 w-14 h-14">
-        <a
-          href="javascript:;"
-          @click="showModal"
-          class="
-            flex
-            items-center
-            justify-center
-            w-full
-            h-full
-            p-4
-            border border-blue-700
-            rounded-full
-            bg-blue-600
-            shadow-md
-            text-white text-lg
-            font-bold
-            outline-none
-            focus:outline-transparent focus:outline-hidden focus:bg-blue-800
-          "
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-8 w-8"
-            viewBox="0 0 20 20"
-            fill="currentColor"
+      <div class="fixed bottom-4 right-4" v-show="!modal">
+        <div class="flex flex-col">
+          <!-- Boton para transferencia -->
+          <a
+            href="javascript:;"
+            @click="showTransferForm"
+            class="
+              flex
+              items-center
+              justify-center
+              w-full
+              h-full
+              p-4
+              mb-2
+              border border-emerald-700
+              rounded-full
+              bg-emerald-500
+              shadow
+              text-white
+              outline-none
+              hover:bg-opacity-50 hover:border-opacity-50
+              focus:outline-transparent
+              focus:outline-hidden
+              focus:bg-emerald-600
+            "
+            v-show="tab === 'transacciones' && canTransferMoney"
           >
-            <path
-              fill-rule="evenodd"
-              d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
-              clip-rule="evenodd"
-            />
-          </svg>
-        </a>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-8 w-8 lg:h-5 lg:w-5"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                d="M8 5a1 1 0 100 2h5.586l-1.293 1.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L13.586 5H8zM12 15a1 1 0 100-2H6.414l1.293-1.293a1 1 0 10-1.414-1.414l-3 3a1 1 0 000 1.414l3 3a1 1 0 001.414-1.414L6.414 15H12z"
+              />
+            </svg>
+          </a>
+          <!-- Button for new transaction -->
+          <a
+            href="javascript:;"
+            @click="showTransactionForm"
+            class="
+              flex
+              items-center
+              justify-center
+              w-full
+              h-full
+              p-4
+              border border-blue-700
+              rounded-full
+              bg-blue-600
+              shadow-md
+              outline-none
+              text-white
+              hover:bg-opacity-50 hover:border-opacity-50
+              focus:outline-transparent focus:outline-hidden focus:bg-blue-800
+            "
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-8 w-8 lg:h-5 lg:w-5"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+                clip-rule="evenodd"
+              />
+            </svg>
+          </a>
+        </div>
       </div>
     </div>
   </app-layout>
@@ -153,6 +202,7 @@ import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import locale_es_do from "dayjs/locale/es";
 import localizedFormat from "dayjs/plugin/localizedFormat";
+import TransferForm from './Components/TransferForm.vue';
 
 export default {
   components: {
@@ -164,8 +214,9 @@ export default {
     ShowBoxClosures,
     NewTransactionForm,
     Link,
+    TransferForm,
   },
-  props: ["cashbox"],
+  props: ["cashbox", "boxs"],
   setup(props) {
     //---------------------------------------------------------
     // SE CONSTRUYE EL FORMATEADOR DE MONEDA
@@ -197,6 +248,8 @@ export default {
       tab: "transacciones", //info, transactions, closures
       modal: false,
       transactionToUpdate: null,
+      transactionFormActive: false,
+      transferFormActive: false,
     };
   },
   methods: {
@@ -208,13 +261,24 @@ export default {
     },
     hiddenModal() {
       this.modal = false;
-      if(this.transactionToUpdate){
+      if (this.transactionToUpdate) {
         this.transactionToUpdate = null;
       }
+
+      this.transactionFormActive = false;
+      this.transferFormActive = false;
+    },
+    showTransactionForm(){
+      this.showModal();
+      this.transactionFormActive = true;
     },
     updateTransaction(data) {
       this.transactionToUpdate = data;
+      this.showTransactionForm();
+    },
+    showTransferForm(){
       this.showModal();
+      this.transferFormActive = true;
     },
     /**
      * Se encarga de agregar los propiedades necesarias
@@ -277,6 +341,9 @@ export default {
     maxDate() {
       return dayjs().subtract(1, "day").format("YYYY-MM-DD");
     },
+    canTransferMoney(){
+      return this.cashbox.balance > 0 && this.boxs.length > 0;
+    }
   },
 };
 </script>

@@ -164,9 +164,9 @@
         </p>
       </div>
 
-      <div class="flex justify-between">
+      <div class="flex justify-between" v-if="!transaction.blocked">
         <JetDangerButton @click="deleteTransaction">Eliminar</JetDangerButton>
-        <JetButton @click="$emit('updateTransaction', transaction)" >Editar</JetButton>
+        <JetButton @click="$emit('updateTransaction', transaction)" v-if="!transaction.transfer" >Editar</JetButton>
       </div>
     </div>
   </div>
