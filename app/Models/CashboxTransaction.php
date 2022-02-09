@@ -45,6 +45,6 @@ class CashboxTransaction extends Model
    */
   public function cashbox()
   {
-    $this->hasOne(Cashbox::class);
+    return $this->hasOne(Cashbox::class);
   }
 }
