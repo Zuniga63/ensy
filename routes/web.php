@@ -82,4 +82,11 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
   Route::put('/update-basic-config', [BusinessConfigController::class, 'updateBasicConfig'])->name('config.updateBasicConfig');
   Route::delete('/delete-logo', [BusinessConfigController::class, 'deleteLogo'])->name('config.deleteLogo');
   Route::delete('/delete-favicon', [BusinessConfigController::class, 'deleteFavicon'])->name('config.deleteFavicon');
+
+  //RUTAS PARA LA ADMINISTRACIÓN DE BARRIOS
+  Route::post('/configuracion/new-town-district', [BusinessConfigController::class, 'storeTownDistrict'])->name('config.storeTownDistrict');
+  Route::put('/configuracion/update-town-district', [BusinessConfigController::class, 'updateTownDistrict'])
+    ->name('config.updateTownDistrict');
+  Route::delete('/configuracion/destroy-town-district', [BusinessConfigController::class, 'destroyTownDistrict'])
+    ->name('config.destroyTownDistrict');
 });

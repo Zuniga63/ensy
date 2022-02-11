@@ -14,11 +14,13 @@ class DatabaseSeeder extends Seeder
    */
   public function run()
   {
-    $tables = ['users', 'business_config'];
+    $tables = ['users', 'business_config', 'country_department', 'town'];
 
     $this->truncateTables($tables);
     $this->call(UserSeeder::class);
     $this->call(BusinessConfigSeeder::class);
+    $this->call(CountryDepartmentSeeder::class);
+    $this->call(TownSeeder::class);
     // \App\Models\User::factory(10)->create();
   }
 

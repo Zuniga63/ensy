@@ -9,7 +9,13 @@
     <div>
       <div class="max-w-7xl mx-auto py-10 sm:px-6 lg:px-8">
         <update-business-information></update-business-information>
-        <jet-section-border></jet-section-border>
+        <jet-section-border class="mb-4"></jet-section-border>
+        <div class="hidden lg:block">
+          <new-district
+            :departments="departments"
+          ></new-district>
+          <jet-section-border></jet-section-border>
+        </div>
       </div>
     </div>
   </app-layout>
@@ -19,15 +25,18 @@
 import AppLayout from "@/Layouts/AppLayout.vue";
 import JetSectionBorder from "@/Jetstream/SectionBorder.vue";
 import UpdateBusinessInformation from "@/Pages/Config/Partial/UpdateBusinessInformation.vue";
+import NewDistrict from "./Partial/NewDistrict.vue";
 
 export default {
   components: {
     AppLayout,
     JetSectionBorder,
     UpdateBusinessInformation,
+    NewDistrict,
   },
+  props: ["departments"],
   mounted() {
-    // console.log(this.$page.props.businessConfig);
+    //console.log(this.$page.props.businessConfig);
   },
 };
 </script>

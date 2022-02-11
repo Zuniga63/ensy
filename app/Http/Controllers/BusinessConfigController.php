@@ -3,11 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Models\BusinessConfig;
+use App\Models\CountryDepartment;
+use App\Models\Town;
+use App\Models\TownDistrict;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
+use stdClass;
 
 class BusinessConfigController extends Controller
 {
@@ -18,7 +22,8 @@ class BusinessConfigController extends Controller
    */
   public function index()
   {
-    return Inertia::render('Config/Index');
+    $departments = $this->getCountryDepartments();
+    return Inertia::render('Config/Index', compact('departments'));
   }
 
   /**
@@ -130,5 +135,119 @@ class BusinessConfigController extends Controller
     }
 
     return Redirect::route('config.index');
+  }
+
+  public function storeTownDistrict(Request $request)
+  {
+    $rules = $this->getDistrictRules();
+    $attr = $this->getDistrictAttr();
+    $request->validate($rules, [], $attr);
+
+
+    $inputs = $request->all();
+
+    //Se crea la instancia del barrio
+    /** @var TownDistrict */
+    $district = new TownDistrict();
+    $district->name = $inputs['name'];
+
+    //Se recupera la instancia del pueblo
+    /** @var Town */
+    $town = Town::find($inputs['town_id'], ['id', 'name']);
+
+    //Se guarda el nuevo barrio
+    $town->districts()->save($district);
+    $message = [
+      'ok' => true,
+      'town' => $town->name,
+      'district' => $district->name
+    ];
+
+    return Redirect::route('config.index')->with('mesage', $message);
+  }
+
+  public function updateTownDistrict(Request $request)
+  {
+    $rules = $this->getDistrictRules();
+    $attr = $this->getDistrictAttr();
+    $request->validate($rules, [], $attr);
+    $inputs = $request->all();
+
+    $district = TownDistrict::find($inputs['district_id']);
+    $district->name = $inputs['name'];
+    $district->save();
+
+    return Redirect::route('config.index');
+  }
+
+  public function destroyTownDistrict(Request $request)
+  {
+    $data = $request->all();
+    $district = TownDistrict::find($data['id']);
+    $res = new stdClass();
+
+    if($district){
+      $district->delete();
+      $res->ok = true;
+      $res->district = $district->toArray();
+    }else{
+      $res->ok = false;
+      $res->district = $data;
+    }
+
+    return Redirect::route('config.index')->with('message', $res);
+  }
+
+  /**
+   * Se encarga de consultar la base de datos
+   * y recuperar la informacion de los departamentos, con sus ciudades 
+   * y distritos
+   * @return Collection
+   */
+  protected function getCountryDepartments()
+  {
+    return CountryDepartment::orderBy('name')->with([
+      'towns' => function ($query) {
+        $query->select(['id', 'country_department_id', 'name'])
+          ->orderBY('name')
+          ->with(['districts' => function ($query) {
+            $query->select(['id', 'town_id', 'name'])
+              ->orderBY('name');
+          }]);
+      }
+    ])->get(['id', 'name']);
+  }
+
+  /**
+   * Construye las reglas de validación para la creación
+   * o la actualización de barrios en la base de datos.
+   * @param bool $update Define si son reglas de actualización.
+   */
+  protected function getDistrictRules($update = false)
+  {
+    $rules = [
+      'department_id' => 'required|integer|exists:country_department,id',
+      'town_id' => 'required|integer|exists:town,id',
+      'name' => 'required|string|min:3',
+    ];
+
+    if ($update) {
+      $rules['district_id'] = 'required|integer|exists:town_distric,id';
+    }
+
+    return $rules;
+  }
+
+  /**
+   * De
+   */
+  protected function getDistrictAttr()
+  {
+    return [
+      'department_id' => 'departamento',
+      'town_id' => 'municipio',
+      'district_id' => 'barrio',
+      'name' => 'nombre del barrio'
+    ];
   }
 }
