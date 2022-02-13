@@ -17,13 +17,11 @@ class CreateCustomerFinancialDataTable extends Migration
       $table->id();
       $table->foreignId('customer_id')->constrained('customer')->cascadeOnDelete();
       $table->string('accupation', 150)->nullable();
-      $table->boolean('dependent')->default(false);
+      $table->string('position', 150)->nullable();
       $table->string('description')->nullable();
       $table->decimal('salary', 10, 2)->nullable();
-      $table->string('company_name', 150)->nullable();
-      $table->string('company_position', 150)->nullable();
-      $table->json('company_address')->nullable();
-      $table->json('company_contact')->nullable();
+      $table->boolean('dependent')->default(false);
+      $table->json('company')->nullable();
       $table->timestamp('admission_date')->nullable();
       $table->timestamp('departure_date')->nullable();
       $table->timestamps();
