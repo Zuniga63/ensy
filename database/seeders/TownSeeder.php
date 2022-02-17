@@ -682,7 +682,7 @@ class TownSeeder extends Seeder
       ['id' => 664, 'country_department_id' => 14, 'name' => "URIBIA", 'code' => 847],
       ['id' => 665, 'country_department_id' => 14, 'name' => "URUMITA", 'code' => 855],
       ['id' => 666, 'country_department_id' => 14, 'name' => "VILLANUEVA", 'code' => 874],
-      ['id' => 667, 'country_department_id' => 15, 'name' => "SANTA MARTA (DISTRITO TURISTICO CULTURAL E HISTORICO DE SANTA MARTA)", 'code' => 1],
+      ['id' => 667, 'country_department_id' => 15, 'name' => "SANTA MARTA", 'code' => 1],
       ['id' => 668, 'country_department_id' => 15, 'name' => "ALGARROBO", 'code' => 30],
       ['id' => 669, 'country_department_id' => 15, 'name' => "ARACATACA", 'code' => 53],
       ['id' => 670, 'country_department_id' => 15, 'name' => "ARIGUANI (EL DIFICIL)", 'code' => 58],
