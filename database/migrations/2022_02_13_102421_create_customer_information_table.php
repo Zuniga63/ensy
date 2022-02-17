@@ -16,15 +16,6 @@ class CreateCustomerInformationTable extends Migration
     Schema::create('customer_information', function (Blueprint $table) {
       $table->id();
       $table->foreignId('customer_id')->constrained('customer')->cascadeOnDelete();
-      /**
-       * CC: Cedula de Ciudadanía
-       * CE: Cedula de extranjería
-       * TI: Tanjeta d Idntidad
-       * NIT: Numero de Idntificación Tributario.
-       * NIP: Numero de Idntificación Personal
-       * PAP: Pasaporte
-       */
-      $table->enum('document_type', ['CC', 'CE', 'TI', 'NIT', 'NIP', 'TI', 'PAP'])->default('CC');
       $table->timestamp('document_expedition_date')->nullable();
       $table->json('document_expedition_place')->nullable();
       $table->string('document_path', 2048)->nullable();
