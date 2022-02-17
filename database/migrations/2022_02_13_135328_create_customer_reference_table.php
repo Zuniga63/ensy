@@ -19,7 +19,7 @@ class CreateCustomerReferenceTable extends Migration
       $table->string('first_name', 50);
       $table->string('last_name', 50)->nullable();
       $table->string('document_number', 20)->nullable();
-      $table->enum('document_type', ['CC', 'CE', 'TI', 'NIT', 'NIP', 'TI', 'PAP'])->default('CC');
+      $table->enum('document_type', ['CC', 'CE', 'TI', 'NIT', 'NIP', 'PAP'])->default('CC');
       $table->string('email')->nullable();
       $table->string('phone', 20)->nullable();
       $table->json('address')->nullable();
