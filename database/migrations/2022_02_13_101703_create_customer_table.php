@@ -18,6 +18,15 @@ class CreateCustomerTable extends Migration
       $table->string('first_name', 50);
       $table->string('last_name', 50)->nullable();
       $table->string('document_number', 20)->nullable()->unique();
+      /**
+       * CC: Cedula de Ciudadanía
+       * CE: Cedula de extranjería
+       * TI: Tanjeta d Idntidad
+       * NIT: Numero de Idntificación Tributario.
+       * NIP: Numero de Idntificación Personal
+       * PAP: Pasaporte
+       */
+      $table->enum('document_type', ['CC', 'CE', 'TI', 'NIT', 'NIP', 'PAP'])->default('CC');
       $table->string('email')->nullable()->unique();
       $table->string('image_path', 2048)->nullable();
       $table->enum('sex', ['f', 'm'])->nullable();
