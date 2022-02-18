@@ -22,10 +22,35 @@ class Customer extends Model
     'first_name',
     'last_name',
     'document_number',
+    'document_type',
     'email',
     'image_path',
     'sex'
   ];
+
+  protected $appends = ['full_name', 'image_url'];
+
+  /**
+   * Retorna el nombre completo del cliente
+   */
+  public function getFullNameAttribute()
+  {
+    $fullName = "$this->first_name $this->last_name";
+    return $this->attributes['fullName'] = trim($fullName);
+  }
+
+  public function getImageUrlAttribute()
+  {
+    $color ="7F9CF5";
+    $bg = "EBF4FF";
+
+    if($this->sex === 'f'){
+      $color = "EC4899";
+      $bg = "fbcfe8";
+    }
+
+    return 'https://ui-avatars.com/api/?name='.urlencode($this->full_name)."&color=$color&background=$bg";
+  }
 
   /**
    * Get the contacts registered for the customer

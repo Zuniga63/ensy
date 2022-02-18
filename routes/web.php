@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\BusinessConfigController;
 use App\Http\Controllers\Cashbox\CashboxController;
+use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\UserController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -62,7 +63,11 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     'cajas' => 'cashbox:slug'
   ])->only(['show', 'edit']);
 
+  //-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
   //Rutas para menejar transacciones
+  //-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
   Route::post('/cajas/{cashbox}/registrar-transaccion', [CashboxController::class, 'storeTransaction'])->name('cashbox.storeTransaction');
   Route::put('/cajas/{cashbox}/{cashbox_transaction}', [CashboxController::class, 'updateTransaction'])->name('cashbox.updateTransaction');
   Route::delete('/cajas/{cashbox}/{cashbox_transaction}', [CashboxController::class, 'destroyTransaction'])->name('cashbox.destroyTransaction');
@@ -83,10 +88,32 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
   Route::delete('/delete-logo', [BusinessConfigController::class, 'deleteLogo'])->name('config.deleteLogo');
   Route::delete('/delete-favicon', [BusinessConfigController::class, 'deleteFavicon'])->name('config.deleteFavicon');
 
+  //-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
   //RUTAS PARA LA ADMINISTRACIÓN DE BARRIOS
+  //-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
   Route::post('/configuracion/new-town-district', [BusinessConfigController::class, 'storeTownDistrict'])->name('config.storeTownDistrict');
   Route::put('/configuracion/update-town-district', [BusinessConfigController::class, 'updateTownDistrict'])
     ->name('config.updateTownDistrict');
   Route::delete('/configuracion/destroy-town-district', [BusinessConfigController::class, 'destroyTownDistrict'])
     ->name('config.destroyTownDistrict');
+
+  //-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
+  // RUTAS PARA ADMINSITRAR CLIENTES
+  //-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
+  Route::resource('clientes', CustomerController::class)
+    ->names([
+      'index' => 'customer.index',
+      'create' => 'customer.create',
+      'store' => 'customer.store',
+      'edit' => 'customer.edit',
+      'update' => 'customer.update',
+      'destroy' => 'customer.destroy',
+    ])
+    ->parameters([
+      'clientes' => 'customer'
+    ]);
 });
