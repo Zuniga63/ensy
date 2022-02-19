@@ -243,6 +243,7 @@
             text-sm text-gray-800
             focus:ring focus:ring-indigo-500 focus:ring-opacity-40
           "
+          v-model="form.type"
         >
           <option value="income">Ingreso en efectivo</option>
           <option value="expense">Egreso en efectivo</option>
