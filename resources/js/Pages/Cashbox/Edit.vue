@@ -1,6 +1,5 @@
 <template>
   <app-layout title="Cajas">
-
     <div class="max-w-7xl mx-auto py-10 sm:px-6 lg:px-8">
       <jet-form-section @submitted="updateBox">
         <template #title>Actualizar Caja</template>
@@ -36,8 +35,8 @@
             <jet-input
               id="cashboxOrder"
               type="number"
-              min = "1"
-              max = "255"
+              min="1"
+              max="255"
               class="mt-1 block w-full"
               v-model="form.order"
             />
@@ -49,6 +48,12 @@
           <jet-action-message :on="form.recentlySuccessful" class="mr-3">
             Guardado.
           </jet-action-message>
+
+          <Link
+            :href="route('cashbox.index')"
+            class="mr-3 underline text-sm text-gray-600 hover:text-gray-900"
+            >Cancelar</Link
+          >
 
           <jet-button
             :class="{ 'opacity-25': form.processing }"
@@ -69,7 +74,7 @@ import JetInput from "@/Jetstream/Input.vue";
 import JetInputError from "@/Jetstream/InputError.vue";
 import JetLabel from "@/Jetstream/Label.vue";
 import JetActionMessage from "@/Jetstream/ActionMessage.vue";
-import { useForm } from "@inertiajs/inertia-vue3";
+import { useForm, Link} from "@inertiajs/inertia-vue3";
 
 export default {
   components: {
@@ -80,10 +85,11 @@ export default {
     JetInputError,
     JetLabel,
     JetActionMessage,
+    Link
   },
   props: ["cashbox"],
   setup(props) {
-    const url = route('cashbox.update', props.cashbox.id);
+    const url = route("cashbox.update", props.cashbox.id);
     const form = useForm({
       name: props.cashbox.name,
       slug: props.cashbox.slug,
@@ -100,14 +106,18 @@ export default {
 
       this.form.put(this.url);
     },
-    createSlug(name){
-      let result = '';
-      if(typeof name === 'string' ){
-        result = name.toLowerCase().replace(/\s/gi, '_').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    createSlug(name) {
+      let result = "";
+      if (typeof name === "string") {
+        result = name
+          .toLowerCase()
+          .replace(/\s/gi, "_")
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "");
       }
 
       return result;
-    }
+    },
   },
 };
 </script>
