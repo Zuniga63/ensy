@@ -30,37 +30,98 @@
           "
         >
           <div class="p-4">
-            <!-- Tabs -->
-            <ul class="flex flex-wrap list-none mb-2">
-              <li
-                v-for="itemTab in tabs"
-                :key="itemTab"
-                @click.stop="tab = itemTab"
-              >
-                <a
-                  href="javascript:;"
-                  class="
-                    block
-                    px-3
-                    py-3
-                    my-2
-                    border-x-0 border-t-0 border-b-2
-                    font-bold
-                    text-xs
-                    leading-tight
-                    uppercase
-                    hover:border-transparent hover:bg-gray-100
-                    focus:border-blue-500
-                  "
-                  :class="{
-                    'border-blue-500 text-blue-500 hover:border-blue-500':
-                      tab === itemTab,
-                  }"
+            <!-- TABS & CONTROLS -->
+            <div class="flex justify-between items-center pr-4">
+              <!-- Tabs -->
+              <ul class="flex flex-wrap list-none mb-2">
+                <li
+                  v-for="itemTab in tabs"
+                  :key="itemTab"
+                  @click.stop="tab = itemTab"
                 >
-                  {{ itemTab }}
-                </a>
-              </li>
-            </ul>
+                  <a
+                    href="javascript:;"
+                    class="
+                      block
+                      px-3
+                      py-3
+                      my-2
+                      border-x-0 border-t-0 border-b-2
+                      font-bold
+                      text-xs
+                      leading-tight
+                      uppercase
+                      hover:border-transparent hover:bg-gray-100
+                      focus:border-blue-500
+                    "
+                    :class="{
+                      'border-blue-500 text-blue-500 hover:border-blue-500':
+                        tab === itemTab,
+                    }"
+                  >
+                    {{ itemTab }}
+                  </a>
+                </li>
+              </ul>
+
+              <div class="flex">
+                <!-- Selector de caja -->
+                <select
+                  name="box"
+                  id="boxSelector"
+                  v-model="boxSlug"
+                  @change="chageBox"
+                  class="
+                    w-80
+                    px-4
+                    py-2
+                    border border-gray-600
+                    rounded
+                    mr-3
+                    text-sm
+                    focus:ring focus:ring-indigo-400 focus:ring-opacity-50
+                  "
+                >
+                  <option :value="null">Selecciona la caja a visitar</option>
+                  <option v-for="box in boxs" :key="box.id" :value="box.slug">
+                    {{ box.name }}
+                  </option>
+                </select>
+
+                <!-- Boton para recargar -->
+                <Link
+                  :href="route('cashbox.show', cashbox.slug)"
+                  preserve-state
+                  preserve-scroll
+                  class="
+                    p-2
+                    border border-gray-400
+                    rounded
+                    bg-gray-200
+                    text-gray-700
+                    hover:ring
+                    hover:ring-gray-500
+                    hover:ring-opacity-20
+                    hover:bg-gray-50
+                  "
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-6 w-6"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                    />
+                  </svg>
+                </Link>
+              </div>
+            </div>
 
             <!-- Content -->
             <div class="pb-1">
@@ -202,7 +263,7 @@ import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import locale_es_do from "dayjs/locale/es";
 import localizedFormat from "dayjs/plugin/localizedFormat";
-import TransferForm from './Components/TransferForm.vue';
+import TransferForm from "./Components/TransferForm.vue";
 
 export default {
   components: {
@@ -250,6 +311,7 @@ export default {
       transactionToUpdate: null,
       transactionFormActive: false,
       transferFormActive: false,
+      boxSlug: null,
     };
   },
   methods: {
@@ -268,7 +330,7 @@ export default {
       this.transactionFormActive = false;
       this.transferFormActive = false;
     },
-    showTransactionForm(){
+    showTransactionForm() {
       this.showModal();
       this.transactionFormActive = true;
     },
@@ -276,7 +338,7 @@ export default {
       this.transactionToUpdate = data;
       this.showTransactionForm();
     },
-    showTransferForm(){
+    showTransferForm() {
       this.showModal();
       this.transferFormActive = true;
     },
@@ -316,6 +378,12 @@ export default {
       trans.createdAt = dayjs(trans.createdAt);
       trans.updatedAt = dayjs(trans.updatedAt);
     },
+    chageBox() {
+      if (this.boxSlug) {
+        let url = route("cashbox.show", this.boxSlug);
+        Inertia.get(url);
+      }
+    },
   },
   beforeMount() {
     this.transformTransactions();
@@ -341,9 +409,9 @@ export default {
     maxDate() {
       return dayjs().subtract(1, "day").format("YYYY-MM-DD");
     },
-    canTransferMoney(){
+    canTransferMoney() {
       return this.cashbox.balance > 0 && this.boxs.length > 0;
-    }
+    },
   },
 };
 </script>
