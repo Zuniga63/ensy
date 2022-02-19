@@ -2,7 +2,7 @@
   <form
     class="
       w-11/12
-      lg:w-96
+      lg:w-4/12
       px-4
       py-6
       border border-gray-300
@@ -30,98 +30,175 @@
 
     <!-- Body -->
     <div class="pb-4">
-      <!-- Selección de la fecha -->
-      <div class="flex items-center mb-2">
-        <JetCheckbox class="mr-2" v-model:checked="form.setDate" id="setDate" />
-        <label for="setDate" class="text-sm text-gray-800"
-          >Seleccionar fecha</label
-        >
-      </div>
-
-      <!-- Conjunto de controles para la fecha y la hora -->
-      <transition
-        name="show-date-controllers"
-        enter-active-class="transition ease-out duration-300"
-        enter-from-class="opacity-0 scale-90"
-        enter-to-class="opacity-100 scale-100"
-        leave-active-class="transition ease-in duration-200"
-        leave-from-class="opacity-100 scale-100"
-        leave-to-class="opacity-0 scale-90"
-      >
-        <!-- Date -->
-        <div v-show="form.setDate" class="mb-2">
-          <!-- Date -->
-          <div class="grid grid-cols-12 items-center">
-            <label
-              for="transactionDate"
-              class="col-span-3 text-sm text-gray-800"
-              >Fecha</label
-            >
-
-            <JetInput
-              type="date"
-              id="transactionDate"
-              class="col-span-9 w-full text-sm"
-              v-model="form.date"
-              :max="form.setDate ? maxDate : null"
-            />
-
-            <jet-input-error
-              :message="form.errors.date"
-              class="mt-2 col-span-12"
-            />
-          </div>
-
-          <!-- Checkbox for time -->
-          <div class="flex items-center mb-2">
-            <JetCheckbox
-              name="setDate"
-              id="setTime"
-              class="mr-2"
-              v-model:checked="form.setTime"
-            />
-            <label for="setTime" class="text-sm text-gray-800"
-              >Seleccionar hora</label
-            >
-          </div>
-
-          <transition
-            name="show-date-controllers"
-            enter-active-class="transition ease-out duration-200"
-            enter-from-class="opacity-0 scale-90"
-            enter-to-class="opacity-100 scale-100"
-            leave-active-class="transition ease-in duration-200"
-            leave-from-class="opacity-100 scale-100"
-            leave-to-class="opacity-0 scale-90"
+      <!-- Selección de la fecha Mobil -->
+      <div class="block lg:hidden">
+        <div class="flex items-center mb-2">
+          <JetCheckbox
+            class="mr-2"
+            v-model:checked="form.setDate"
+            id="setDate"
+          />
+          <label for="setDate" class="text-sm text-gray-800"
+            >Seleccionar fecha</label
           >
-            <div v-show="form.setTime" class="grid grid-cols-12 items-center">
+        </div>
+
+        <!-- Conjunto de controles para la fecha y la hora -->
+        <transition
+          name="show-date-controllers"
+          enter-active-class="transition ease-out duration-300"
+          enter-from-class="opacity-0 scale-90"
+          enter-to-class="opacity-100 scale-100"
+          leave-active-class="transition ease-in duration-200"
+          leave-from-class="opacity-100 scale-100"
+          leave-to-class="opacity-0 scale-90"
+        >
+          <!-- Date -->
+          <div v-show="form.setDate" class="mb-2">
+            <!-- Date -->
+            <div class="grid grid-cols-12 items-center">
               <label
-                for="transactionTime"
+                for="transactionDate"
                 class="col-span-3 text-sm text-gray-800"
-                >Hora:
-              </label>
+                >Fecha</label
+              >
+
               <JetInput
-                type="time"
-                name="transactionTime"
+                type="date"
+                id="transactionDate"
                 class="col-span-9 w-full text-sm"
-                id="transactionTime"
-                v-model="form.time"
+                v-model="form.date"
+                :max="form.setDate ? maxDate : null"
               />
 
               <jet-input-error
-                :message="form.errors.time"
+                :message="form.errors.date"
                 class="mt-2 col-span-12"
               />
             </div>
-          </transition>
+
+            <!-- Checkbox for time -->
+            <div class="flex items-center mb-2">
+              <JetCheckbox
+                name="setDate"
+                id="setTime"
+                class="mr-2"
+                v-model:checked="form.setTime"
+              />
+              <label for="setTime" class="text-sm text-gray-800"
+                >Seleccionar hora</label
+              >
+            </div>
+
+            <transition
+              name="show-date-controllers"
+              enter-active-class="transition ease-out duration-200"
+              enter-from-class="opacity-0 scale-90"
+              enter-to-class="opacity-100 scale-100"
+              leave-active-class="transition ease-in duration-200"
+              leave-from-class="opacity-100 scale-100"
+              leave-to-class="opacity-0 scale-90"
+            >
+              <div v-show="form.setTime" class="grid grid-cols-12 items-center">
+                <label
+                  for="transactionTime"
+                  class="col-span-3 text-sm text-gray-800"
+                  >Hora:
+                </label>
+                <JetInput
+                  type="time"
+                  name="transactionTime"
+                  class="col-span-9 w-full text-sm"
+                  id="transactionTime"
+                  v-model="form.time"
+                />
+
+                <jet-input-error
+                  :message="form.errors.time"
+                  class="mt-2 col-span-12"
+                />
+              </div>
+            </transition>
+          </div>
+        </transition>
+      </div>
+
+      <!-- SELECTOR DE LA FECHA ESCRITORIO -->
+      <div class="hidden lg:grid grid-cols-3 gap-2 mb-4">
+        <!-- Selector de fecha -->
+        <div class="col-span-2">
+          <!-- Checked for setDate -->
+          <div class="flex items-center mb-2">
+            <JetCheckbox
+              class="mr-2"
+              v-model:checked="form.setDate"
+              id="setDateDesk"
+            />
+            <label for="setDateDesk" class="text-sm text-gray-800"
+              >Seleccionar fecha</label
+            >
+          </div>
+
+          <!-- Input para la fecha -->
+          <div class="flex flex-col">
+            <JetInput
+              type="date"
+              id="transactionDateDesktop"
+              class="w-full text-sm text-gray-800 transition-colors"
+              :class="{
+                'text-opacity-20 border-opacity-20': !form.setDate,
+              }"
+              v-model="form.date"
+              :max="form.setDate ? maxDate : null"
+              :disabled="!form.setDate"
+            />
+
+            <jet-input-error :message="form.errors.date" class="mt-2" />
+          </div>
         </div>
-      </transition>
+
+        <!-- Selector de la hora -->
+        <div>
+          <!-- Checked for setTime -->
+          <div class="flex items-center mb-2">
+            <JetCheckbox
+              class="mr-2"
+              :class="{ 'text-opacity-20': !form.setDate }"
+              v-model:checked="form.setTime"
+              id="setTimeDesk"
+              :disabled="!form.setDate"
+            />
+            <label
+              for="setTimeDesk"
+              class="text-sm text-gray-800"
+              :class="{ 'text-opacity-20': !form.setDate }"
+              >Seleccionar Hora</label
+            >
+          </div>
+          <!-- Slector de hora -->
+          <div class="flex flex-col">
+            <JetInput
+              type="time"
+              name="transactionTime"
+              class="col-span-9 w-full text-sm text-gray-800 transition-colors"
+              :class="{
+                'text-opacity-20 border-opacity-20':
+                  !form.setTime || !form.setDate,
+              }"
+              v-model="form.time"
+              :disabled="!form.setDate || !form.setTime"
+            />
+
+            <jet-input-error :message="form.errors.time" class="mt-2" />
+          </div>
+        </div>
+      </div>
 
       <!-- Description -->
       <div class="mb-2">
         <label
           for="description"
-          class="block mb-2 text-basetext-gray-800 text-center"
+          class="block mb-2 text-base text-gray-800 text-center"
           >Descripcion</label
         >
         <textarea
@@ -146,16 +223,46 @@
         ></textarea>
         <jet-input-error :message="form.errors.description" class="mt-2" />
       </div>
+
+      <!-- Tipo de Transacción -->
+      <div class="hidden lg:block mb-2">
+        <label
+          for="typeSelector"
+          class="block mb-2 text-sm text-gray-800 text-left"
+        >
+          Tipo de Transación
+        </label>
+
+        <select
+          name="typeSelector"
+          id="typeSelector"
+          class="
+            w-full
+            border border-gray-300
+            rounded
+            text-sm text-gray-800
+            focus:ring focus:ring-indigo-500 focus:ring-opacity-40
+          "
+        >
+          <option value="income">Ingreso en efectivo</option>
+          <option value="expense">Egreso en efectivo</option>
+        </select>
+
+        <jet-input-error :message="form.errors.type" class="mt-2" />
+      </div>
+
       <!-- Importe -->
       <div class="mb-2">
-        <label for="amount" class="inline-block mb-1 text-sm text-gray-800"
+        <label
+          for="transactionAmount"
+          class="inline-block mb-1 text-sm text-gray-800"
           >Importe</label
         >
         <CurrencyInput
           name="amount"
-          id="amount"
+          id="transactionAmount"
           type="text"
-          class="w-full text-sm text-gray-800 text-right"
+          class="w-full text-sm text-gray-800 text-right px-4"
           v-model="form.amount"
           placeholder="Ingresa el importe"
           autocomplete="off"
@@ -165,8 +272,9 @@
           class="col-span-12 mt-2"
         />
       </div>
+
       <!-- Tipo de transacción -->
-      <div class="flex justify-around">
+      <div class="lg:hidden flex justify-around">
         <div class="flex items-center">
           <input
             type="radio"
@@ -205,7 +313,7 @@
           <label for="transactionExpense">Egreso</label>
         </div>
       </div>
-      <jet-input-error :message="form.errors.type" class="mt-2" />
+      <jet-input-error :message="form.errors.type" class="mt-2 lg:hidden" />
     </div>
 
     <footer
@@ -216,6 +324,9 @@
         border-t-4 border-double border-slate-900
       "
     >
+      <JetDangerButton type="button" @click="hiddenForm"
+        >Cancelar</JetDangerButton
+      >
       <JetButton>
         <svg
           class="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
@@ -240,9 +351,6 @@
         </svg>
         {{ buttonMessage }}
       </JetButton>
-      <JetDangerButton type="button" @click="hiddenForm"
-        >Cancelar</JetDangerButton
-      >
     </footer>
   </form>
 </template>
@@ -301,7 +409,9 @@ export default {
   methods: {
     hiddenForm() {
       this.$emit("hiddenForm");
-      this.form.reset("description", "amount", "type", "setDate");
+      this.form.reset("description", "amount", "type");
+      this.form.setDate = this.form.date ? true : false;
+      this.form.setTime = this.form.time ? true : false;
       this.updateForm = false;
       this.buttonMessage = "Registrar";
     },
