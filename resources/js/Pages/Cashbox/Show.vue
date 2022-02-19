@@ -64,7 +64,7 @@
                 </li>
               </ul>
 
-              <div class="flex">
+              <div class="hidden lg:flex">
                 <!-- Selector de caja -->
                 <select
                   name="box"
@@ -137,36 +137,62 @@
         </div>
       </div>
 
-      <div
-        class="
-          fixed
-          inset-0
-          flex
-          items-center
-          justify-center
-          bg-indigo-300 bg-opacity-30
-          z-50
-        "
-        v-show="modal"
-        @click.self="hiddenModal"
+      <transition
+        leave-active-class="transition ease-in duration-100"
+        leave-from-class="opacity-100"
+        leave-to-class="opacity-0"
       >
-        <new-transaction-form
-          @hidden-form="hiddenModal"
-          :cashbox-id="cashbox.id"
-          :max-date="maxDate"
-          :transaction="transactionToUpdate"
-          v-show="transactionFormActive"
-        />
+        <div
+          class="
+            fixed
+            inset-0
+            flex
+            items-center
+            justify-center
+            bg-indigo-300 bg-opacity-30
+            z-50
+          "
+          v-show="modal"
+          @click.self="hiddenModal"
+        >
+          <transition
+            name="show-form-modal"
+            enter-active-class="transition ease-out duration-200"
+            enter-from-class="opacity-0 scale-90"
+            enter-to-class="opacity-100 scale-100"
+            leave-active-class="transition ease-in duration-100"
+            leave-from-class="opacity-100 scale-100"
+            leave-to-class="opacity-0 scale-90"
+          >
+            <new-transaction-form
+              @hidden-form="hiddenModal"
+              :cashbox-id="cashbox.id"
+              :max-date="maxDate"
+              :transaction="transactionToUpdate"
+              v-show="transactionFormActive"
+            />
+          </transition>
 
-        <transfer-form
-          @hidden-form="hiddenModal"
-          :cashbox-id="cashbox.id"
-          :max-date="maxDate"
-          :balance="cashbox.balance"
-          :boxs="boxs"
-          v-show="transferFormActive"
-        />
-      </div>
+          <transition
+            name="show-form-modal"
+            enter-active-class="transition ease-out duration-200"
+            enter-from-class="opacity-0 scale-90"
+            enter-to-class="opacity-100 scale-100"
+            leave-active-class="transition ease-in duration-100"
+            leave-from-class="opacity-100 scale-100"
+            leave-to-class="opacity-0 scale-90"
+          >
+            <transfer-form
+              @hidden-form="hiddenModal"
+              :cashbox-id="cashbox.id"
+              :max-date="maxDate"
+              :balance="cashbox.balance"
+              :boxs="boxs"
+              v-show="transferFormActive"
+            />
+          </transition>
+        </div>
+      </transition>
 
       <!-- Button for show modal  -->
       <div class="fixed bottom-4 right-4" v-show="!modal">
