@@ -28,7 +28,7 @@ use Inertia\Inertia;
 //   ]);
 // });
 
-Route::redirect('/', '/panel', 301);
+Route::redirect('/', '/panel', 302);
 
 Route::middleware(['auth:sanctum', 'verified'])->group(function () {
   // DASBOARD
