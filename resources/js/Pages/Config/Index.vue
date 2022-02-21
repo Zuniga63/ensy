@@ -8,12 +8,15 @@
 
     <div>
       <div class="max-w-7xl mx-auto py-10 sm:px-6 lg:px-8">
-        <update-business-information></update-business-information>
-        <jet-section-border class="mb-4"></jet-section-border>
+        <!-- Formulario para información basica -->
+        <update-business-information />
+        <jet-section-border class="mb-4"/>
+        <!-- Formulario para actualizar las redes sociales -->
+        <update-social-networks/>
+        <jet-section-border class="mb-4"/>
+
         <div class="hidden lg:block">
-          <new-district
-            :departments="departments"
-          ></new-district>
+          <new-district :departments="departments"/>
           <jet-section-border></jet-section-border>
         </div>
       </div>
@@ -25,6 +28,7 @@
 import AppLayout from "@/Layouts/AppLayout.vue";
 import JetSectionBorder from "@/Jetstream/SectionBorder.vue";
 import UpdateBusinessInformation from "@/Pages/Config/Partial/UpdateBusinessInformation.vue";
+import UpdateSocialNetworks from "./Partial/UpdateSocialsAndContacts.vue"
 import NewDistrict from "./Partial/NewDistrict.vue";
 
 export default {
@@ -33,6 +37,7 @@ export default {
     JetSectionBorder,
     UpdateBusinessInformation,
     NewDistrict,
+    UpdateSocialNetworks,
   },
   props: ["departments"],
   mounted() {

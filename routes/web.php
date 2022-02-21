@@ -85,6 +85,7 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
   //   ]);
   Route::get('/configuracion', [BusinessConfigController::class, 'index'])->name('config.index');
   Route::put('/update-basic-config', [BusinessConfigController::class, 'updateBasicConfig'])->name('config.updateBasicConfig');
+  Route::put('/update-socials-and-contacts', [BusinessConfigController::class, 'updateSocialsAndContacts'])->name('config.updateSocialsAndContacts');
   Route::delete('/delete-logo', [BusinessConfigController::class, 'deleteLogo'])->name('config.deleteLogo');
   Route::delete('/delete-favicon', [BusinessConfigController::class, 'deleteFavicon'])->name('config.deleteFavicon');
 

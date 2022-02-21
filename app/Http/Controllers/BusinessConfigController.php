@@ -107,6 +107,72 @@ class BusinessConfigController extends Controller
     return Redirect::route('config.index');
   }
 
+  /**
+   * Se encarga de actualizar la información de contacto
+   * y los enlaces a las rede sociales.
+   * @return \Illuminate\Http\Response
+   */
+  public function updateSocialsAndContacts(Request $request)
+  {
+    $rules = [
+      'phone' => 'nullable|string|min:6|max:20',
+      'show_phone' => 'nullable|boolean',
+      'address' => 'nullable|string|max:255',
+      'show_address' => 'boolean',
+      'email' => 'nullable|string|email:rfc,dns|max:255',
+      'show_email' => 'nullable|boolean',
+      'whatsapp' => 'nullable|string|min:6|max:20',
+      'show_whatsapp' => 'boolean',
+      'facebook_nick' => 'nullable|string|min:3|max:255',
+      'facebook_link' => 'nullable|string|url|max:2048',
+      'show_facebook' => 'boolean',
+      'instagram_nick' => 'nullable|string|min:3|max:255',
+      'instagram_link' => 'nullable|string|url|max:2048',
+      'show_instagram' => 'boolean',
+    ];
+
+    $attr = [
+      'phone' => 'telefono',
+      'address' => 'dirección',
+      'email' => 'correo electronico',
+      'whatsapp' => 'WhatsApp',
+      'facebook_nick' => 'facebook nick',
+      'facebook_link' => 'facebook link',
+      'instagram_nick' => 'instagram nick',
+      'instagram_link' => 'instagram link',
+    ];
+
+    $request->validate($rules, [], $attr);
+    $inputs = $request->all();
+
+    //Recupero la configuración
+    $config = BusinessConfig::first();
+
+    $config->phone = $inputs['phone'];
+    $config->show_phone = $config->phone && $inputs['show_phone'];
+
+    $config->address = $inputs['address'];
+    $config->show_address = $config->address && $inputs['show_address'];
+
+    $config->email = $inputs['email'];
+    $config->show_email = $config->email && $inputs['show_email'];
+
+    $config->whatsapp = $inputs['whatsapp'];
+    $config->show_whatsapp = $config->whatsapp && $inputs['show_whatsapp'];
+
+    $config->facebook_nick = $inputs['facebook_nick'];
+    $config->facebook_link = $inputs['facebook_link'];
+    $config->show_facebook = $config->facebook_nick && $config->facebook_link && $inputs['show_facebook'];
+
+    $config->instagram_nick = $inputs['instagram_nick'];
+    $config->instagram_link = $inputs['instagram_link'];
+    $config->show_instagram = $config->instagram_nick && $config->instagram_link && $inputs['show_instagram'];
+
+    $config->save();
+
+    return Redirect::route('config.index');
+  }
+
   public function deleteLogo()
   {
     $businessConfig = BusinessConfig::first(['id', 'logo']);
@@ -186,11 +252,11 @@ class BusinessConfigController extends Controller
     $district = TownDistrict::find($data['id']);
     $res = new stdClass();
 
-    if($district){
+    if ($district) {
       $district->delete();
       $res->ok = true;
       $res->district = $district->toArray();
-    }else{
+    } else {
       $res->ok = false;
       $res->district = $data;
     }
