@@ -25,7 +25,7 @@ class CreateBusinessConfigTable extends Migration
       $table->string('email')->nullable();
       $table->string('show_email')->default(false);
       $table->string('whatsapp', 20)->nullable();
-      $table->boolean('show_wathsapp')->default(false);
+      $table->boolean('show_whatsapp')->default(false);
       $table->string('facebook_nick')->nullable();
       $table->string('facebook_link', 2048)->nullable();
       $table->boolean('show_facebook')->default(false);
