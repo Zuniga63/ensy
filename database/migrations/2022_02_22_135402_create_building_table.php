@@ -24,7 +24,7 @@ class CreateBuildingTable extends Migration
       $table->json('address')->nullable();
       $table->enum('building_type', ['house', 'apartment', 'business'])->nullable();
       $table->unsignedTinyInteger('socioeconomic')->nullable();
-      $table->string('building_state', 20)->nullable();
+      $table->string('building_state', 45)->nullable();
       $table->unsignedTinyInteger('rooms')->nullable();
       $table->unsignedTinyInteger('bathrooms')->nullable();
       $table->unsignedTinyInteger('parking_lots')->nullable();
