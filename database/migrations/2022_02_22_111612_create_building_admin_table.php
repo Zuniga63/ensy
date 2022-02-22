@@ -18,7 +18,7 @@ class CreateBuildingAdminTable extends Migration
       $table->string('name', 45);
       $table->string('admin_first_name', 45)->nullable();
       $table->string('admin_last_name', 45)->nullable();
-      $table->string('admin_document_number')->nullable();
+      $table->string('admin_document_number', 20)->nullable();
       $table->json('phones')->nullable();
       $table->string('email')->nullable();
       $table->timestamps();
