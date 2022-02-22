@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\BuildingAdminController;
 use App\Http\Controllers\BusinessConfigController;
 use App\Http\Controllers\Cashbox\CashboxController;
 use App\Http\Controllers\CustomerController;
@@ -74,15 +75,11 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
   //Rutas para manejar transferencia
   Route::post('/cajas/{cashbox}/registrar-transferencia', [CashboxController::class, 'storeTransfer'])->name('cashbox.storeTransfer');
 
-  //RUTA PARA CONFIGURAR SITIO
-  // Route::resource('configuracion', BusinessConfigController::class)
-  //   ->only('index', 'update')
-  //   ->names([
-  //     'index' => 'config.index',
-  //     'update' => 'config.update',
-  //   ])->parameters([
-  //     'configuracion' => 'businessConfig'
-  //   ]);
+  //-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
+  //  RUTAS PARA CONFIGURAR EL SITIO
+  //-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
   Route::get('/configuracion', [BusinessConfigController::class, 'index'])->name('config.index');
   Route::put('/update-basic-config', [BusinessConfigController::class, 'updateBasicConfig'])->name('config.updateBasicConfig');
   Route::put('/update-socials-and-contacts', [BusinessConfigController::class, 'updateSocialsAndContacts'])->name('config.updateSocialsAndContacts');
@@ -116,5 +113,24 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     ])
     ->parameters([
       'clientes' => 'customer'
+    ]);
+
+  //-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
+  // RUTAS PARA LOS ADMINSITRADORES DE INMUEBLES
+  //-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
+
+  Route::resource('administraciones', BuildingAdminController::class)
+    ->names([
+      'index' => 'buildingAdmin.index',
+      'create' => 'buildingAdmin.create',
+      'store' => 'buildingAdmin.store',
+      'edit' => 'buildingAdmin.edit',
+      'update' => 'buildingAdmin.update',
+      'destroy' => 'buildingAdmin.destroy',
+    ])
+    ->parameters([
+      'administraciones' => 'buildingAdmin'
     ]);
 });
