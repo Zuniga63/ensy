@@ -1,0 +1,50 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+class CreateBuildingTable extends Migration
+{
+  /**
+   * Run the migrations.
+   *
+   * @return void
+   */
+  public function up()
+  {
+    Schema::create('building', function (Blueprint $table) {
+      $table->id();
+      $table->foreignId('owner_id')->nullable()->constrained('customer')->nullOnDelete();
+      $table->foreignId('town_distric_id')->nullable()->constrained('town_district')->nullOnDelete();
+      $table->string('image_path', 2048)->nullable();
+      $table->string('description')->nullable();
+      $table->json('features')->nullable();
+      $table->json('address')->nullable();
+      $table->enum('building_type', ['house', 'apartment', 'business'])->nullable();
+      $table->unsignedTinyInteger('socioeconomic')->nullable();
+      $table->string('building_state', 20)->nullable();
+      $table->unsignedTinyInteger('rooms')->nullable();
+      $table->unsignedTinyInteger('bathrooms')->nullable();
+      $table->unsignedTinyInteger('parking_lots')->nullable();
+      $table->unsignedFloat('area')->nullable();
+      $table->unsignedFloat('private_area')->nullable();
+      $table->unsignedTinyInteger('floor')->nullable();
+      $table->timestamp('antiquity')->nullable();
+      $table->decimal('lease_fee', 10, 2)->default(0.00);
+      $table->float('comission', 3, 2)->default(0.00);
+      $table->boolean('available')->default(false);
+      $table->timestamps();
+    });
+  }
+
+  /**
+   * Reverse the migrations.
+   *
+   * @return void
+   */
+  public function down()
+  {
+    Schema::dropIfExists('building');
+  }
+}
