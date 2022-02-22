@@ -17,6 +17,7 @@ class CreateBuildingImageTable extends Migration
       $table->id();
       $table->foreignId('building_id')->constrained('building')->cascadeOnDelete();
       $table->string('image_path', 2048);
+      $table->string('description')->nullable();
     });
   }
 

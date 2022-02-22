@@ -15,13 +15,12 @@ class CreateBuildingAdminTable extends Migration
   {
     Schema::create('building_admin', function (Blueprint $table) {
       $table->id();
-      $table->foreignId('building_id')->constrained('building')->cascadeOnDelete();
+      $table->string('name', 45);
       $table->string('admin_first_name', 45)->nullable();
       $table->string('admin_last_name', 45)->nullable();
       $table->string('admin_document_number')->nullable();
       $table->json('phones')->nullable();
       $table->string('email')->nullable();
-      $table->decimal('admin_fee', 10, 2)->default(0.00);
       $table->timestamps();
     });
   }

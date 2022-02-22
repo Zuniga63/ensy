@@ -16,6 +16,7 @@ class CreateBuildingTable extends Migration
     Schema::create('building', function (Blueprint $table) {
       $table->id();
       $table->foreignId('owner_id')->nullable()->constrained('customer')->nullOnDelete();
+      $table->foreignId('building_admin_id')->nullable()->constrained('building_admin')->nullOnDelete();
       $table->foreignId('town_distric_id')->nullable()->constrained('town_district')->nullOnDelete();
       $table->string('image_path', 2048)->nullable();
       $table->string('description')->nullable();
@@ -32,6 +33,7 @@ class CreateBuildingTable extends Migration
       $table->unsignedTinyInteger('floor')->nullable();
       $table->timestamp('antiquity')->nullable();
       $table->decimal('lease_fee', 10, 2)->default(0.00);
+      $table->decimal('admin_fee', 10, 2)->default(0.00);
       $table->float('comission', 3, 2)->default(0.00);
       $table->boolean('available')->default(false);
       $table->timestamps();
