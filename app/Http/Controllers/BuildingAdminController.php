@@ -136,6 +136,7 @@ class BuildingAdminController extends Controller
   {
     return [
       'name' => 'required|string|min:3|max:45',
+      'address' => 'nullable|string|min:3|max:255',
       'admin_first_name' => 'required|string|min:3|max:45',
       'admin_last_name' => 'nullable|string|min:3|max:45',
       'admin_document_number' => 'nullable|string|min:6|max:20',
@@ -148,6 +149,7 @@ class BuildingAdminController extends Controller
   {
     return [
       'name' => 'nombre',
+      'address' => 'dirección',
       'admin_first_name' => 'nombres del administrador',
       'admin_last_name' => 'apellidos del adminsitrador',
       'admin_document_number' => 'numero de documento',
