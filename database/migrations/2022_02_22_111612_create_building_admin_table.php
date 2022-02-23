@@ -16,6 +16,7 @@ class CreateBuildingAdminTable extends Migration
     Schema::create('building_admin', function (Blueprint $table) {
       $table->id();
       $table->string('name', 45);
+      $table->string('address')->nullable();
       $table->string('admin_first_name', 45)->nullable();
       $table->string('admin_last_name', 45)->nullable();
       $table->string('admin_document_number', 20)->nullable();

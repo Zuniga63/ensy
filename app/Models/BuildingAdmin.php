@@ -22,6 +22,7 @@ class BuildingAdmin extends Model
    */
   protected $fillable = [
     'name',
+    'address',
     'admin_first_name',
     'admin_last_name',
     'admin_document_number',
