@@ -16,8 +16,8 @@ class BuildingAdminController extends Controller
    */
   public function index()
   {
-    $admins = BuildingAdmin::withCount('buildings')->get();
-    return Inertia::render('BuildingAdmin/Index', compact('admin'));
+    $admins = BuildingAdmin::withCount('buildings')->orderBy('name')->get();
+    return Inertia::render('BuildingAdmin/Index', compact('admins'));
   }
 
   /**
@@ -42,6 +42,7 @@ class BuildingAdminController extends Controller
     $attr = $this->getAttr();
     $request->validate($rules, [], $attr);
     $inputs = $request->all();
+    $inputs['email'] = strtolower($inputs['email']);
 
     $admin = BuildingAdmin::create($inputs);
 
@@ -51,6 +52,7 @@ class BuildingAdminController extends Controller
     ];
 
     if ($inputs['addOtherAdmin']) {
+      $result['reload'] = true;
       return Redirect::route('buildingAdmin.create')->with('message', $result);
     } else {
       return Redirect::route('buildingAdmin.index')->with('message', $result);
@@ -78,7 +80,7 @@ class BuildingAdminController extends Controller
    */
   public function edit(BuildingAdmin $buildingAdmin)
   {
-    return Inertia::render('BuildingAdmin/Edit', compact('BuildingAdmin'));
+    return Inertia::render('BuildingAdmin/Edit', compact('buildingAdmin'));
   }
 
   /**
@@ -100,7 +102,7 @@ class BuildingAdminController extends Controller
     $buildingAdmin->admin_last_name = $inputs['admin_last_name'];
     $buildingAdmin->admin_document_number = $inputs['admin_document_number'];
     $buildingAdmin->phones = $inputs['phones'];
-    $buildingAdmin->email = $inputs['email'];
+    $buildingAdmin->email = strtolower($inputs['email']);
     $buildingAdmin->save();
 
     $result = [
@@ -140,7 +142,7 @@ class BuildingAdminController extends Controller
       'admin_first_name' => 'required|string|min:3|max:45',
       'admin_last_name' => 'nullable|string|min:3|max:45',
       'admin_document_number' => 'nullable|string|min:6|max:20',
-      'phones' => 'nullable|string|json',
+      'phones' => 'nullable|array',
       'email' => 'nullable|string|email:rfc,dns'
     ];
   }

@@ -39,6 +39,17 @@ class BuildingAdmin extends Model
     'phones' => 'array',
   ];
 
+  protected $appends = ['full_name'];
+
+  /**
+   * Retorna el nombre completo del cliente
+   */
+  public function getFullNameAttribute()
+  {
+    $fullName = "$this->admin_first_name $this->admin_last_name";
+    return $this->attributes['fullName'] = trim($fullName);
+  }
+
   /**
    * Recupera los inmuebles bajo este grupo de 
    * administración
