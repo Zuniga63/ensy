@@ -75,10 +75,11 @@
                     w-80
                     px-4
                     py-2
-                    border border-gray-600
+                    border border-gray-200
                     rounded
                     mr-3
                     text-sm
+                    text-gray-800
                     focus:ring focus:ring-indigo-400 focus:ring-opacity-50
                   "
                 >
