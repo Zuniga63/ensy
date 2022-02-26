@@ -126,7 +126,7 @@
 
             <!-- Content -->
             <div class="pb-1">
-              <ShowBoxInfo v-show="tab === tabs[0]" />
+              <ShowBoxInfo v-show="tab === tabs[0]" :transactions="cashbox.transactions"/>
               <ShowTransactions
                 v-show="tab === tabs[1]"
                 :transactions="cashbox.transactions"

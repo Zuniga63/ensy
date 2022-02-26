@@ -236,7 +236,8 @@
           Mostrando pag.
           <span class="font-bold">{{ page + 1 }}</span>
           de {{ pages.length }} | Transacciones:
-          {{ sortedTransactions.length }} | Sumatoria: {{ formatCurrency(balance) }}
+          {{ sortedTransactions.length }} | Sumatoria:
+          {{ formatCurrency(balance) }}
         </p>
       </div>
     </div>
@@ -425,9 +426,8 @@ export default {
       return pages;
     },
     balance() {
-      return this.sortedTransactions
-        .map((item) => item.amount)
-        .reduce((prev, next) => prev + next);
+      let allAmounts = this.sortedTransactions.map((item) => item.amount);
+      return allAmounts.length ? allAmounts.reduce((prev, next) => prev + next) : 0;
     },
   },
   watch: {
