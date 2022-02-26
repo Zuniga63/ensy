@@ -124,7 +124,7 @@ class CashboxController extends Controller
         ->orderBy('transaction_date', 'asc')
         ->orderBy('id')
         ->orderBy('created_at');
-    }])->loadSum('transactions as balance', 'amount');
+    }]);
 
     $balance = 0;
     $cashbox->transactions->map(function ($item) use (&$balance) {
@@ -133,7 +133,7 @@ class CashboxController extends Controller
       $balance += $item->amount;
       return $item;
     });
-    $cashbox->balance = floatval($cashbox->balance);
+    $cashbox->balance = $balance;
 
     //Recupero la otras cajas
     $boxs = Cashbox::orderBy('order')->where('id', '!=', $cashbox->id)->get(['id', 'name', 'slug']);
