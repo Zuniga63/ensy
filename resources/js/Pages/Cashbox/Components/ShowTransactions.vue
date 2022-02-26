@@ -44,10 +44,10 @@
           />
         </div>
       </div>
-      <div class="max-h-screen overflow-scroll">
+      <div class="max-h-screen overflow-scroll" v-if="window.width < 1024">
         <TransactionCard
           @updateTransaction="updateTransaction"
-          v-for="item in sortedTransactions"
+          v-for="item in pages[page]?.transactions"
           :key="item.id"
           :transaction="item"
         />
@@ -55,13 +55,13 @@
     </div>
 
     <!-- desktop version -->
-    <div class="hidden lg:block">
+    <div class="hidden lg:block" v-if="window.width >= 1024">
       <!-- Controles -->
-      <div class="flex justify-between mb-4">
+      <div class="flex justify-between items-center mb-4">
         <!-- Controles de ordenamiento -->
-        <div>
-          <label for="desktopOrderBy" class="inline-block mr-2"
-            >Ordenar transacciones por:</label
+        <div class="flex flex-col">
+          <label for="desktopOrderBy" class="inline-block mb-2"
+            >Ordenar por:</label
           >
           <select
             name="desktopOrderBY"
@@ -73,6 +73,7 @@
               border-gray-300
               focus:border-indigo-300
               rounded-md
+              text-sm text-gray-800
               focus:ring focus:ring-indigo-200 focus:ring-opacity-50
             "
             v-model="sortBy"
@@ -84,28 +85,36 @@
 
         <!-- Control de busqueda -->
         <div>
-          <input
-            type="text"
-            name="searchByDescription"
-            placeholder="Buscar por su descripción."
-            v-model="search"
-            class="
-              w-80
-              px-4
-              py-2
-              border-gray-300
-              focus:border-indigo-300
-              rounded-md
-              focus:ring focus:ring-indigo-200 focus:ring-opacity-50
-            "
-          />
+          <div class="flex flex-col">
+            <label for="desktopSearch" class="inline-block mb-2 text-gray-800"
+              >Filtrar por descripción</label
+            >
+            <input
+              type="text"
+              name="searchByDescription"
+              placeholder="Buscar por su descripción."
+              v-model="search"
+              class="
+                w-80
+                px-4
+                py-2
+                border-gray-300
+                focus:border-indigo-300
+                rounded-md
+                text-sm text-gray-800
+                focus:ring focus:ring-indigo-200 focus:ring-opacity-50
+              "
+            />
+          </div>
           <!-- TODO: Input con el buscador -->
         </div>
       </div>
 
       <!-- Tabla -->
-      <div class="h-[28rem] shadow border-b border-gray-300 overflow-y-scroll">
-        <table class="relative min-w-full table-auto">
+      <div
+        class="h-[28rem] shadow border-b border-gray-300 overflow-y-scroll mb-4"
+      >
+        <table class="relative min-w-full table-auto mb-2">
           <thead class="sticky top-0 bg-gray-50">
             <tr>
               <th
@@ -177,15 +186,58 @@
               </th>
             </tr>
           </thead>
-          <tbody class="bg-white divide-y divide-gray-200">
+          <tbody class="bg-white divide-y divide-gray-200" v-if="pages.length">
             <transaction-row
-              v-for="item in sortedTransactions"
+              v-for="item in pages[page]?.transactions"
               :key="item.id"
               :transaction="item"
               @updateTransaction="updateTransaction"
+              ref="tran"
             />
           </tbody>
         </table>
+      </div>
+
+      <div class="flex items-center">
+        <div class="flex items-center mr-4">
+          <p class="text-sm text-gray-800 mr-2">Pag.:</p>
+
+          <select
+            name="page"
+            id="page"
+            v-model="page"
+            class="border border-gray-200 rounded mr-2 text-sm"
+          >
+            <option v-for="(item, index) in pages" :key="index" :value="index">
+              {{ item.page }}
+            </option>
+          </select>
+
+          <div class="self-stretch mr-2 border border-gray-200"></div>
+
+          <p class="text-sm text-gray-800 mr-2">Filas:</p>
+
+          <select
+            name="items"
+            id="items"
+            v-model="itemsPerPage"
+            class="border border-gray-200 rounded mr-2 text-sm"
+          >
+            <option value="25">25</option>
+            <option value="50">50</option>
+            <option value="75">75</option>
+            <option value="100">100</option>
+            <option value="500">500</option>
+            <option value="1000">1000</option>
+          </select>
+        </div>
+
+        <p class="text-gray-400">
+          Mostrando pag.
+          <span class="font-bold">{{ page + 1 }}</span>
+          de {{ pages.length }} | Transacciones:
+          {{ sortedTransactions.length }} | Sumatoria: {{ formatCurrency(balance) }}
+        </p>
       </div>
     </div>
   </div>
@@ -210,29 +262,96 @@ export default {
     },
   },
   emits: ["updateTransaction"],
+  setup(props) {
+    //---------------------------------------------------------
+    // SE CONSTRUYE EL FORMATEADOR DE MONEDA
+    //---------------------------------------------------------
+    let fractionDigits = 0;
+    let style = "currency";
+    let currency = "COP";
+
+    let formater = new Intl.NumberFormat("es-CO", {
+      style,
+      currency,
+      minimumFractionDigits: fractionDigits,
+    });
+
+    return { formater };
+  },
   data() {
     return {
+      /**
+       * Permite establecer el orden de ordenación de las transacciones
+       * tiene dos valores posibles recentFirst y oldFirst
+       * @type {string}
+       */
       sortBy: "recentFirst",
+      /**
+       * Permite filtrar las transacicones por coincidencias
+       * en la propiedad descripción.
+       * @type {string}
+       */
       search: "",
+      /**
+       * Indica la pagina de transacciones que se estpa visualizando
+       * @type {number}
+       */
+      page: 0,
+      /**
+       * Establece el numero de transacciónes que se visualizan por pag
+       * @type {number}
+       */
+      itemsPerPage: 25,
+      /**
+       * Establece las dimensiones de la ventana
+       * y definir que se muestra y que no.
+       * @type {object}
+       */
+      window: {
+        width: 0,
+        height: 0,
+      },
     };
   },
   methods: {
+    /**
+     * Emite un evento para activar el formulario de actualización
+     * enviando los datos de la transacción.
+     * @param {object} data Instancia de la transacción a actualizar.
+     */
     updateTransaction(data) {
       this.$emit("updateTransaction", data);
+    },
+    /**
+     * Actualiza los parametros de la ventana cada que
+     * esta se redimensiona.
+     */
+    handleResize() {
+      this.window.width = window.innerWidth;
+      this.window.height = window.innerHeight;
+    },
+    /**
+     * Se encarga normalizar el texto y sirva para
+     * realizar busqudas.
+     * @param {string} text texto a normlaizar
+     * @returns {string}
+     */
+    nomalizeText(text) {
+      return text
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
+    },
+    formatCurrency(number) {
+      return this.formater.format(number);
     },
   },
   computed: {
     sortedTransactions() {
       let filtered = this.transactions.filter((item) => {
         //Se recupera la descripción y se normaliza
-        let description = item.description
-          .toLowerCase()
-          .normalize("NFD")
-          .replace(/[\u0300-\u036f]/g, "");
-        let search = this.search
-          .toLowerCase()
-          .normalize("NFD")
-          .replace(/[\u0300-\u036f]/g, "");
+        let description = this.nomalizeText(item.description);
+        let search = this.nomalizeText(this.search);
 
         return description.includes(search);
       });
@@ -279,9 +398,52 @@ export default {
         return 0;
       });
     },
-    windowHeight() {
-      return window.innerHeight;
+    pages() {
+      let page = 1;
+      let transactions = [];
+      let pages = [];
+
+      this.sortedTransactions.forEach((item) => {
+        if (transactions.length < this.itemsPerPage) {
+          transactions.push(item);
+        } else {
+          pages.push({
+            page,
+            transactions,
+          });
+
+          page++;
+          transactions = [item];
+        }
+      });
+
+      pages.push({
+        page,
+        transactions,
+      });
+
+      return pages;
     },
+    balance() {
+      return this.sortedTransactions
+        .map((item) => item.amount)
+        .reduce((prev, next) => prev + next);
+    },
+  },
+  watch: {
+    pages(newPages, oldPages) {
+      if (newPages.length < this.page + 1) {
+        console.log("Pages cambio", newPages.length);
+        this.page = newPages.length - 1;
+      }
+    },
+  },
+  created() {
+    window.addEventListener("resize", this.handleResize);
+    this.handleResize();
+  },
+  destroyed() {
+    window.removeEventListener("resize", this.handleResize);
   },
 };
 </script>
