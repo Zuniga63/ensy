@@ -70,7 +70,7 @@
         <row-button
           type="delete"
           title="Eliminar Transacción"
-          @click="deleteTransaction"
+          @click="$emit('deleteTransaction', transaction)"
         />
       </div>
       <!-- Blocked Icon -->
@@ -106,6 +106,7 @@ export default {
     RowButton,
   },
   props: ["transaction"],
+  emits: ['deleteTransaction'],
   setup(props) {
     //---------------------------------------------------------
     // SE CONSTRUYE EL FORMATEADOR DE MONEDA
@@ -125,52 +126,6 @@ export default {
   methods: {
     formatCurrency(number) {
       return this.formater.format(number);
-    },
-    deleteTransaction() {
-      Swal.fire({
-        title: "¿Está seguro?",
-        text: "Está acción no puede revertirse y eleminará la transacción de la base de datos.",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonColor: "#3085d6",
-        cancelButtonColor: "#d33",
-        confirmButtonText: "¡Si, Eliminala!",
-        cancelButtonText: "Cancelar",
-      }).then((result) => {
-        if (result.isConfirmed) {
-          this.destroy();
-        }
-      });
-    },
-    destroy() {
-      let name = "cashbox.destroyTransaction";
-      let parameters = [this.transaction.cashbox_id, this.transaction.id];
-      let url = route(name, parameters);
-      Inertia.delete(url, {
-        preserveScroll: true,
-        preserveState: true,
-        onSuccess: (page) => {
-          let result = page.props.flash.message;
-          let title = "¡Transacción Eliminada!";
-          let message = result.message;
-          let icon = "success";
-          if (result.ok) {
-            Swal.fire({
-              title,
-              icon,
-              text: message,
-            });
-          } else {
-            icon = "error";
-            title = "¡Oops!";
-            Swal.fire({
-              icon,
-              title,
-              text: message,
-            });
-          }
-        },
-      });
     },
   },
   computed: {

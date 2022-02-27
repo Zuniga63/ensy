@@ -47,6 +47,7 @@
       <div class="max-h-screen overflow-scroll" v-if="window.width < 1024">
         <TransactionCard
           @updateTransaction="updateTransaction"
+          @delete-transaction="deleteTransaction"
           v-for="item in pages[page]?.transactions"
           :key="item.id"
           :transaction="item"
@@ -192,6 +193,7 @@
               :key="item.id"
               :transaction="item"
               @updateTransaction="updateTransaction"
+              @delete-transaction="deleteTransaction"
               ref="tran"
             />
           </tbody>
@@ -262,7 +264,7 @@ export default {
       default: [],
     },
   },
-  emits: ["updateTransaction"],
+  emits: ["updateTransaction", 'deleteTransaction'],
   setup(props) {
     //---------------------------------------------------------
     // SE CONSTRUYE EL FORMATEADOR DE MONEDA
@@ -322,6 +324,9 @@ export default {
      */
     updateTransaction(data) {
       this.$emit("updateTransaction", data);
+    },
+    deleteTransaction(data){
+      this.$emit('deleteTransaction', data);
     },
     /**
      * Actualiza los parametros de la ventana cada que

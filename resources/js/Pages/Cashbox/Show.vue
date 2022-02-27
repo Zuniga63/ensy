@@ -78,8 +78,7 @@
                     border border-gray-200
                     rounded
                     mr-3
-                    text-sm
-                    text-gray-800
+                    text-sm text-gray-800
                     focus:ring focus:ring-indigo-400 focus:ring-opacity-50
                   "
                 >
@@ -126,11 +125,15 @@
 
             <!-- Content -->
             <div class="pb-1">
-              <ShowBoxInfo v-show="tab === tabs[0]" :transactions="cashbox.transactions"/>
+              <ShowBoxInfo
+                v-show="tab === tabs[0]"
+                :transactions="cashbox.transactions"
+              />
               <ShowTransactions
                 v-show="tab === tabs[1]"
                 :transactions="cashbox.transactions"
                 @update-transaction="updateTransaction"
+                @delete-transaction="deleteTransaction"
               />
               <ShowBoxClosures v-show="tab === tabs[2]" />
             </div>
@@ -292,6 +295,9 @@ import locale_es_do from "dayjs/locale/es";
 import localizedFormat from "dayjs/plugin/localizedFormat";
 import TransferForm from "./Components/TransferForm.vue";
 
+import Swal from "sweetalert2";
+import axios from "axios";
+
 export default {
   components: {
     AppLayout,
@@ -342,12 +348,108 @@ export default {
     };
   },
   methods: {
-    formatCurrency(number) {
-      return this.formater.format(number);
+    //----------------------------------------------------------------------------
+    //----------------------------------------------------------------------------
+    //              METODOS PARA ELIMINAR TRANSACCIÓNES
+    //----------------------------------------------------------------------------
+    //----------------------------------------------------------------------------
+    /**
+     * Se encarga de preguntar en primer lugar al usuario si desea eliminar
+     * la transación y en segunda instancia realizar la petición y remover
+     * dicha transacción.
+     * @param {onject} transaction instancia de la transacción a eliminar.
+     */
+    deleteTransaction(transaction) {
+      let urlName = "cashbox.destroyTransaction";
+      let urlParam = [transaction.cashbox_id, transaction.id];
+      let url = route(urlName, urlParam);
+
+      //Se construye el mensaje al usuario
+      let title = "¿Está seguro que desea eliminar esta transacción?";
+      let message =
+        "Una vez eliminado de la base de datos no puede revertirse.";
+
+      Swal.fire({
+        title,
+        icon: "warning",
+        text: message,
+        showCancelButton: true,
+        confirmButtonText: "¡Si, eliminalo!",
+        cancelButtonText: "Cancelar",
+        showLoaderOnConfirm: true,
+        backdrop: true,
+        preConfirm: async () => {
+          try {
+            const res = await axios.delete(url);
+            return res.data;
+          } catch (error) {
+            return {
+              ok: false,
+              status: error.response.status,
+              statusText: error.response.statusText,
+            };
+          }
+        },
+        allowOutsideClick: () => !Swal.isLoading(),
+      }).then(async (result) => {
+        //Los datos provenientes del servidor.
+        let res = result.value;
+
+        if (result.isConfirmed) {
+          if (res.ok) {
+            Swal.fire({
+              title: `¡Transacción Eliminada!`,
+              icon: "success",
+              text: `La transacción con ID:${res.transaction.id} fue eliminada.`,
+            });
+
+            this.removeTransaction(res.transaction);
+          } else {
+            this.showError(res, transaction);
+            //Se refrescan los datos de la caja
+            this.$inertia.reload({
+              only: ["cashbox"],
+            });
+          }
+        }
+      });
     },
+    /**
+     * Se encarga de remover la transacción del listado de transacciones
+     * @param {object} transaction identificador de la transacción.
+     */
+    removeTransaction(transaction) {
+      //Se busca el index de la transaccion
+      let index = this.cashbox.transactions.findIndex(t => t.id === transaction.id);
+      if(index > 0){
+        this.cashbox.transactions.splice(index, 1);
+        this.calculateBalance();
+      }
+    },
+    /**
+     * Habilita el cambio de la caja que se está mostrando
+     */
+    chageBox() {
+      if (this.boxSlug) {
+        let url = route("cashbox.show", this.boxSlug);
+        Inertia.get(url);
+      }
+    },
+    //----------------------------------------------------------------------------
+    //----------------------------------------------------------------------------
+    //      CONTROL DE MODALES Y FORMULARIOS
+    //----------------------------------------------------------------------------
+    //----------------------------------------------------------------------------
+    /**
+     * Permite que el backdrop del modal se visualice.
+     */
     showModal() {
       this.modal = true;
     },
+    /**
+     * Oculta tanto el modal como el backdrop del modal
+     * y si es una actualización tambien resetea su valor.
+     */
     hiddenModal() {
       this.modal = false;
       if (this.transactionToUpdate) {
@@ -357,17 +459,40 @@ export default {
       this.transactionFormActive = false;
       this.transferFormActive = false;
     },
+    /**
+     * Activa el formulario para registrar una nueva transacción
+     */
     showTransactionForm() {
       this.showModal();
       this.transactionFormActive = true;
     },
+    /**
+     * Activa el formulario para actualizar una transacción
+     * @param {object} data Es la instancia de la transacción a modificar.
+     */
     updateTransaction(data) {
       this.transactionToUpdate = data;
       this.showTransactionForm();
     },
+    /**
+     * Activa el formulario para registrar una transferencia.
+     */
     showTransferForm() {
       this.showModal();
       this.transferFormActive = true;
+    },
+    //----------------------------------------------------------------------------
+    //----------------------------------------------------------------------------
+    //                  UTILIDADES Y METODOS DE RENDERIZADO
+    //----------------------------------------------------------------------------
+    //----------------------------------------------------------------------------
+    /**
+     * Se encarga de dar formato de moneda al numero pasado como parametro
+     * @param {number} number Numero a formatear
+     * @return {string} Numero formateado
+     */
+    formatCurrency(number) {
+      return this.formater.format(number);
     },
     /**
      * Se encarga de agregar los propiedades necesarias
@@ -405,11 +530,28 @@ export default {
       trans.createdAt = dayjs(trans.createdAt);
       trans.updatedAt = dayjs(trans.updatedAt);
     },
-    chageBox() {
-      if (this.boxSlug) {
-        let url = route("cashbox.show", this.boxSlug);
-        Inertia.get(url);
+    /**
+     * Se encarga de mostrar el mensaje de error al
+     * usuario de la plataforma.
+     */
+    async showError(error, transaction) {
+      let title = "¡Opps, algo salio mal!";
+      let icon = "error";
+      let message = null;
+
+      if (error.status == 404) {
+        message = "La transacción no existe o fue eliminada.";
+      } else {
+        message = error.message
+          ? error.message
+          : "No se pudo completar la petición. Contacte con el administrador.";
       }
+
+      Swal.fire({
+        title,
+        icon,
+        html: message,
+      });
     },
   },
   beforeMount() {

@@ -390,9 +390,12 @@ class CashboxController extends Controller
     }
     $result = [
       'ok' => $ok,
-      'message' => $message
+      'message' => $message,
+      'transaction' => $cashbox_transaction,
     ];
-    return Redirect::route('cashbox.show', $cashbox->slug)->with('message', $result);
+
+    return $result;
+    //return Redirect::route('cashbox.show', $cashbox->slug)->with('message', $result);
   }
 
   //-------------------------------------------------------------
