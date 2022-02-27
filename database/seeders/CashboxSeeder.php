@@ -57,7 +57,7 @@ class CashboxSeeder extends Seeder
 
     $now = Carbon::now();                         //Criterio de parada
     $date = Carbon::now()                         //Variable incrementable
-      ->subYear()
+      ->subYears(4)
       ->startOfYear()
       ->addHours(8);
     $months = 1;                                  //Para llevar la cuenta de los meses.
