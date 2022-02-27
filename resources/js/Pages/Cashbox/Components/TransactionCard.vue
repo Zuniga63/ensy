@@ -165,7 +165,7 @@
       </div>
 
       <div class="flex justify-between" v-if="!transaction.blocked">
-        <JetDangerButton @click="deleteTransaction">Eliminar</JetDangerButton>
+        <JetDangerButton @click="$emit('deleteTransaction', transaction)">Eliminar</JetDangerButton>
         <JetButton @click="$emit('updateTransaction', transaction)" v-if="!transaction.transfer" >Editar</JetButton>
       </div>
     </div>
@@ -182,7 +182,7 @@ export default {
     JetButton,
     JetDangerButton,
   },
-  emits: ["updateTransaction"],
+  emits: ["updateTransaction", "deleteTransaction"],
   props: ["transaction"],
   setup(props) {
     //---------------------------------------------------------
@@ -211,51 +211,6 @@ export default {
     },
     showDetails() {
       this.showingDetails = !this.showingDetails;
-    },
-    deleteTransaction() {
-      Swal.fire({
-        title: "¿Está seguro?",
-        text: "Está acción no puede revertirse y eleminará la transacción de la base de datos.",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonColor: "#3085d6",
-        cancelButtonColor: "#d33",
-        confirmButtonText: "¡Si, Eliminala!",
-        cancelButtonText: "Cancelar",
-      }).then((result) => {
-        if (result.isConfirmed) {
-          this.destroy();
-        }
-      });
-    },
-    destroy() {
-      let name = "cashbox.destroyTransaction";
-      let parameters = [this.transaction.cashbox_id, this.transaction.id];
-      let url = route(name, parameters);
-      Inertia.delete(url, {
-        preserveScroll: true,
-        preserveState: true,
-        onSuccess: (page) => {
-          let result = page.props.flash.message;
-          let title = "¡Transacción Eliminada!";
-          let message = result.message;
-          let icon = 'success';
-          if(result.ok){
-            Swal.fire({
-              title,
-              icon,
-            })
-          }else{
-            icon = 'error';
-            title = '¡Oops!';
-            Swal.fire({
-              icon,
-              title,
-              text: message,
-            })
-          }
-        }
-      });
     },
   },
   computed: {
