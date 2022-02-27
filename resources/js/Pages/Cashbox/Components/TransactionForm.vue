@@ -411,8 +411,8 @@ export default {
     hiddenForm() {
       this.$emit("hiddenForm");
       this.form.reset("description", "amount", "type");
-      this.form.setDate = this.form.date ? true : false;
-      this.form.setTime = this.form.time ? true : false;
+      this.form.setDate = this.form.setDate && this.form.date ? true : false;
+      this.form.setTime = this.form.setTime && this.form.time ? true : false;
       this.updateForm = false;
       this.buttonMessage = "Registrar";
     },
