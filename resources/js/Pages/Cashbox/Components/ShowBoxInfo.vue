@@ -1,9 +1,9 @@
 <template>
-  <div class="grid grid-cols-2">
-    <div class="px-4">
+  <div class="grid grid-cols-6">
+    <div class="col-span-6 lg:col-span-2 px-4">
       <canvas ref="generalChart"></canvas>
     </div>
-    <div class="px-4 col-span-2">
+    <div class="col-span-6 lg:col-span-4">
       <canvas ref="weekReport"></canvas>
     </div>
   </div>
@@ -34,6 +34,8 @@ export default {
       currency,
       minimumFractionDigits: fractionDigits,
     });
+
+    window.formater = formater;
 
     //----------------------------------------------------
     // SE ESTABLECEN LOS PARAMETROS DE dayjs
@@ -117,12 +119,7 @@ export default {
                   }
 
                   return label;
-                }, //end label
-                // title: context => {
-                //   let dayOfMonth = context[0].parsed.x;
-                //   let date = dayjs().startOf('month').add(dayOfMonth, 'day');
-                //   return date.format('dddd DD [de] MMMM');
-                // }
+                },
               },
             },
           },
@@ -210,9 +207,36 @@ export default {
             },
             title: {
               display: true,
-              text: "Rporte Semanal",
+              text: "Reporte Semanal",
+            },
+            tooltip: {
+              callbacks: {
+                label: (context) => {
+                  let label = context.dataset.label || "";
+
+                  if (label) {
+                    label += ": ";
+                  }
+
+                  if (context.parsed.y !== null) {
+                    label += this.formatCurrency(context.parsed.y, 0);
+                  }
+
+                  return label;
+                },
+              },
             },
           },
+          scales: {
+            y: {
+              ticks: {
+                beginAtZero: true,
+                callback: function (value, index, values) {
+                  return window.formater.format(value);
+                }, //end callback
+              }, //end ticks
+            },
+          }, //end scales
         },
       };
     },
