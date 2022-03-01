@@ -503,10 +503,16 @@ class CashboxController extends Controller
        */
       $box->loadSum([
         'transactions as incomes' => function (Builder $query) {
-          $query->where('amount', '>=', 0);
+          $query->where('amount', '>=', 0)->where('transfer', false);
+        },
+        'transactions as deposits' => function (Builder $query) {
+          $query->where('amount', '>=', 0)->where('transfer', true);
         },
         'transactions as expenses' => function (Builder $query) {
-          $query->where('amount', '<', 0);
+          $query->where('amount', '<', 0)->where('transfer', false);
+        },
+        'transactions as transfers' => function (Builder $query) {
+          $query->where('amount', '<', 0)->where('transfer', true);
         }
       ], 'amount');
     } else {
@@ -522,12 +528,24 @@ class CashboxController extends Controller
       $box->loadSum([
         'transactions as incomes' => function (Builder $query) use ($date) {
           $query->where('amount', '>=', 0)
+            ->where('transfer', false)
+            ->where('transaction_date', '>=', $date);
+        },
+        'transactions as deposits' => function (Builder $query) use ($date) {
+          $query->where('amount', '>=', 0)
+            ->where('transfer', true)
             ->where('transaction_date', '>=', $date);
         },
         'transactions as expenses' => function (Builder $query) use ($date) {
           $query->where('amount', '<', 0)
-            ->where('transaction_date', '>=', $date);;
-        }
+            ->where('transaction_date', '>=', $date)
+            ->where('transfer', false);
+        },
+        'transactions as transfers' => function (Builder $query) use ($date) {
+          $query->where('amount', '<', 0)
+            ->where('transaction_date', '>=', $date)
+            ->where('transfer', true);
+        },
       ], 'amount');
     }
 
@@ -545,7 +563,9 @@ class CashboxController extends Controller
     $box->base = $box->base ? floatval($box->base) : 0;
     $box->balance = $box->balance ? floatval($box->balance) : 0;
     $box->incomes = $box->incomes ? floatval($box->incomes) : 0;
+    $box->deposits = $box->deposits ? floatval($box->deposits) : 0;
     $box->expenses = $box->expenses ? floatval($box->expenses) : 0;
+    $box->transfers = $box->transfers ? floatval($box->transfers) : 0;
 
     return $box;
   }
@@ -557,7 +577,7 @@ class CashboxController extends Controller
    */
   protected function validateBoxBalance(Cashbox $box)
   {
-    $balanceCalulated = $box->base + $box->incomes + $box->expenses;
+    $balanceCalulated = $box->base + $box->incomes + $box->deposits + $box->expenses + $box->transfers;
     $diff = abs($box->balance - $balanceCalulated);
     $box->balanceIsWrong = $diff > 0.00001;
 
