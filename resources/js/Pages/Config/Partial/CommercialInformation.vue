@@ -374,23 +374,23 @@
           <div class="col-span-2 lg:col-span-1">
             <!-- Etiqueta -->
             <custom-label
-              for="business-bank-account-title"
+              for="business-bank-account-holder"
               class="mb-2"
               value="Titular de la Cuenta"
             />
             <!-- Input -->
             <jet-input
-              id="business-bank-account-title"
-              name="business-bank-account-title"
+              id="business-bank-account-holder"
+              name="business-bank-account-holder"
               type="text"
-              v-model="form.bank_account_title"
+              v-model="form.bank_account_holder"
               class="w-full mb-2"
               placeholder="Escribelo aquí."
             />
 
             <!-- Error -->
             <jet-input-error
-              :message="form.errors.bank_account_title"
+              :message="form.errors.bank_account_holder"
               class="mt-2"
             />
           </div>
@@ -399,23 +399,23 @@
           <div class="col-span-2 lg:col-span-1">
             <!-- Etiqueta -->
             <custom-label
-              for="business-bank-account-title-document"
+              for="business-bank-account-holder-document"
               class="mb-2"
               value="Documento del titular"
             />
             <!-- Input -->
             <jet-input
-              id="business-bank-account-title-document"
-              name="business-bank-account-title-document"
+              id="business-bank-account-holder-document"
+              name="business-bank-account-holder-document"
               type="text"
-              v-model="form.bank_account_title_document"
+              v-model="form.bank_account_holder_document"
               class="w-full mb-2"
               placeholder="Escribelo aquí."
             />
 
             <!-- Error -->
             <jet-input-error
-              :message="form.errors.bank_account_title_document"
+              :message="form.errors.bank_account_holder_document"
               class="mt-2"
             />
           </div>
@@ -476,8 +476,8 @@ export default {
       bank_name: props.config.bank_name,
       bank_account_type: props.config.bank_account_type,
       bank_account_number: props.config.bank_account_number,
-      bank_account_title: props.config.bank_account_title,
-      bank_account_title_document: props.config.bank_account_title_document,
+      bank_account_holder: props.config.bank_account_holder,
+      bank_account_holder_document: props.config.bank_account_holder_document,
     });
 
     return { form };

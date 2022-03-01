@@ -22,6 +22,11 @@ class CreateCustomerInformationTable extends Migration
       $table->json('birthplace')->nullable();
       $table->timestamp('birth_date')->nullable();
       $table->string('nacionality', 50)->nullable();
+      $table->string('bank_name', 90)->nullable();
+      $table->enum('bank_account_type', ['savings', 'current'])->nullable();
+      $table->string('bank_account_number')->nullable();
+      $table->string('bank_account_holder', 90)->nullable();
+      $table->string('bank_account_holder_document', 20)->nullable();
       $table->timestamps();
     });
   }
