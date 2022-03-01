@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\CountryDepartment;
 use App\Models\Customer\Customer;
+use App\Models\Customer\CustomerInformation;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redirect;
 use Inertia\Inertia;
 
@@ -80,6 +82,7 @@ class CustomerController extends Controller
    */
   public function edit(Customer $customer)
   {
+    $customer->load('information');
     $departments = $this->getCountryDepartments();
     return Inertia::render('Customer/Edit', compact('departments', 'customer'));
   }
@@ -108,6 +111,56 @@ class CustomerController extends Controller
     $customer->document_number = $inputs['document_number'];
     $customer->document_type = $inputs['document_type'];
     $customer->save();
+
+    return Redirect::route('customer.edit', $customer->id);
+  }
+
+  /**
+   * Se encarga de actualizar la información bancaria
+   * del cliente en la base de datos.
+   */
+  public function updateCustomerBankInformation(Request $request, Customer $customer)
+  {
+    $rules = [
+      'id' => 'nullable|integer|exists:customer_information,id',
+      'cashbox_id' => 'required|integer|exists:customer,id',
+      'bank_name' => 'nullable|string|min:3|max:90',
+      'bank_account_type' => 'nullable|string|in:savings,current',
+      'bank_account_number' => 'nullable|string|max:255',
+      'bank_account_holder' => 'nullable|string|min:3|max:90',
+      'bank_account_holder_document' => 'nullable|string|max:20',
+    ];
+
+    $attr = [
+      'id' => 'identificador de table',
+      'cashbox_id' => 'identificador de caja',
+      'bank_name' => 'nombre del banco',
+      'bank_account_type' => 'tipo de cuenta',
+      'bank_account_number' => 'numero de cuenta',
+      'bank_account_holder' => 'titular de la cuenta',
+      'bank_account_holder_document' => 'documento del titular'
+    ];
+
+    $request->validate($rules, [], $attr);
+    $inputs = $request->all();
+    try {
+      DB::beginTransaction();
+      $information = $customer->information;
+      if (!$information) {
+        $information = $this->createCustomerInformation($customer->id);
+      }
+
+      $information->bank_name = $inputs['bank_name'];
+      $information->bank_account_type = $inputs['bank_account_type'];
+      $information->bank_account_number = $inputs['bank_account_number'];
+      $information->bank_account_holder = $inputs['bank_account_holder'];
+      $information->bank_account_holder_document = $inputs['bank_account_holder_document'];
+
+      $customer->information()->save($information);
+      DB::commit();
+    } catch (\Throwable $th) {
+      DB::rollBack();
+    }
 
     return Redirect::route('customer.edit', $customer->id);
   }
@@ -180,5 +233,22 @@ class CustomerController extends Controller
           ->orderBY('name');
       }
     ])->get(['id', 'name']);
+  }
+
+  /**
+   * Crea la relación con la tabla de información si esta no existe
+   * @param integer $customerId Identificador del cliente
+   * @return CustomerInformation
+   */
+  protected function createCustomerInformation($customerId)
+  {
+    $information = new CustomerInformation();
+    /**
+     * @var Customer
+     */
+    $customer = Customer::find($customerId);
+    $customer->information()->save($information);
+
+    return $information;
   }
 }
