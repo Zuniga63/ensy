@@ -75,16 +75,12 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
   //Rutas para manejar transferencia
   Route::post('/cajas/{cashbox}/registrar-transferencia', [CashboxController::class, 'storeTransfer'])->name('cashbox.storeTransfer');
 
-  //-----------------------------------------------------------------------------
-  //-----------------------------------------------------------------------------
-  //  RUTAS PARA CONFIGURAR EL SITIO
-  //-----------------------------------------------------------------------------
-  //-----------------------------------------------------------------------------
   Route::get('/configuracion', [BusinessConfigController::class, 'index'])->name('config.index');
   Route::put('/update-basic-config', [BusinessConfigController::class, 'updateBasicConfig'])->name('config.updateBasicConfig');
   Route::put('/update-socials-and-contacts', [BusinessConfigController::class, 'updateSocialsAndContacts'])->name('config.updateSocialsAndContacts');
   Route::delete('/delete-logo', [BusinessConfigController::class, 'deleteLogo'])->name('config.deleteLogo');
   Route::delete('/delete-favicon', [BusinessConfigController::class, 'deleteFavicon'])->name('config.deleteFavicon');
+  Route::put('/update-commercial-information', [BusinessConfigController::class, 'updateCommercialInformation'])->name('config.updateCommercialInformation');
 
   //-----------------------------------------------------------------------------
   //-----------------------------------------------------------------------------

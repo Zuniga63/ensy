@@ -6,6 +6,7 @@ use App\Models\BusinessConfig;
 use App\Models\CountryDepartment;
 use App\Models\Town;
 use App\Models\TownDistrict;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redirect;
@@ -23,7 +24,8 @@ class BusinessConfigController extends Controller
   public function index()
   {
     $departments = $this->getCountryDepartments();
-    return Inertia::render('Config/Index', compact('departments'));
+    $config = BusinessConfig::first();
+    return Inertia::render('Config/Index', compact('departments', 'config'));
   }
 
   /**
@@ -167,6 +169,71 @@ class BusinessConfigController extends Controller
     $config->instagram_nick = $inputs['instagram_nick'];
     $config->instagram_link = $inputs['instagram_link'];
     $config->show_instagram = $config->instagram_nick && $config->instagram_link && $inputs['show_instagram'];
+
+    $config->save();
+
+    return Redirect::route('config.index');
+  }
+
+  public function updateCommercialInformation(Request $request)
+  {
+    $rules = [
+      'legal_representative_first_name' => 'nullable|string|min:3|max:45',
+      'legal_representative_last_name' => 'nullable|string|min:3|max:45',
+      'legal_representative_document' => 'nullable|string|max:20',
+      'legal_representative_document_type' => 'required|in:CC,CE,PAP',
+      'legal_representative_sex' => 'nullable|string|in:f,m',
+      'legal_representative_tel' => 'nullable|string|min:6|max:20',
+      'legal_representative_email' => 'nullable|string|email:rfc,dns|max:255',
+      'nit' => 'nullable|string|max:45',
+      'nit_name' => 'nullable|string|max:150',
+      'nit_date_of_renovation' => 'nullable|string|date',
+      'bank_name' => 'nullable|string|min:3|max:45',
+      'bank_account_type' => 'required|string|in:savings,current',
+      'bank_account_number' => 'nullable|string|max:255',
+      'bank_account_title' => 'nullable|string|min:3|max:255',
+      'bank_account_title_document' => 'nullable|string|max:20',
+    ];
+
+    $attr = [
+      'legal_representative_first_name' => 'nombres',
+      'legal_representative_last_name' => 'apellidos',
+      'legal_representative_document' => 'documento',
+      'legal_representative_document_type' => 'tipo',
+      'legal_representative_sex' => 'sexo',
+      'legal_representative_tel' => 'telefono',
+      'legal_representative_email' => 'email',
+      'nit' => 'nit',
+      'nit_name' => 'nombre',
+      'nit_date_of_renovation' => 'fecha de renovación',
+      'bank_name' => 'bano',
+      'bank_account_type' => 'tipo de cuenta',
+      'bank_account_number' => 'numero de cuenta',
+      'bank_account_title' => 'titular',
+      'bank_account_title_document' => 'documento del titular',
+    ];
+
+    $request->validate($rules, [], $attr);
+    $input = $request->all();
+    $config = BusinessConfig::first();
+
+    $config->legal_representative_first_name = $input['legal_representative_first_name'];
+    $config->legal_representative_last_name = $input['legal_representative_last_name'];
+    $config->legal_representative_document = $input['legal_representative_document'];
+    $config->legal_representative_document_type = $input['legal_representative_document_type'];
+    $config->legal_representative_sex = $input['legal_representative_sex'];
+    $config->legal_representative_email = strtolower($input['legal_representative_email']);
+    $config->legal_representative_tel = $input['legal_representative_tel'];
+
+    $config->nit = $input['nit'];
+    $config->nit_name = $input['nit_name'];
+    $config->nit_date_of_renovation = $input['nit_date_of_renovation'] ? Carbon::createFromFormat('Y-m-d', $input['nit_date_of_renovation']) : null;
+
+    $config->bank_name = $input['bank_name'];
+    $config->bank_account_number = $input['bank_account_number'];
+    $config->bank_account_type = $input['bank_account_type'];
+    $config->bank_account_title = $input['bank_account_title'];
+    $config->bank_account_title_document = $input['bank_account_title_document'];
 
     $config->save();
 
