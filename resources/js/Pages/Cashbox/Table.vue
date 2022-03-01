@@ -2,7 +2,7 @@
   <div class="flex flex-col">
     <div class="overflow-x-auto">
       <div class="align-middle inline-block w-full">
-        <div class="shadow overflow-hidden border-b border-gray-200">
+        <div class="shadow overflow-x-auto border-b border-gray-200">
           <table class="min-w-full divide-y divide-gray-200">
             <!-- Head -->
             <thead class="bg-gray-50">
@@ -87,7 +87,8 @@
                 }"
                 class="hover:bg-indigo-50"
               >
-                <td class="px-6 py-4 whitespace-nowrap text-gray-800">
+                <!-- Nombre -->
+                <td class="px-6 py-2 whitespace-nowrap text-gray-800">
                   <div class="flex flex-col">
                     {{ box.name }}
                     <span v-if="box.code" class="text-xs text-gray-400"
@@ -95,34 +96,85 @@
                     </span>
                   </div>
                 </td>
+                <!-- Base -->
                 <td
-                  class="
-                    flex flex-col
-                    px-6
-                    py-4
-                    whitespace-nowrap
-                    text-gray-800 text-right
-                  "
+                  class="px-6 py-2 whitespace-nowrap text-gray-800 text-right"
                 >
-                  <p>
-                    {{ formatCurrency(box.base) }}
-                  </p>
-                  <p v-if="box.lastClosure" class="-mt-1 text-sm text-gray-400">
-                    {{ box.lastClosureFromNow }}
-                  </p>
+                  <div class="flex flex-col">
+                    <p>
+                      {{ formatCurrency(box.base) }}
+                    </p>
+                    <p
+                      v-if="box.lastClosure"
+                      class="-mt-1 text-sm text-gray-400"
+                    >
+                      {{ box.lastClosureFromNow }}
+                    </p>
+                  </div>
                 </td>
-                <td
-                  class="px-6 py-4 whitespace-nowrap text-gray-800 text-right"
-                >
-                  {{ formatCurrency(box.incomes) }}
+                <!-- Ingresos -->
+                <td class="px-6 py-2 whitespace-nowrap text-right">
+                  <div class="flex flex-col">
+                    <span class="text-green-500">{{
+                      formatCurrency(box.incomes)
+                    }}</span>
+                    <div
+                      class="flex items-center justify-between text-indigo-500"
+                      v-if="box.deposits"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="h-4 w-4 mr-2"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"
+                        />
+                      </svg>
+                      <span class="text-sm">{{
+                        formatCurrency(box.deposits)
+                      }}</span>
+                    </div>
+                  </div>
                 </td>
-                <td
-                  class="px-6 py-4 whitespace-nowrap text-gray-800 text-right"
-                >
-                  {{ formatCurrency(box.expenses) }}
+<!-- Expenses -->
+                <td class="px-6 py-2 whitespace-nowrap text-right">
+                  <div class="flex flex-col">
+                    <span class="text-red-500">{{
+                      formatCurrency(box.expenses)
+                    }}</span>
+                    <div
+                      class="flex items-center justify-between text-orange-400"
+                      v-if="box.transfers"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="h-4 w-4 mr-2"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"
+                        />
+                      </svg>
+                      <span class="text-sm">{{
+                        formatCurrency(box.transfers)
+                      }}</span>
+                    </div>
+                  </div>
                 </td>
+                <!-- Balance -->
                 <td
-                  class="px-6 py-4 whitespace-nowrap text-gray-800 text-right"
+                  class="px-6 py-2 whitespace-nowrap text-gray-800 text-right"
                 >
                   <div class="flex flex-col">
                     <span
@@ -140,12 +192,13 @@
                     </span>
                   </div>
                 </td>
+                <!-- Actions -->
                 <td
                   class="
                     flex
                     justify-end
                     px-6
-                    py-4
+                    py-2
                     whitespace-nowrap
                     text-gray-800
                   "
@@ -255,23 +308,62 @@
                 <td colspan="2" class="relative px-6 py-3">
                   <span class="sr-only">Nothing</span>
                 </td>
-                <td
-                  class="px-6 py-3 text-right text-sm text-gray-500 font-bold"
-                >
-                  {{ incomes }}
+                <!-- Incomes -->
+                <td class="px-6 py-2 text-right text-sm font-bold">
+                  <div class="flex flex-col">
+                    <span class="text-green-500">{{ incomes }}</span>
+                    <div class="flex items-center justify-between text-indigo-500">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="h-4 w-4 mr-2"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"
+                        />
+                      </svg>
+                      <span class="text-sm">{{ deposits }}</span>
+                    </div>
+                  </div>
                 </td>
+                <!-- Expeneses -->
                 <td
-                  class="px-6 py-3 text-right text-sm text-gray-500 font-bold"
+                  class="px-6 py-2 text-right text-sm text-gray-500 font-bold"
                 >
-                  {{ expenses }}
+                  <div class="flex flex-col">
+                    <span class="text-red-500">{{ expenses }}</span>
+                    <div class="flex items-center justify-between text-orange-500">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="h-4 w-4 mr-2"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"
+                        />
+                      </svg>
+                      <span class="text-sm">{{ transfers }}</span>
+                    </div>
+                  </div>
                 </td>
+                <!-- Balance -->
                 <td
-                  class="px-6 py-3 text-right text-sm text-gray-500 font-bold"
+                  class="px-6 py-2 text-right text-sm text-gray-500 font-bold"
                 >
                   {{ balance }}
                 </td>
                 <td
-                  class="px-6 py-3 text-right text-sm text-gray-500 font-bold"
+                  class="px-6 py-2 text-right text-sm text-gray-500 font-bold"
                 >
                   <Link
                     :href="route('cashbox.create')"
@@ -343,6 +435,16 @@ export default {
     expenses() {
       return this.formatCurrency(
         this.boxs.reduce((prev, current) => prev + current.expenses, 0)
+      );
+    },
+    deposits() {
+      return this.formatCurrency(
+        this.boxs.reduce((prev, current) => prev + current.deposits, 0)
+      );
+    },
+    transfers() {
+      return this.formatCurrency(
+        this.boxs.reduce((prev, current) => prev + current.transfers, 0)
       );
     },
     balance() {

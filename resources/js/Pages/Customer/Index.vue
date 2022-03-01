@@ -62,7 +62,7 @@
           <table class="relative min-w-full table-auto">
             <thead class="sticky top-0 bg-gray-50">
               <tr>
-                <!-- Customer Image -->
+                <!-- # -->
                 <th
                   scope="col"
                   class="
@@ -75,7 +75,7 @@
                 >
                   #
                 </th>
-                <!-- Nombres -->
+                <!-- Imagen. nombre y correo -->
                 <th
                   scope="col"
                   class="
@@ -89,7 +89,7 @@
                   Nombres y Apellidos
                 </th>
 
-                <!-- Documento -->
+                <!-- Documento y tipo -->
                 <th
                   scope="col"
                   class="
@@ -103,34 +103,6 @@
                   Documento
                 </th>
 
-                <!-- Tipo -->
-                <th
-                  scope="col"
-                  class="
-                    px-6
-                    py-3
-                    text-left text-gray-500
-                    tracking-wider
-                    uppercase
-                  "
-                >
-                  Tipo
-                </th>
-
-                <!-- Correo -->
-                <th
-                  scope="col"
-                  class="
-                    px-6
-                    py-3
-                    text-left text-gray-500
-                    tracking-wider
-                    uppercase
-                  "
-                >
-                  Correo
-                </th>
-
                 <th scope="col" class="relative px-6 py-3">
                   <span class="sr-only">Actions</span>
                 </th>
@@ -142,12 +114,12 @@
                 :key="customer.id"
                 class="transition-colors hover:bg-indigo-50"
               >
-                <!-- Imagen del cliente -->
+                <!-- Index -->
                 <td class="px-3 py-2 text-gray-800 text-center text-gray-800">
                   {{ index + 1 }}
                 </td>
 
-                <!-- Nombres -->
+                <!-- Nombres y correo-->
                 <td class="px-3 py-2 text-gray-800">
                   <div class="flex">
                     <div class="w-16 h-16 p-2 mr-2">
@@ -158,8 +130,35 @@
                       />
                     </div>
                     <div class="flex flex-col justify-center">
-                      <span>{{ customer.first_name }}</span>
-                      <span>{{ customer.last_name }}</span>
+                      <span>{{ customer.full_name }}</span>
+                      <!-- Email -->
+                      <div
+                        v-if="customer.email"
+                        class="flex items-center text-indigo-500"
+                      >
+                        <!-- Heroicon: Inbox -->
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          class="h-4 w-4"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
+                          />
+                        </svg>
+
+                        <span
+                          class="text-sm hover:cursor-pointer"
+                          @click="selectText"
+                        >
+                          {{ customer.email }}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </td>
@@ -167,28 +166,13 @@
                 <!-- Documento -->
                 <td class="px-3 py-2 text-gray-800">
                   <span v-if="customer.document_number" class="tracking-widest">
-                    {{ customer.document_number }}
+                    <span class="text-gray-400 text-sm"
+                      >{{ customer.document_type }}:
+                    </span>
+                    <span @click="selectText">
+                      {{ customer.document_number }}
+                    </span>
                   </span>
-                  <span v-else class="text-gray-400">No registrado.</span>
-                </td>
-
-                <!-- Documento -->
-                <td class="px-3 py-2 text-gray-800">
-                  <span v-if="customer.document_number">
-                    {{ customer.document_type }}
-                  </span>
-                  <span v-else class="text-gray-400">No registrado.</span>
-                </td>
-
-                <!-- Correo Electronico -->
-                <td class="px-3 py-2 text-gray-800">
-                  <span
-                    v-if="customer.email"
-                    :class="{
-                      'text-sm': customer.email.length > 30,
-                    }"
-                    >{{ customer.email }}</span
-                  >
                   <span v-else class="text-gray-400">No registrado.</span>
                 </td>
 
@@ -391,6 +375,26 @@ export default {
 
         return false;
       });
+    },
+    /**
+     * Codigo que me permite seleccionar el texto de un elemento
+     * tomado de: https://stackoverflow.com/questions/985272/selecting-text-in-an-element-akin-to-highlighting-with-your-mouse
+     */
+    selectText(event) {
+      let node = event.target;
+      if (document.body.createTextRange) {
+        const range = document.body.createTextRange();
+        range.moveToElementText(node);
+        range.select();
+      } else if (window.getSelection) {
+        const selection = window.getSelection();
+        const range = document.createRange();
+        range.selectNodeContents(node);
+        selection.removeAllRanges();
+        selection.addRange(range);
+      } else {
+        console.warn("Could not select text in node: Unsupported browser.");
+      }
     },
   },
   computed: {

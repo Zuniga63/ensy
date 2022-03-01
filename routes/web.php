@@ -129,4 +129,7 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     ->parameters([
       'administraciones' => 'buildingAdmin'
     ]);
+    
+  Route::put('/clientes/{customer}/update-customer-bank-information', [CustomerController::class, 'updateCustomerBankInformation'])
+    ->name('customer.updateBankInformation');
 });

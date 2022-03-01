@@ -18,7 +18,7 @@ class AddBankColumnsToBusinessConfigTable extends Migration
       $table->string('bank_account_number')->nullable()->after('bank_name');
       $table->enum('bank_account_type', ['savings', 'current'])->default('savings')->after('bank_account_number');
       $table->string('bank_account_holder', 90)->nullable()->after('bank_account_type');
-      $table->string('bank_account_holder_document', 20)->nullable()->after('bank_account_title');
+      $table->string('bank_account_holder_document', 20)->nullable()->after('bank_account_holder');
     });
   }
 
