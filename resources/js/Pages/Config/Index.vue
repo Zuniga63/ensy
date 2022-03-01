@@ -14,6 +14,8 @@
         <!-- Formulario para actualizar las redes sociales -->
         <update-social-networks/>
         <jet-section-border class="mb-4"/>
+        <commercial-information :config="config"/>
+        <jet-section-border class="mb-4"/>
 
         <div class="hidden lg:block">
           <new-district :departments="departments"/>
@@ -29,6 +31,7 @@ import AppLayout from "@/Layouts/AppLayout.vue";
 import JetSectionBorder from "@/Jetstream/SectionBorder.vue";
 import UpdateBusinessInformation from "@/Pages/Config/Partial/UpdateBusinessInformation.vue";
 import UpdateSocialNetworks from "./Partial/UpdateSocialsAndContacts.vue"
+import CommercialInformation from "./Partial/CommercialInformation.vue"
 import NewDistrict from "./Partial/NewDistrict.vue";
 
 export default {
@@ -38,8 +41,9 @@ export default {
     UpdateBusinessInformation,
     NewDistrict,
     UpdateSocialNetworks,
+    CommercialInformation,
   },
-  props: ["departments"],
+  props: ["departments", "config"],
   mounted() {
     //console.log(this.$page.props.businessConfig);
   },
