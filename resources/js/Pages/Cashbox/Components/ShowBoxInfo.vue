@@ -128,7 +128,7 @@ export default {
     },
     weeklyReportDataset() {
       let today = dayjs();
-      let date = today.subtract(6, "day").startOf("day");
+      let date = today.subtract(7, "day").startOf("day");
       let labels = [];
       let incomes = [];
       let expenses = [];
@@ -145,7 +145,7 @@ export default {
       while (date.isBefore(today)) {
         //Se guarda el nombre del día
         labels.push(date.format("dddd"));
-        let startDay = date.clone();
+        let startDay = date.clone().startOf('daye');
         let endDay = date.endOf("day");
         let dailyTransactions = lastWeekTransaction.filter((trans) => {
           return (
@@ -172,6 +172,9 @@ export default {
               ? Math.abs(expenseAmounts.reduce((prev, next) => prev + next))
               : 0
           );
+        }else{
+          incomes.push(0);
+          expenses.push(0);
         }
 
         //Se incrementa un día
