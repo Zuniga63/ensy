@@ -191,8 +191,8 @@ class BusinessConfigController extends Controller
       'bank_name' => 'nullable|string|min:3|max:45',
       'bank_account_type' => 'required|string|in:savings,current',
       'bank_account_number' => 'nullable|string|max:255',
-      'bank_account_title' => 'nullable|string|min:3|max:255',
-      'bank_account_title_document' => 'nullable|string|max:20',
+      'bank_account_holder' => 'nullable|string|min:3|max:255',
+      'bank_account_holder_document' => 'nullable|string|max:20',
     ];
 
     $attr = [
@@ -209,8 +209,8 @@ class BusinessConfigController extends Controller
       'bank_name' => 'bano',
       'bank_account_type' => 'tipo de cuenta',
       'bank_account_number' => 'numero de cuenta',
-      'bank_account_title' => 'titular',
-      'bank_account_title_document' => 'documento del titular',
+      'bank_account_holder' => 'titular',
+      'bank_account_holder_document' => 'documento del titular',
     ];
 
     $request->validate($rules, [], $attr);
@@ -232,8 +232,8 @@ class BusinessConfigController extends Controller
     $config->bank_name = $input['bank_name'];
     $config->bank_account_number = $input['bank_account_number'];
     $config->bank_account_type = $input['bank_account_type'];
-    $config->bank_account_title = $input['bank_account_title'];
-    $config->bank_account_title_document = $input['bank_account_title_document'];
+    $config->bank_account_holder = $input['bank_account_holder'];
+    $config->bank_account_holder_document = $input['bank_account_holder_document'];
 
     $config->save();
 
