@@ -86,7 +86,7 @@ class CustomerController extends Controller
    */
   public function edit(Customer $customer)
   {
-    $customer->load('information');
+    $customer->load('information', 'contacts');
     $departments = $this->getCountryDepartments();
     return Inertia::render('Customer/Edit', compact('departments', 'customer'));
   }
