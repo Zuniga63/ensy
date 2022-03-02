@@ -112,4 +112,9 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
 
   Route::put('/clientes/{customer}/update-customer-bank-information', [CustomerController::class, 'updateCustomerBankInformation'])
     ->name('customer.updateBankInformation');
+  Route::post('/clientes/{customer}/store-customer-contact', [CustomerController::class, 'storeCustomerContact'])
+    ->name('customer.sotreContact');
+  Route::delete('/clientes/{customer}/{customer_contact}', [CustomerController::class, 'destroyCustomerContact'])
+    ->name('customer.destroyContact');
+  
 });
