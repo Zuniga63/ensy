@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\CountryDepartment;
 use App\Models\Customer\Customer;
+use App\Models\Customer\CustomerContact;
 use App\Models\Customer\CustomerInformation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -65,6 +66,37 @@ class CustomerController extends Controller
     } else {
       return Redirect::route('customer.index')->with('message', $result);
     }
+  }
+
+  /**
+   * Se encarga de guardar la información de contacto del cliente.
+   * @param \Illuminate\Http\Request  $request
+   * @param  \App\Models\Customer\Customer  $customer
+   * @return \Illuminate\Http\Response
+   */
+  public function storeCustomerContact(Request $request, Customer $customer)
+  {
+    $rules = [
+      'description' => 'nullable|string|max:50',
+      'number' => 'required|string|max:20',
+      'whatsapp' => 'required|boolean'
+    ];
+
+    $attr = [
+      'description' => 'descripción',
+      'number' => 'numero',
+    ];
+
+    $request->validate($rules, [], $attr);
+
+    $contact = new CustomerContact();
+    $contact->description = $request->input('description');
+    $contact->number = $request->input('number');
+    $contact->whatsapp = $request->input('whatsapp', false);
+
+    $customer->contacts()->save($contact);
+
+    return Redirect::route('customer.edit', $customer->id);
   }
 
   /**
@@ -184,6 +216,18 @@ class CustomerController extends Controller
     ];
 
     return $res;
+  }
+
+  /**
+   * Se encarga de guardar la información de contacto del cliente.
+   * @param  \App\Models\Customer\CustomerContact  $customer_contact
+   * @param  \App\Models\Customer\Customer  $customer
+   * @return \Illuminate\Http\Response
+   */
+  public function destroyCustomerContact(Customer $customer, CustomerContact $customer_contact)
+  {
+    $customer_contact->delete();
+    return Redirect::route('customer.edit', $customer->id);
   }
 
   //-----------------------------------------------------------
