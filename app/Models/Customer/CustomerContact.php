@@ -31,6 +31,7 @@ class CustomerContact extends Model
    */
   protected $casts = [
     'other' => 'array',
+    'whatsapp' => 'boolean'
   ];
 
   

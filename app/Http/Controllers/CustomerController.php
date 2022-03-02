@@ -19,7 +19,10 @@ class CustomerController extends Controller
    */
   public function index()
   {
-    $customers = Customer::orderBy('first_name')->orderBy('last_name')->get();
+    $customers = Customer::orderBy('first_name')
+      ->orderBy('last_name')
+      ->with('information', 'contacts')
+      ->get();
 
     return Inertia::render('Customer/Index', compact('customers'));
   }
@@ -48,6 +51,7 @@ class CustomerController extends Controller
     $request->validate($rules, [], $attr);
 
     $inputs = $request->all();
+    $inputs['email'] = strtolower($inputs['email']);
 
     $customer = Customer::create($inputs);
     $result = [
@@ -106,7 +110,7 @@ class CustomerController extends Controller
 
     $customer->first_name = $inputs['first_name'];
     $customer->last_name = $inputs['last_name'];
-    $customer->email = $inputs['email'];
+    $customer->email = strtolower($inputs['email']);
     $customer->sex = $inputs['sex'];
     $customer->document_number = $inputs['document_number'];
     $customer->document_type = $inputs['document_type'];
@@ -142,7 +146,6 @@ class CustomerController extends Controller
     ];
 
     $request->validate($rules, [], $attr);
-    $inputs = $request->all();
     try {
       DB::beginTransaction();
       $information = $customer->information;
@@ -150,15 +153,16 @@ class CustomerController extends Controller
         $information = $this->createCustomerInformation($customer->id);
       }
 
-      $information->bank_name = $inputs['bank_name'];
-      $information->bank_account_type = $inputs['bank_account_type'];
-      $information->bank_account_number = $inputs['bank_account_number'];
-      $information->bank_account_holder = $inputs['bank_account_holder'];
-      $information->bank_account_holder_document = $inputs['bank_account_holder_document'];
+      $information->bank_name = $request->input('bank_name');
+      $information->bank_account_type = $request->input('bank_account_type');
+      $information->bank_account_number = $request->input('bank_account_number');
+      $information->bank_account_holder = $request->input('bank_account_holder');
+      $information->bank_account_holder_document = $request->input('bank_account_holder_document');
 
       $customer->information()->save($information);
       DB::commit();
     } catch (\Throwable $th) {
+      dd($th);
       DB::rollBack();
     }
 
