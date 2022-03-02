@@ -16,6 +16,8 @@
     <div class="max-w-7xl mx-auto py-10 sm:px-6 lg:px-8">
       <customer-form :customer="customer"/>
       <jet-section-border/>
+      <contact-form class="mt-10" :customer="customer"/>
+      <jet-section-border/>
       <bank-information-form class="mt-10" :customer="customer"/>
     </div>
   </app-layout>
@@ -27,6 +29,7 @@ import LinkButton from "@/Components/Form/LinkButton.vue";
 import CustomerForm from "./Partial/CustomerFormBasic.vue";
 import JetSectionBorder from "@/Jetstream/SectionBorder.vue";
 import BankInformationForm from "./Partial/BankInformationForm.vue";
+import ContactForm from "./Partial/ContactForm.vue";
 
 export default {
   components: {
@@ -35,6 +38,7 @@ export default {
     CustomerForm,
     JetSectionBorder,
     BankInformationForm,
+    ContactForm
   },
   props:{
     customer: Object,
