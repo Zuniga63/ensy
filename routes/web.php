@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\BuildingAdminController;
+use App\Http\Controllers\BuildingController;
 use App\Http\Controllers\BusinessConfigController;
 use App\Http\Controllers\Cashbox\CashboxController;
 use App\Http\Controllers\CustomerController;
@@ -129,12 +130,29 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     ->parameters([
       'administraciones' => 'buildingAdmin'
     ]);
-    
+
   Route::put('/clientes/{customer}/update-customer-bank-information', [CustomerController::class, 'updateCustomerBankInformation'])
     ->name('customer.updateBankInformation');
   Route::post('/clientes/{customer}/store-customer-contact', [CustomerController::class, 'storeCustomerContact'])
     ->name('customer.sotreContact');
   Route::delete('/clientes/{customer}/{customer_contact}', [CustomerController::class, 'destroyCustomerContact'])
     ->name('customer.destroyContact');
-  
+
+  //-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
+  // RUTAS PARA LOS INMUEBLES
+  //-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
+  Route::resource('inmuebles', BuildingController::class)
+    ->names([
+      'index' => 'building.index',
+      'create' => 'building.create',
+      'store' => 'building.store',
+      'edit' => 'building.edit',
+      'update' => 'building.update',
+      'destroy' => 'building.destroy',
+    ])
+    ->parameters([
+      'inmuebles' => 'building'
+    ]);
 });
