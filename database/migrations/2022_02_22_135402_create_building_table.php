@@ -16,6 +16,8 @@ class CreateBuildingTable extends Migration
     Schema::create('building', function (Blueprint $table) {
       $table->id();
       $table->foreignId('owner_id')->nullable()->constrained('customer')->nullOnDelete();
+      $table->foreignId('country_department_id')->nullable()->constrained('country_department')->nullOnDelete();
+      $table->foreignId('town_id')->nullable()->constrained('town')->nullOnDelete();
       $table->foreignId('building_admin_id')->nullable()->constrained('building_admin')->nullOnDelete();
       $table->foreignId('town_distric_id')->nullable()->constrained('town_district')->nullOnDelete();
       $table->string('image_path', 2048)->nullable();
@@ -24,17 +26,19 @@ class CreateBuildingTable extends Migration
       $table->json('address')->nullable();
       $table->enum('building_type', ['house', 'apartment', 'business'])->nullable();
       $table->unsignedTinyInteger('socioeconomic')->nullable();
-      $table->string('building_state', 45)->nullable();
       $table->unsignedTinyInteger('rooms')->nullable();
       $table->unsignedTinyInteger('bathrooms')->nullable();
       $table->unsignedTinyInteger('parking_lots')->nullable();
       $table->unsignedFloat('area')->nullable();
       $table->unsignedFloat('private_area')->nullable();
       $table->unsignedTinyInteger('floor')->nullable();
-      $table->timestamp('antiquity')->nullable();
+      $table->date('antiquity')->nullable();
       $table->decimal('lease_fee', 10, 2)->default(0.00);
       $table->decimal('admin_fee', 10, 2)->default(0.00);
-      $table->float('comission', 3, 2)->default(0.00);
+      $table->float('commission', 3, 2)->default(0.00);
+      $table->string('insurance_carrier', 45)->nullable();
+      $table->string('insurance_type', 45)->nullable();
+      $table->float('insurance_commission', 3, 2)->default(0.00);
       $table->boolean('available')->default(false);
       $table->timestamps();
     });
