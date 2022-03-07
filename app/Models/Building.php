@@ -23,7 +23,9 @@ class Building extends Model
    */
   protected $fillable = [
     'owner_id',
-    'town_distric_id',
+    'country_department_id',
+    'town_id',
+    'town_district_id',
     'building_admin_id',
     'image_path',
     'description',
@@ -31,7 +33,6 @@ class Building extends Model
     'address',
     'building_type',
     'socioeconomic',
-    'building_state',
     'rooms',
     'bathrooms',
     'parking_lots',
@@ -41,7 +42,10 @@ class Building extends Model
     'antiquity',
     'lease_fee',
     'admin_fee',
-    'comission',
+    'commission',
+    'insurance_carrier',
+    'insurance_commission',
+    'insurance_type',
     'available'
   ];
 
@@ -61,7 +65,9 @@ class Building extends Model
    *
    * @var array
    */
-  protected $with = ['buildingAdmin'];
+  protected $with = ['buildingAdmin', 'owner'];
+
+  protected $appends = ['image_url'];
 
   /**
    * Recuera la información de la administración
@@ -86,5 +92,16 @@ class Building extends Model
   public function owner()
   {
     return $this->belongsTo(Customer::class, 'owner_id');
+  }
+
+  public function getImageUrlAttribute()
+  {
+    $url = null;
+    if($this->image_path){
+      $path = urlencode($this->image_path);
+      $url = asset('storage/' . $path);
+    }
+
+    return $this->attributes['imageUrl'] = $url;
   }
 }
