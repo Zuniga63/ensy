@@ -155,4 +155,8 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     ->parameters([
       'inmuebles' => 'building'
     ]);
+  Route::put('/inmuebles/{building}/update-address', [BuildingController::class, 'updateAddress'])
+    ->name('building.updateAddress');
+  Route::put('/inmuebles/{building}/update-building-state', [BuildingController::class, 'updateBuildingState'])
+    ->name('building.updateBuildingState');
 });

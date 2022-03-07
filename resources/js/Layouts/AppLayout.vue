@@ -496,6 +496,7 @@ export default {
         { id: 2, name: "Cajas", routeName: "cashbox.index" },
         { id: 3, name: "Clientes", routeName: "customer.index" },
         { id: 4, name: "Administraciones", routeName: "buildingAdmin.index" },
+        { id: 5, name: "Inmuebles", routeName: "building.index" },
       ],
     };
   },
