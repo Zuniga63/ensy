@@ -21,6 +21,6 @@ class TownDistrict extends Model
    */
   public function town()
   {
-    return $this->hasOne(Town::class);
+    return $this->belongsTo(Town::class);
   }
 }
