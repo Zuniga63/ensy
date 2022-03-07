@@ -16,10 +16,10 @@ class CreateBuildingTable extends Migration
     Schema::create('building', function (Blueprint $table) {
       $table->id();
       $table->foreignId('owner_id')->nullable()->constrained('customer')->nullOnDelete();
+      $table->foreignId('building_admin_id')->nullable()->constrained('building_admin')->nullOnDelete();
       $table->foreignId('country_department_id')->nullable()->constrained('country_department')->nullOnDelete();
       $table->foreignId('town_id')->nullable()->constrained('town')->nullOnDelete();
-      $table->foreignId('building_admin_id')->nullable()->constrained('building_admin')->nullOnDelete();
-      $table->foreignId('town_distric_id')->nullable()->constrained('town_district')->nullOnDelete();
+      $table->foreignId('town_district_id')->nullable()->constrained('town_district')->nullOnDelete();
       $table->string('image_path', 2048)->nullable();
       $table->string('description')->nullable();
       $table->json('features')->nullable();
