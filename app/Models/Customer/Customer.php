@@ -31,6 +31,13 @@ class Customer extends Model
   protected $appends = ['full_name', 'image_url'];
 
   /**
+   * The relationships that should always be loaded.
+   *
+   * @var array
+   */
+  protected $with = ['contacts'];
+
+  /**
    * Retorna el nombre completo del cliente
    */
   public function getFullNameAttribute()
