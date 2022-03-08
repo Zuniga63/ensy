@@ -66,15 +66,32 @@
               <!-- Dirección -->
               <td class="px-2 py-1 text-gray-800 border border-slate-500">
                 <div class="flex flex-col items-start">
-                  <!-- Numero -->
-                  <span>
-                    {{ item.address?.address }} -
-                    <span> {{ item.address?.district.name }} </span>
-                    (<span> {{ item.address?.town.name }} </span>)
-                  </span>
+                  <!-- Dirección -->
+                  <p>
+                    <span class="font-bold">{{ item.address?.address }}</span>
+                    {{ item.building_admin?.name }}
+                    <span v-if="item.address?.apartment" class="font-bold">
+                      Apartamento {{ item.address.apartment }}
+                    </span>
+                  </p>
+                  <!-- Barrio -->
+                  <p>
+                    Barrio
+                    <span class="font-bold">
+                      {{ item.address?.district.name }}
+                      (<span class="text-xs"> {{ item.address?.town.name }} </span>)
+                    </span>
+                  </p>
+                  <!-- Observación -->
                   <span class="text-gray-400">
                     {{ item.address?.observation }}
                   </span>
+                  <!-- Codigo de Archivo -->
+                  <p class="text-gray-600">
+                    Codigo: <span class="font-bold">{{item.id}}</span>
+                    - <span v-if="item.available">Diponible.</span> 
+                    <span v-else>No disponible.</span>
+                  </p>
                 </div>
               </td>
 
