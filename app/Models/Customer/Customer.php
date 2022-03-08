@@ -28,6 +28,9 @@ class Customer extends Model
     'sex'
   ];
 
+  //------------------------------------------------------------
+  // SETERS AND GETTERS
+  //------------------------------------------------------------
   protected $appends = ['full_name', 'image_url'];
 
   /**
@@ -41,16 +44,28 @@ class Customer extends Model
 
   public function getImageUrlAttribute()
   {
-    $color ="7F9CF5";
+    $color = "7F9CF5";
     $bg = "EBF4FF";
 
-    if($this->sex === 'f'){
+    if ($this->sex === 'f') {
       $color = "EC4899";
       $bg = "fbcfe8";
     }
 
-    return 'https://ui-avatars.com/api/?name='.urlencode($this->full_name)."&color=$color&background=$bg";
+    return 'https://ui-avatars.com/api/?name=' . urlencode($this->full_name) . "&color=$color&background=$bg";
   }
+
+  /**
+   * Convierte todos los caracteres 
+   */
+  public function setEmailAttribute($value)
+  {
+    $this->attributes['email'] = $value ? strtolower($value) : null;
+  }
+
+  //--------------------------------------------------------------
+  // RELACIONES
+  //--------------------------------------------------------------
 
   /**
    * Get the contacts registered for the customer
