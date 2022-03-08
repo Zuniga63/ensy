@@ -23,14 +23,14 @@
           <div class="flex flex-col">
             <custom-label
               for="searchByName"
-              value="Buscar por nombre"
+              value="Nombre del Edificio"
               class="uppercase mb-2 text-sm"
             />
             <jet-input
               type="text"
               id="searchByName"
-              placeholder="Escribe el nombre del cliente"
-              class="w-full"
+              placeholder="Escribe el nombre del edificio."
+              class="w-full text-sm"
               v-model="search"
             />
           </div>
