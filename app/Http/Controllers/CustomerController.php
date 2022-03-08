@@ -52,7 +52,6 @@ class CustomerController extends Controller
     $request->validate($rules, [], $attr);
 
     $inputs = $request->all();
-    $inputs['email'] = $inputs['email'] ? strtolower($inputs['email']) : null;
 
     $customer = Customer::create($inputs);
     $result = [
@@ -142,7 +141,7 @@ class CustomerController extends Controller
 
     $customer->first_name = $inputs['first_name'];
     $customer->last_name = $inputs['last_name'];
-    $customer->email = $inputs['email'] ? strtolower($inputs['email']) : null;
+    $customer->email = $inputs['email'];
     $customer->sex = $inputs['sex'];
     $customer->document_number = $inputs['document_number'];
     $customer->document_type = $inputs['document_type'];
