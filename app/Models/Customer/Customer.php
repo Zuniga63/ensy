@@ -2,6 +2,7 @@
 
 namespace App\Models\Customer;
 
+use App\Models\Building;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -112,5 +113,14 @@ class Customer extends Model
   public function financialData()
   {
     return $this->hasOne(CustomerFinancialData::class);
+  }
+
+  /**
+   * Obtiene los inmuebles que son propiedad del
+   * cliente.
+   */
+  public function buildings()
+  {
+    return $this->hasMany(Building::class, 'owner_id');
   }
 }
