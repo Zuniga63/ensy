@@ -70,8 +70,15 @@
                   <p>
                     <span class="font-bold">{{ item.address?.address }}</span>
                     {{ item.building_admin?.name }}
-                    <span v-if="item.address?.apartment" class="font-bold">
-                      Apartamento {{ item.address.apartment }}
+                    <span
+                      v-if="item.building_type && item.address?.apartment"
+                      class="font-bold"
+                    >
+                      <span v-if="item.building_type == 'apartment'"
+                        >Apt.</span
+                      >
+                      <span v-if="item.building_type == 'business'">Local</span>
+                      {{ item.address.apartment }}
                     </span>
                   </p>
                   <!-- Barrio -->
@@ -79,7 +86,9 @@
                     Barrio
                     <span class="font-bold">
                       {{ item.address?.district.name }}
-                      (<span class="text-xs"> {{ item.address?.town.name }} </span>)
+                      (<span class="text-xs">
+                        {{ item.address?.town.name }} </span
+                      >)
                     </span>
                   </p>
                   <!-- Observación -->
@@ -88,8 +97,8 @@
                   </span>
                   <!-- Codigo de Archivo -->
                   <p class="text-gray-600">
-                    Codigo: <span class="font-bold">{{item.id}}</span>
-                    - <span v-if="item.available">Diponible.</span> 
+                    Codigo: <span class="font-bold">{{ item.id }}</span> -
+                    <span v-if="item.available">Diponible.</span>
                     <span v-else>No disponible.</span>
                   </p>
                 </div>

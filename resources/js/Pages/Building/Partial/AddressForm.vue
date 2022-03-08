@@ -7,6 +7,85 @@
     </template>
 
     <template #form>
+      <!-- Grupo de Administración -->
+      <div class="col-span-6 lg:col-span-3">
+        <!-- Etiqueta -->
+        <custom-label
+          for="buildign-admin"
+          class="mb-2"
+          value="Administración"
+        />
+
+        <!-- Campo -->
+        <select
+          name="buildign-admin"
+          id="buildign-admin"
+          v-model="form.building_admin_id"
+          class="
+            w-full
+            px-6
+            py-2
+            border border-gray-300
+            focus:border-indigo-300
+            focus:ring
+            focus:ring-indigo-200
+            focus:ring-opacity-50
+            rounded-md
+            shadow-sm
+            text-sm text-gray-800
+          "
+        >
+          <option :value="null">No tiene administración</option>
+          <option v-for="admin in admins" :key="admin.id" :value="admin.id">
+            {{ admin.name }}
+          </option>
+        </select>
+
+        <!-- Mensaje de error -->
+        <jet-input-error
+          :message="form.errors.building_admin_id"
+          class="mt-2"
+        />
+      </div>
+
+      <!-- Tipo de inmuebles -->
+      <div class="col-span-6 lg:col-span-3">
+        <!-- Etiqueta -->
+        <custom-label
+          for="buildign-type"
+          class="mb-2"
+          value="Tipo de Inmueble"
+        />
+
+        <!-- Campo -->
+        <select
+          name="buildign-type"
+          id="buildign-type"
+          v-model="form.building_type"
+          class="
+            w-full
+            px-6
+            py-2
+            border border-gray-300
+            focus:border-indigo-300
+            focus:ring
+            focus:ring-indigo-200
+            focus:ring-opacity-50
+            rounded-md
+            shadow-sm
+            text-sm text-gray-800
+          "
+        >
+          <option :value="null">Indefinido</option>
+          <option value="house">Casa</option>
+          <option value="apartment">Apartamento</option>
+          <option value="business">Comercio</option>
+        </select>
+
+        <!-- Mensaje de error -->
+        <jet-input-error :message="form.errors.building_type" class="mt-2" />
+      </div>
+
       <!-- Departamento -->
       <div class="col-span-6 lg:col-span-3">
         <!-- Etiqueta -->
@@ -137,27 +216,68 @@
         <jet-input-error :message="form.errors.town_district_id" class="mt-2" />
       </div>
 
-      <!-- Dirección -->
+      <!-- Dirección y apartamento/local -->
       <div class="col-span-6 lg:col-span-3">
-        <!-- Etiqueta -->
-        <custom-label
-          for="building-address"
-          class="mb-2"
-          value="Dirección"
-          required
-        />
+        <div class="grid grid-cols-3 gap-2">
+          <!-- Dirección -->
+          <div class="col-span-2">
+            <!-- Etiqueta -->
+            <custom-label
+              for="building-address"
+              class="mb-2"
+              value="Dirección"
+              required
+            />
 
-        <!-- Campo -->
-        <jet-input
-          type="text"
-          id="building-address"
-          class="w-full"
-          placeholder="Ejemplo: Calle 5 #24-34"
-          v-model="address.address"
-        />
+            <!-- Campo -->
+            <jet-input
+              type="text"
+              id="building-address"
+              class="w-full text-sm"
+              placeholder="Ejemplo: Calle 5 #24-34"
+              v-model="address.address"
+            />
 
-        <!-- Mensaje de error -->
-        <jet-input-error :message="form.errors.address" class="mt-2" />
+            <!-- Mensaje de error -->
+            <jet-input-error :message="form.errors.address" class="mt-2" />
+          </div>
+
+          <transition
+            enter-active-class="transition ease-out duration-200"
+            enter-from-class="opacity-0 scale-90"
+            enter-to-class="opacity-100 scale-100"
+            leave-active-class="transition ease-in duration-200"
+            leave-from-class="opacity-100 scale-100"
+            leave-to-class="opacity-0 scale-90"
+          >
+            <!-- Estrato -->
+            <div v-show="additionalAddress">
+              <!-- Etiqueta -->
+              <custom-label for="building-address-apartment" class="mb-2">
+                <span v-if="form.building_type === 'apartment'"
+                  >Apartamento</span
+                >
+                <span v-else>Local</span>
+              </custom-label>
+              <!-- Input -->
+              <jet-input
+                id="building-address-apartment"
+                name="building-address-apartment"
+                type="number"
+                v-model="address.apartment"
+                class="w-full text-center text-sm"
+                placeholder="Ej: 401"
+                min="1"
+              />
+
+              <!-- Error -->
+              <jet-input-error
+                :message="form.errors.socioeconomic"
+                class="mt-2"
+              />
+            </div>
+          </transition>
+        </div>
       </div>
 
       <!-- Obsrvación -->
@@ -216,9 +336,11 @@ export default {
     JetActionMessage,
     JetButton,
   },
-  props: ["building", "departments", "allDistricts"],
+  props: ["building", "departments", "allDistricts", "admins"],
   setup(props) {
     const form = useForm({
+      building_admin_id: props.building.building_admin_id,
+      building_type: props.building.building_type,
       country_department_id: props.building.country_department_id,
       town_id: props.building.town_id,
       town_district_id: props.building.town_district_id,
@@ -238,6 +360,7 @@ export default {
     if (this.building.address) {
       this.address.address = this.building.address.address;
       this.address.observation = this.building.address.observation;
+      this.address.apartment = this.building.address.apartment;
     }
   },
   methods: {
@@ -285,6 +408,7 @@ export default {
           },
           address: this.address.address,
           observation: this.address.observation,
+          apartment: this.additionalAddress ? this.address.apartment : null,
         };
       }
 
@@ -331,6 +455,12 @@ export default {
 
       return null;
     },
+    additionalAddress() {
+      return (
+        this.form.building_type === "apartment" ||
+        this.form.building_type === "business"
+      );
+    },
   },
   watch: {
     "form.country_department_id"(newValue) {
@@ -374,6 +504,23 @@ export default {
         setTimeout(() => {
           this.form.town_id = district.town.id;
         }, 50);
+      }
+    },
+    "form.building_admin_id"(newValue, oldValue) {
+      let newAdmin = this.admins.find((item) => item.id == newValue);
+      let oldAdmin = this.admins.find((item) => item.id == oldValue);
+      let address = this.address.address;
+
+      if (newAdmin) {
+        if (oldAdmin && address == oldAdmin.address) {
+          this.address.address = newAdmin.address;
+        } else if (!address) {
+          this.address.address = newAdmin.address;
+        }
+      } else {
+        if (oldAdmin && address && address == oldAdmin.address) {
+          this.address.address = null;
+        }
       }
     },
   },

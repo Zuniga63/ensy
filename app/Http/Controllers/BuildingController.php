@@ -35,7 +35,7 @@ class BuildingController extends Controller
   public function create()
   {
     $customers = Customer::orderBy('first_name')->orderBy('last_name')->get(['id', 'first_name', 'last_name']);
-    $admins = BuildingAdmin::orderBy('name')->get(['id', 'name']);
+    $admins = BuildingAdmin::orderBy('name')->get(['id', 'name', 'address']);
     $departments = $this->getCountryDepartments();
     $allDistricts = TownDistrict::orderBy('name')->with('town')->get();
 
@@ -149,7 +149,7 @@ class BuildingController extends Controller
   public function edit(Building $building)
   {
     $customers = Customer::orderBy('first_name')->orderBy('last_name')->get(['id', 'first_name', 'last_name']);
-    $admins = BuildingAdmin::orderBy('name')->get(['id', 'name']);
+    $admins = BuildingAdmin::orderBy('name')->get(['id', 'name', 'address']);
     $departments = $this->getCountryDepartments();
     $allDistricts = TownDistrict::orderBy('name')->with('town')->get();
 
@@ -239,7 +239,6 @@ class BuildingController extends Controller
       $building->area = $request->input('area');
       $building->private_area = $request->input('private_area');
       $building->floor = $request->input('floor');
-      $building->building_type = $request->input('building_type');
       $building->features = $request->input('features');
       $building->save();
       $log[] = "La información del inmueble fue actualizada.";
@@ -319,6 +318,8 @@ class BuildingController extends Controller
       $building->image_path = $imagePath;
     }
 
+    $building->building_admin_id = $request->input('building_admin_id');
+    $building->building_type = $request->input('building_type');
     $building->country_department_id = $request->input("country_department_id");
     $building->town_id = $request->input('town_id');
     $building->town_district_id = $request->input('town_district_id');
@@ -339,13 +340,12 @@ class BuildingController extends Controller
     $building->owner_id = $request->input('owner_id');
     $building->lease_fee = $request->input('lease_fee', 0.00);
     $building->commission = $request->input('commission') ? floatval($request->input('commission')) / 100 : 0;
-    $building->building_admin_id = $request->input('building_admin_id');
-    $building->admin_fee = $request->input('admin_fee', 0.00);
     $building->insurance_carrier = $request->input('insurance_carrier');
     $building->insurance_type = $request->input('insurance_type');
     $building->insurance_commission = $request->input('insurance_commission')
       ? floatval($request->input('insurance_commission')) / 100
       : 0;
+    $building->admin_fee = $request->input('admin_fee', 0.00);
 
     $building->save();
 
@@ -419,23 +419,24 @@ class BuildingController extends Controller
       'area' => 'nullable|numeric|min:0|max:999999',
       'private_area' => 'nullable|numeric|min:0|max:999999',
       'floor' => 'nullable|integer|min:1|max:100',
-      'building_type' => 'nullable|string|in:house,apartment,business',
+
       'features' => 'nullable|array',
       'available' => 'required|boolean',
     ];
 
     $addressRules = [
+      'building_admin_id' => 'nullable|integer|exists:building_admin,id',
+      'building_type' => 'nullable|string|in:house,apartment,business',
       'country_department_id' => 'required|integer|exists:country_department,id',
       'town_id' => 'required|integer|exists:town,id',
       'town_district_id' => 'required|exists:town_district,id',
-      'address' => 'required|array:department,town,district,address,observation',
+      'address' => 'required|array:department,town,district,address,observation,apartment',
     ];
 
     $stateRules = [
       'owner_id' => 'nullable|integer|exists:customer,id',
       'lease_fee' => 'required|numeric|min:0|max:99999999.99',
       'commission' => 'required|integer|min:0|max:100',
-      'building_admin_id' => 'nullable|integer|exists:building_admin,id',
       'admin_fee' => 'required|numeric|min:0|max:99999999.99',
       'insurance_carrier' => 'nullable|string|max:45',
       'insurance_type' => 'nullable|string|max:45',

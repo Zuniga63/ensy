@@ -393,47 +393,6 @@
                     />
                   </div>
 
-                  <!-- Tipo de inmuebles -->
-                  <div>
-                    <!-- Etiqueta -->
-                    <custom-label
-                      for="buildign-type"
-                      class="mb-2"
-                      value="Tipo de Inmueble"
-                    />
-
-                    <!-- Campo -->
-                    <select
-                      name="buildign-type"
-                      id="buildign-type"
-                      v-model="form.building_type"
-                      class="
-                        w-full
-                        px-6
-                        py-2
-                        border border-gray-300
-                        focus:border-indigo-300
-                        focus:ring
-                        focus:ring-indigo-200
-                        focus:ring-opacity-50
-                        rounded-md
-                        shadow-sm
-                        text-sm text-gray-800
-                      "
-                    >
-                      <option :value="null">Selecciona un Tipo</option>
-                      <option value="house">Casa</option>
-                      <option value="apartment">Departamento</option>
-                      <option value="business">Comercio</option>
-                    </select>
-
-                    <!-- Mensaje de error -->
-                    <jet-input-error
-                      :message="form.errors.building_type"
-                      class="mt-2"
-                    />
-                  </div>
-
                   <!-- Campo para otras caracteristicas -->
                   <div class="col-span-2">
                     <custom-label
@@ -535,6 +494,92 @@
             title="Dirección del Inmueble"
           >
             <div class="grid grid-cols-2 gap-4">
+              <!-- Grupo de Administración -->
+              <div class="col-span-2 lg:col-span-1">
+                <!-- Etiqueta -->
+                <custom-label
+                  for="buildign-admin"
+                  class="mb-2"
+                  value="Administración"
+                />
+
+                <!-- Campo -->
+                <select
+                  name="buildign-admin"
+                  id="buildign-admin"
+                  v-model="form.building_admin_id"
+                  class="
+                    w-full
+                    px-6
+                    py-2
+                    border border-gray-300
+                    focus:border-indigo-300
+                    focus:ring
+                    focus:ring-indigo-200
+                    focus:ring-opacity-50
+                    rounded-md
+                    shadow-sm
+                    text-sm text-gray-800
+                  "
+                >
+                  <option :value="null">No tiene administración</option>
+                  <option
+                    v-for="admin in admins"
+                    :key="admin.id"
+                    :value="admin.id"
+                  >
+                    {{ admin.name }}
+                  </option>
+                </select>
+
+                <!-- Mensaje de error -->
+                <jet-input-error
+                  :message="form.errors.building_admin_id"
+                  class="mt-2"
+                />
+              </div>
+
+              <!-- Tipo de inmuebles -->
+              <div class="col-span-2 lg:col-span-1">
+                <!-- Etiqueta -->
+                <custom-label
+                  for="buildign-type"
+                  class="mb-2"
+                  value="Tipo de Inmueble"
+                />
+
+                <!-- Campo -->
+                <select
+                  name="buildign-type"
+                  id="buildign-type"
+                  v-model="form.building_type"
+                  class="
+                    w-full
+                    px-6
+                    py-2
+                    border border-gray-300
+                    focus:border-indigo-300
+                    focus:ring
+                    focus:ring-indigo-200
+                    focus:ring-opacity-50
+                    rounded-md
+                    shadow-sm
+                    text-sm text-gray-800
+                  "
+                >
+                  <option :value="null">Indefinido</option>
+                  <option value="house">Casa</option>
+                  <option value="apartment">Apartamento</option>
+                  <option value="business">Comercio</option>
+                </select>
+
+                <!-- Mensaje de error -->
+                <jet-input-error
+                  :message="form.errors.building_type"
+                  class="mt-2"
+                />
+              </div>
+
               <!-- Departamento -->
               <div class="col-span-2 lg:col-span-1">
                 <!-- Etiqueta -->
@@ -668,27 +713,74 @@
                 />
               </div>
 
-              <!-- Dirección -->
+              <!-- Dirección y apartamento/local -->
               <div class="col-span-2 lg:col-span-1">
-                <!-- Etiqueta -->
-                <custom-label
-                  for="building-address"
-                  class="mb-2"
-                  value="Dirección"
-                  required
-                />
+                <div class="grid grid-cols-3 gap-2">
+                  <!-- Dirección -->
+                  <div class="col-span-2">
+                    <!-- Etiqueta -->
+                    <custom-label
+                      for="building-address"
+                      class="mb-2"
+                      value="Dirección"
+                      required
+                    />
 
-                <!-- Campo -->
-                <jet-input
-                  type="text"
-                  id="building-address"
-                  class="w-full"
-                  placeholder="Ejemplo: Calle 5 #24-34"
-                  v-model="address.address"
-                />
+                    <!-- Campo -->
+                    <jet-input
+                      type="text"
+                      id="building-address"
+                      class="w-full text-sm"
+                      placeholder="Ejemplo: Calle 5 #24-34"
+                      v-model="address.address"
+                    />
 
-                <!-- Mensaje de error -->
-                <jet-input-error :message="form.errors.address" class="mt-2" />
+                    <!-- Mensaje de error -->
+                    <jet-input-error
+                      :message="form.errors.address"
+                      class="mt-2"
+                    />
+                  </div>
+
+                  <transition
+                    enter-active-class="transition ease-out duration-200"
+                    enter-from-class="opacity-0 scale-90"
+                    enter-to-class="opacity-100 scale-100"
+                    leave-active-class="transition ease-in duration-200"
+                    leave-from-class="opacity-100 scale-100"
+                    leave-to-class="opacity-0 scale-90"
+                  >
+                    <!-- Estrato -->
+                    <div v-show="additionalAddress">
+                      <!-- Etiqueta -->
+                      <custom-label
+                        for="building-address-apartment"
+                        class="mb-2"
+                      >
+                        <span v-if="form.building_type === 'apartment'"
+                          >Apartamento</span
+                        >
+                        <span v-else>Local</span>
+                      </custom-label>
+                      <!-- Input -->
+                      <jet-input
+                        id="building-address-apartment"
+                        name="building-address-apartment"
+                        type="number"
+                        v-model="address.apartment"
+                        class="w-full text-center text-sm"
+                        placeholder="Ej: 401"
+                        min="1"
+                      />
+
+                      <!-- Error -->
+                      <jet-input-error
+                        :message="form.errors.socioeconomic"
+                        class="mt-2"
+                      />
+                    </div>
+                  </transition>
+                </div>
               </div>
 
               <!-- Obsrvación -->
@@ -821,76 +913,6 @@
                 </div>
               </div>
 
-              <!-- Grupo de Administración -->
-              <div class="col-span-2 lg:col-span-1">
-                <!-- Etiqueta -->
-                <custom-label
-                  for="buildign-admin"
-                  class="mb-2"
-                  value="Administración"
-                />
-
-                <!-- Campo -->
-                <select
-                  name="buildign-admin"
-                  id="buildign-admin"
-                  v-model="form.building_admin_id"
-                  class="
-                    w-full
-                    px-6
-                    py-2
-                    border border-gray-300
-                    focus:border-indigo-300
-                    focus:ring
-                    focus:ring-indigo-200
-                    focus:ring-opacity-50
-                    rounded-md
-                    shadow-sm
-                    text-sm text-gray-800
-                  "
-                >
-                  <option :value="null">Selecciona una Administración</option>
-                  <option
-                    v-for="admin in admins"
-                    :key="admin.id"
-                    :value="admin.id"
-                  >
-                    {{ admin.name }}
-                  </option>
-                </select>
-
-                <!-- Mensaje de error -->
-                <jet-input-error
-                  :message="form.errors.building_admin_id"
-                  class="mt-2"
-                />
-              </div>
-
-              <!-- Cuota de administración -->
-              <div class="col-span-2 lg:col-span-1">
-                <custom-label
-                  for="building-admin-fee"
-                  class="mb-2"
-                  required
-                  value="Cuota de Administración"
-                />
-
-                <CurrencyInput
-                  name="building-admin-fee"
-                  id="building-admin-fee"
-                  type="text"
-                  class="w-full text-sm text-gray-800 text-right px-4"
-                  v-model="form.admin_fee"
-                  placeholder="Ingresa la cuota de adminsitración."
-                  autocomplete="off"
-                />
-
-                <jet-input-error
-                  :message="form.errors.admin_fee"
-                  class="col-span-12 mt-2"
-                />
-              </div>
-
               <!-- Aseguradora -->
               <div class="col-span-2 lg:col-span-1">
                 <!-- Etiqueta -->
@@ -973,6 +995,44 @@
                   </div>
                 </div>
               </div>
+
+              <!-- Cuota de administración -->
+              <transition
+                enter-active-class="transition ease-out duration-200"
+                enter-from-class="opacity-0 scale-90"
+                enter-to-class="opacity-100 scale-100"
+                leave-active-class="transition ease-in duration-200"
+                leave-from-class="opacity-100 scale-100"
+                leave-to-class="opacity-0 scale-90"
+              >
+                <div
+                  class="col-span-2 lg:col-span-1"
+                  v-if="form.building_admin_id"
+                >
+                  <custom-label
+                    for="building-admin-fee"
+                    class="mb-2"
+                    required
+                    value="Cuota de Administración"
+                  />
+
+                  <CurrencyInput
+                    name="building-admin-fee"
+                    id="building-admin-fee"
+                    type="text"
+                    class="w-full text-sm text-gray-800 text-right px-4"
+                    v-model="form.admin_fee"
+                    placeholder="Ingresa la cuota de adminsitración."
+                    autocomplete="off"
+                    :disabled="!form.building_admin_id"
+                  />
+
+                  <jet-input-error
+                    :message="form.errors.admin_fee"
+                    class="col-span-12 mt-2"
+                  />
+                </div>
+              </transition>
             </div>
           </input-group-section>
         </template>
@@ -1091,6 +1151,7 @@ export default {
         town: null,
         district: null,
         address: null,
+        apartment: null,
         observation: null,
       },
     };
@@ -1194,6 +1255,7 @@ export default {
           },
           address: this.address.address,
           observation: this.address.observation,
+          apartment: this.additionalAddress ? this.address.apartment : null,
         };
       }
 
@@ -1207,6 +1269,11 @@ export default {
       this.form.address = this.getAddress();
       //Se agregan las caracteristicas
       this.form.features = this.features.length > 0 ? this.features : null;
+
+      //Se setea admin fee y lease fee
+      if (!this.form.lease_fee) this.form.lease_fee = 0;
+      if (!this.form.admin_fee || !this.form.building_admin_id)
+        this.form.admin_fee = 0;
     },
     /**
      * Se encarga de volver a setear los campos de departamento,
@@ -1216,6 +1283,7 @@ export default {
       //Se limpian las variables
       this.address.address = null;
       this.address.observation = null;
+      this.address.department = null;
       this.form.country_department_id = address ? address.department.id : null;
       setTimeout(() => {
         this.form.town_id = address ? address.town.id : null;
@@ -1280,6 +1348,12 @@ export default {
 
       return null;
     },
+    additionalAddress() {
+      return (
+        this.form.building_type === "apartment" ||
+        this.form.building_type === "business"
+      );
+    },
   },
   watch: {
     "form.country_department_id"(newValue) {
@@ -1323,6 +1397,23 @@ export default {
         setTimeout(() => {
           this.form.town_id = district.town.id;
         }, 50);
+      }
+    },
+    "form.building_admin_id"(newValue, oldValue) {
+      let newAdmin = this.admins.find((item) => item.id == newValue);
+      let oldAdmin = this.admins.find((item) => item.id == oldValue);
+      let address = this.address.address;
+
+      if (newAdmin) {
+        if (oldAdmin && address == oldAdmin.address) {
+          this.address.address = newAdmin.address;
+        } else if (!address) {
+          this.address.address = newAdmin.address;
+        }
+      } else {
+        if (oldAdmin && address && address == oldAdmin.address) {
+          this.address.address = null;
+        }
       }
     },
   },

@@ -398,47 +398,6 @@
             <jet-input-error :message="form.errors.floor" class="mt-2" />
           </div>
 
-          <!-- Tipo de inmuebles -->
-          <div>
-            <!-- Etiqueta -->
-            <custom-label
-              for="buildign-type"
-              class="mb-2"
-              value="Tipo de Inmueble"
-            />
-
-            <!-- Campo -->
-            <select
-              name="buildign-type"
-              id="buildign-type"
-              v-model="form.building_type"
-              class="
-                w-full
-                px-6
-                py-2
-                border border-gray-300
-                focus:border-indigo-300
-                focus:ring
-                focus:ring-indigo-200
-                focus:ring-opacity-50
-                rounded-md
-                shadow-sm
-                text-sm text-gray-800
-              "
-            >
-              <option :value="null">Selecciona un Tipo</option>
-              <option value="house">Casa</option>
-              <option value="apartment">Departamento</option>
-              <option value="business">Comercio</option>
-            </select>
-
-            <!-- Mensaje de error -->
-            <jet-input-error
-              :message="form.errors.building_type"
-              class="mt-2"
-            />
-          </div>
-
           <!-- Campo para otras caracteristicas -->
           <div class="col-span-2">
             <custom-label
@@ -578,7 +537,6 @@ export default {
       deleteImage: false,
       description: props.building.description,
       features: null,
-      building_type: props.building.building_type,
       socioeconomic: props.building.socioeconomic,
       rooms: props.building.rooms,
       bathrooms: props.building.bathrooms,

@@ -16,7 +16,7 @@
     <div class="max-w-7xl mx-auto py-10 sm:px-6 lg:px-8">
       <general-form :building="building"/>
       <jet-section-border class="mb-4"/>
-      <address-form :building="building" :departments="departments" :allDistricts="allDistricts"/>
+      <address-form :building="building" :departments="departments" :allDistricts="allDistricts" :admins="admins"/>
       <jet-section-border class="mb-4"/>
       <building-state-form :building="building" :customers="customers" :admins="admins"/>
 

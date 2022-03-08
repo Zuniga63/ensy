@@ -100,72 +100,6 @@
         </div>
       </div>
 
-      <!-- Grupo de Administración -->
-      <div class="col-span-6 lg:col-span-3">
-        <!-- Etiqueta -->
-        <custom-label
-          for="buildign-admin"
-          class="mb-2"
-          value="Administración"
-        />
-
-        <!-- Campo -->
-        <select
-          name="buildign-admin"
-          id="buildign-admin"
-          v-model="form.building_admin_id"
-          class="
-            w-full
-            px-6
-            py-2
-            border border-gray-300
-            focus:border-indigo-300
-            focus:ring
-            focus:ring-indigo-200
-            focus:ring-opacity-50
-            rounded-md
-            shadow-sm
-            text-sm text-gray-800
-          "
-        >
-          <option :value="null">Selecciona una Administración</option>
-          <option v-for="admin in admins" :key="admin.id" :value="admin.id">
-            {{ admin.name }}
-          </option>
-        </select>
-
-        <!-- Mensaje de error -->
-        <jet-input-error
-          :message="form.errors.building_admin_id"
-          class="mt-2"
-        />
-      </div>
-
-      <!-- Cuota de administración -->
-      <div class="col-span-6 lg:col-span-3">
-        <custom-label
-          for="building-admin-fee"
-          class="mb-2"
-          required
-          value="Cuota de Administración"
-        />
-
-        <CurrencyInput
-          name="building-admin-fee"
-          id="building-admin-fee"
-          type="text"
-          class="w-full text-sm text-gray-800 text-right px-4"
-          v-model="form.admin_fee"
-          placeholder="Ingresa la cuota de adminsitración."
-          autocomplete="off"
-        />
-
-        <jet-input-error
-          :message="form.errors.admin_fee"
-          class="col-span-12 mt-2"
-        />
-      </div>
-
       <!-- Aseguradora -->
       <div class="col-span-6 lg:col-span-3">
         <!-- Etiqueta -->
@@ -248,6 +182,41 @@
           </div>
         </div>
       </div>
+
+      <!-- Cuota de administración -->
+      <transition
+        enter-active-class="transition ease-out duration-200"
+        enter-from-class="opacity-0 scale-90"
+        enter-to-class="opacity-100 scale-100"
+        leave-active-class="transition ease-in duration-200"
+        leave-from-class="opacity-100 scale-100"
+        leave-to-class="opacity-0 scale-90"
+      >
+        <div class="col-span-6 lg:col-span-4" v-if="form.building_admin_id">
+          <custom-label
+            for="building-admin-fee"
+            class="mb-2"
+            required
+            value="Cuota de Administración"
+          />
+
+          <CurrencyInput
+            name="building-admin-fee"
+            id="building-admin-fee"
+            type="text"
+            class="w-full text-sm text-gray-800 text-right px-4"
+            v-model="form.admin_fee"
+            placeholder="Ingresa la cuota de adminsitración."
+            autocomplete="off"
+            :disabled="!form.building_admin_id"
+          />
+
+          <jet-input-error
+            :message="form.errors.admin_fee"
+            class="col-span-12 mt-2"
+          />
+        </div>
+      </transition>
     </template>
 
     <template #actions>
@@ -320,6 +289,10 @@ export default {
     submit() {
       let url = route("building.updateBuildingState", this.building.id);
 
+      if (!this.form.lease_fee) this.form.lease_fee = 0;
+      if (!this.form.admin_fee || !this.building.building_admin_id)
+        this.form.admin_fee = 0;
+
       this.form.put(url, {
         preserveScroll: true,
         preserveState: true,
@@ -331,6 +304,9 @@ export default {
         },
       });
     },
+  },
+  beforeUpdate() {
+    this.form.building_admin_id = this.building.building_admin_id;
   },
 };
 </script>
