@@ -51,6 +51,14 @@ class BuildingAdmin extends Model
   }
 
   /**
+   * Convierte todos los caracteres del email a minusculas
+   */
+  public function setEmailAttribute($value)
+  {
+    $this->attributes['email'] = $value ? strtolower($value) : null;
+  }
+
+  /**
    * Recupera los inmuebles bajo este grupo de 
    * administración
    */

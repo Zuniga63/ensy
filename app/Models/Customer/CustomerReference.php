@@ -38,6 +38,14 @@ class CustomerReference extends Model
   ];
 
   /**
+   * Convierte todos los caracteres a minusculas
+   */
+  public function setEmailAttribute($value)
+  {
+    $this->attributes['email'] = $value ? strtolower($value) : null;
+  }
+
+  /**
    * Customer associated with this contact
    */
   public function customer()

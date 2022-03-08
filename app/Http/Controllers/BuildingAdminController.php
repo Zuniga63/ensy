@@ -42,7 +42,6 @@ class BuildingAdminController extends Controller
     $attr = $this->getAttr();
     $request->validate($rules, [], $attr);
     $inputs = $request->all();
-    $inputs['email'] = strtolower($inputs['email']);
 
     $admin = BuildingAdmin::create($inputs);
 
@@ -102,7 +101,7 @@ class BuildingAdminController extends Controller
     $buildingAdmin->admin_last_name = $inputs['admin_last_name'];
     $buildingAdmin->admin_document_number = $inputs['admin_document_number'];
     $buildingAdmin->phones = $inputs['phones'];
-    $buildingAdmin->email = strtolower($inputs['email']);
+    $buildingAdmin->email = $inputs['email'];
     $buildingAdmin->save();
 
     $result = [
