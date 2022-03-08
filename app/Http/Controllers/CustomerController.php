@@ -23,6 +23,7 @@ class CustomerController extends Controller
     $customers = Customer::orderBy('first_name')
       ->orderBy('last_name')
       ->with('information', 'contacts')
+      ->withCount('buildings')
       ->get();
 
     return Inertia::render('Customer/Index', compact('customers'));
