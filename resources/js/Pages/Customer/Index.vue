@@ -17,37 +17,81 @@
     <div class="max-w-7xl mx-auto py-10 sm:px-6 lg:px-8">
       <div class="py-5 px-4 rounded-md bg-white shadow">
         <!-- Controles de busqueda -->
-        <div class="grid grid-cols-2 gap-4 w-full mb-4">
+        <div class="grid grid-cols-4 gap-4 w-full mb-4">
           <!-- Busqueda por nombre -->
           <div class="flex flex-col">
             <custom-label
               for="searchByName"
-              value="Buscar por nombre"
-              class="uppercase mb-2 text-sm"
+              value="Nombre del Cliente"
+              class="mb-2 text-sm"
             />
             <jet-input
               type="text"
               id="searchByName"
-              placeholder="Escribe el nombre del cliente"
-              class="w-full"
+              placeholder="Ej: Juanito Perez"
+              class="w-full text-sm"
               v-model="searchByName"
             />
           </div>
 
+          <!-- Busqueda por documento -->
           <div class="flex flex-col">
             <custom-label
               for="searchByDocument"
-              value="Buscar por Numero de Documento"
-              class="uppercase mb-2 text-sm"
+              value="Documento"
+              class="mb-2 text-sm"
             />
             <jet-input
               type="text"
               id="searchByDocument"
-              placeholder="Escribe el nombre del cliente"
-              class="w-full"
+              placeholder="Escribe el # de documento."
+              class="w-full text-sm"
               v-model="searchByDocument"
             />
           </div>
+
+          <!-- Buscar por email -->
+          <div class="flex flex-col">
+            <custom-label
+              for="searchByEmail"
+              value="Email"
+              class="mb-2 text-sm"
+            />
+            <jet-input
+              type="text"
+              id="searchByEmail"
+              placeholder="ejemplo@ejemplo.com"
+              class="w-full text-sm"
+              v-model="searchByEmail"
+            />
+          </div>
+
+          <!-- Buscar por Bank Account -->
+          <div class="flex flex-col">
+            <custom-label
+              for="searchByBankAccount"
+              value="Numero de cuenta"
+              class="mb-2 text-sm"
+            />
+            <jet-input
+              type="text"
+              id="searchByBankAccount"
+              placeholder="Escribe el numero de cuenta."
+              class="w-full text-sm"
+              v-model="searchByBankAccount"
+            />
+          </div>
+
+          <!-- Show OnlyOwner -->
+          <label class="flex items-center mr-3" v-if="!customer">
+            <jet-checkbox
+              name="showOnlyOwner"
+              v-model:checked="showOnlyOwner"
+            />
+            <span class="ml-2 text-sm text-gray-600"
+              >Mostrar solo Propietarios</span
+            >
+          </label>
         </div>
 
         <!-- Tabla con los datos de los clientes -->
@@ -157,8 +201,8 @@
                 :key="customer.id"
                 class="transition-colors"
                 :class="{
-                  'hover:bg-indigo-50' : !customer.buildings_count,
-                  'hover:bg-emerald-50': customer.buildings_count
+                  'hover:bg-indigo-50': !customer.buildings_count,
+                  'hover:bg-emerald-50': customer.buildings_count,
                 }"
               >
                 <!-- Index -->
@@ -354,6 +398,7 @@ import LinkButton from "@/Components/Form/LinkButton.vue";
 import RowButton from "@/Components/Table/RowButton.vue";
 import CustomLabel from "@/Components/Form/Label.vue";
 import JetInput from "@/Jetstream/Input.vue";
+import JetCheckbox from "@/Jetstream/Checkbox.vue";
 import WhatsappIcon from "@/Components/Svgs/Whatsapp.vue";
 import PhoneIcon from "@/Components/Svgs/Phone.vue";
 
@@ -368,6 +413,7 @@ export default {
     RowButton,
     CustomLabel,
     JetInput,
+    JetCheckbox,
     WhatsappIcon,
     PhoneIcon,
   },
@@ -381,6 +427,9 @@ export default {
     return {
       searchByName: null,
       searchByDocument: null,
+      searchByBankAccount: null,
+      searchByEmail: null,
+      showOnlyOwner: false,
     };
   },
   methods: {
@@ -492,8 +541,8 @@ export default {
     },
     /**
      * Filtra los clientes por su nombre
-     * @param String name Es el nombre que se va a filtrar
-     * @param String customers Listado de clientes a filtrar.
+     * @param {String} name Es el nombre que se va a filtrar
+     * @param {Array} customers Listado de clientes a filtrar.
      * @returns Array
      */
     filterByName(name, customers) {
@@ -505,9 +554,9 @@ export default {
     },
     /**
      * Filtra los clientes por el numero de documento
-     * @param String document Documento utilizado para filtrar
-     * @param String customers Listado de clientes a filtrar.
-     * @returns Array
+     * @param {String} document Documento utilizado para filtrar
+     * @param {array} customers Listado de clientes a filtrar.
+     * @returns {Array}
      */
     filterByDocument(document, customers) {
       document = this.normalizeString(document);
@@ -519,6 +568,49 @@ export default {
 
         return false;
       });
+    },
+    /**
+     * Filtra los clientes por el correo electronico
+     * @param {String} email Correo electronico.
+     * @param {array} customers Listado de clientes a filtrar.
+     * @returns {Array}
+     */
+    filterByEmail(email, customers) {
+      email = this.normalizeString(email);
+      return customers.filter((c) => {
+        if (c.email) {
+          let customerEmail = this.normalizeString(c.email);
+          return customerEmail.includes(email);
+        }
+
+        return false;
+      });
+    },
+    /**
+     * Filtra los clientes por numero de cuenta.
+     * @param {String} bankAccount Numero de cuenta
+     * @param {array} customers Listado de clientes a filtrar.
+     * @returns {Array}
+     */
+    filterByBankAccount(bankAccount, customers) {
+      bankAccount = this.normalizeString(bankAccount);
+      return customers.filter((customer) => {
+        if (customer.information && customer.information.bank_account_number) {
+          let account = this.normalizeString(
+            customer.information.bank_account_number
+          );
+          return account.includes(bankAccount);
+        }
+
+        return false;
+      });
+    },
+    /**
+     * Filtra los cliente segun si son propieraios o no.
+     * @param {array} customers Listado de clientes
+     */
+    filterByOwner(customers) {
+      return customers.filter((customer) => customer.buildings_count > 0);
     },
     /**
      * Codigo que me permite seleccionar el texto de un elemento
@@ -547,15 +639,14 @@ export default {
       let result = this.customers;
       let name = this.searchByName;
       let document = this.searchByDocument;
+      let email = this.searchByEmail;
+      let bankAccount = this.searchByBankAccount;
 
-      if (name) {
-        result = this.filterByName(name, result);
-        if (document) {
-          result = this.filterByDocument(document, result);
-        }
-      } else if (document) {
-        result = this.filterByDocument(document, result);
-      }
+      if (name) result = this.filterByName(name, result);
+      if (document) result = this.filterByDocument(document, result);
+      if (email) result = this.filterByEmail(email, result);
+      if (bankAccount) result = this.filterByBankAccount(bankAccount, result);
+      if (this.showOnlyOwner) result = this.filterByOwner(result);
 
       return result;
     },
