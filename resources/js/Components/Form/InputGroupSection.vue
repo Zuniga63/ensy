@@ -9,17 +9,35 @@
         px-4
         border border-gray-200
         rounded-full
-        bg-white
-        text-sm text-gray-800
+        text-sm
         font-bold
         transform
         -translate-y-1/2
+        hover:cursor-pointer
       "
+      :class="{
+        'text-gray-800 bg-white': visible,
+        'text-white bg-gray-600': !visible,
+      }"
+      @click="visible = !visible"
     >
       {{ title }}
     </header>
 
-    <slot></slot>
+    <div class="w-full overflow-hidden">
+      <transition
+        enter-active-class="transition ease-out duration-300"
+        enter-from-class="opacity-0 -translate-y-full"
+        enter-to-class="opacity-100 translate-y-0"
+        leave-active-class="transition ease-in duration-300"
+        leave-from-class="opacity-100 translate-y-0"
+        leave-to-class="opacity-0 -translate-y-full"
+      >
+        <div v-show="visible">
+          <slot />
+        </div>
+      </transition>
+    </div>
   </div>
 </template>
 <script>
@@ -29,6 +47,11 @@ export default {
       type: String,
       default: "Titulo",
     },
+  },
+  data() {
+    return {
+      visible: true,
+    };
   },
 };
 </script>
