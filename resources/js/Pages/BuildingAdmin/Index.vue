@@ -172,7 +172,7 @@
 
                 <!-- Administrador -->
                 <td class="px-2 py-2 text-gray-800">
-                  <div class="flex flex-col justify-center">
+                  <div class="flex flex-col justify-center" v-if="admin.full_name">
                     <p>{{ admin.full_name }}</p>
                     <span
                       class="text-sm text-gray-400"
@@ -181,6 +181,7 @@
                       CC: <span>{{ admin.admin_document_number }}</span>
                     </span>
                   </div>
+                  <p v-else class="text-gray-400">No Registrado.</p>
                 </td>
 
                 <!-- Documento -->
