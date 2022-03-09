@@ -33,7 +33,7 @@
                       relative
                       w-60
                       h-60
-                      mb-2
+                      mb-2 mt-1
                       ring ring-gray-500
                       rounded-sm
                       overflow-hidden
@@ -1222,6 +1222,9 @@ export default {
         apartment: null,
         observation: null,
       },
+      showGeneralForm: true,
+      showAddressForm: false,
+      ashoStateForm: false,
     };
   },
   methods: {
