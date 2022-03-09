@@ -22,7 +22,7 @@ class BuildingController extends Controller
    */
   public function index()
   {
-    $buildings = Building::get();
+    $buildings = Building::orderBy('code')->get();
 
     return Inertia::render('Building/Index', compact('buildings'));
   }
@@ -38,8 +38,9 @@ class BuildingController extends Controller
     $admins = BuildingAdmin::orderBy('name')->get(['id', 'name', 'address']);
     $departments = $this->getCountryDepartments();
     $allDistricts = TownDistrict::orderBy('name')->with('town')->get();
+    $code = Building::max('code') + 1;
 
-    return Inertia::render('Building/Create', compact('customers', 'admins', 'departments', 'allDistricts'));
+    return Inertia::render('Building/Create', compact('customers', 'admins', 'departments', 'allDistricts', 'code'));
   }
 
   /**
@@ -239,6 +240,7 @@ class BuildingController extends Controller
       $building->area = $request->input('area');
       $building->private_area = $request->input('private_area');
       $building->floor = $request->input('floor');
+      $building->antiquity = $request->input('antiquity');
       $building->features = $request->input('features');
       $building->save();
       $log[] = "La información del inmueble fue actualizada.";
@@ -331,7 +333,7 @@ class BuildingController extends Controller
 
   public function updateBuildingState(Request $request, Building $building)
   {
-    $rules = $this->getBuildingRules('state');
+    $rules = $this->getBuildingRules('state', $building->id);
     $attr = $this->getBuildingAttr();
     $messages = $this->getCustomMessages();
 
@@ -346,6 +348,7 @@ class BuildingController extends Controller
       ? floatval($request->input('insurance_commission')) / 100
       : 0;
     $building->admin_fee = $request->input('admin_fee', 0.00);
+    $building->code = $request->input('code');
 
     $building->save();
 
@@ -407,7 +410,7 @@ class BuildingController extends Controller
    * @param NULL|String $section La sección [general,address,state] que se quiere construir.
    * @return Array
    */
-  protected function getBuildingRules($section = null)
+  protected function getBuildingRules($section = null, $buildingId = null)
   {
     $generalRules = [
       'image' => 'nullable|file|image|max:1024',
@@ -419,7 +422,7 @@ class BuildingController extends Controller
       'area' => 'nullable|numeric|min:0|max:999999',
       'private_area' => 'nullable|numeric|min:0|max:999999',
       'floor' => 'nullable|integer|min:1|max:100',
-
+      'antiquity' => 'nullable|string|date',
       'features' => 'nullable|array',
       'available' => 'required|boolean',
     ];
@@ -441,6 +444,7 @@ class BuildingController extends Controller
       'insurance_carrier' => 'nullable|string|max:45',
       'insurance_type' => 'nullable|string|max:45',
       'insurance_commission' => 'required|integer|min:0|max:100',
+      'code' => 'nullable|integer|min:0|max:32000|unique:building,code,' . $buildingId
     ];
 
 
@@ -478,6 +482,7 @@ class BuildingController extends Controller
       'area' => 'área',
       'private_area' => 'área privada',
       'floor' => 'piso',
+      'antiquity' => 'antiguedad',
       'lease_fee' => 'canon de arrendamiento',
       'admin_fee' => 'cuota de administración',
       'commission' => 'comisión',
@@ -502,6 +507,7 @@ class BuildingController extends Controller
       'commission.max' => 'No puede ser mayor que 100%',
       'insurance_commission.min' => 'No puede ser menor que 0%',
       'insurance_commission.max' => 'No puede ser mayor que el 100%',
+      'code.unique' => 'Ya fue tomado.',
     ];
   }
 }

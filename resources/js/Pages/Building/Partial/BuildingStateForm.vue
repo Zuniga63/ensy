@@ -192,7 +192,7 @@
         leave-from-class="opacity-100 scale-100"
         leave-to-class="opacity-0 scale-90"
       >
-        <div class="col-span-6 lg:col-span-4" v-if="form.building_admin_id">
+        <div class="col-span-6 lg:col-span-3" v-if="form.building_admin_id">
           <custom-label
             for="building-admin-fee"
             class="mb-2"
@@ -217,6 +217,30 @@
           />
         </div>
       </transition>
+
+      <!-- Codigo del inmueble -->
+      <div class="col-span-6 lg:col-span-3">
+        <div class="grid grid-cols-3 gap-2">
+          <!-- Codigo -->
+          <div>
+            <!-- Etiqueta -->
+            <custom-label for="building-code" class="mb-2" value="Codigo" />
+            <!-- Input -->
+            <jet-input
+              id="building-code"
+              name="building-code"
+              type="number"
+              v-model="form.code"
+              class="w-full text-center text-sm"
+              placeholder="Codigo"
+              min="0"
+            />
+
+            <!-- Error -->
+            <jet-input-error :message="form.errors.code" class="mt-2" />
+          </div>
+        </div>
+      </div>
     </template>
 
     <template #actions>
@@ -277,6 +301,7 @@ export default {
       building_admin_id: props.building.building_admin_id,
       lease_fee: props.building.lease_fee,
       admin_fee: props.building.admin_fee,
+      code: props.building.code,
       commission: props.building.commission * 100,
       insurance_carrier: props.building.insurance_carrier,
       insurance_type: props.building.insurance_type,

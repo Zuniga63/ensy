@@ -27,6 +27,7 @@ class Building extends Model
     'town_id',
     'town_district_id',
     'building_admin_id',
+    'code',
     'image_path',
     'description',
     'features',

@@ -97,7 +97,7 @@
                   </span>
                   <!-- Codigo de Archivo -->
                   <p class="text-gray-600">
-                    Codigo: <span class="font-bold">{{ item.id }}</span> -
+                    Codigo: <span class="font-bold">{{ item.code }}</span> -
                     <span v-if="item.available">Diponible.</span>
                     <span v-else>No disponible.</span>
                   </p>

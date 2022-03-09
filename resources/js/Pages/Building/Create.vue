@@ -221,7 +221,7 @@
                       name="building-rooms"
                       type="number"
                       v-model="form.rooms"
-                      class="w-full text-center"
+                      class="w-full text-center text-sm"
                       placeholder="# Hab."
                       min="1"
                       max="100"
@@ -248,7 +248,7 @@
                       name="building-bathrooms"
                       type="number"
                       v-model="form.bathrooms"
-                      class="w-full text-center"
+                      class="w-full text-center text-sm"
                       placeholder="# Baños"
                       min="1"
                       max="100"
@@ -275,7 +275,7 @@
                       name="building-parking-lots"
                       type="number"
                       v-model="form.parking_lots"
-                      class="w-full text-center"
+                      class="w-full text-center text-sm"
                       placeholder="# parking"
                       min="1"
                       max="100"
@@ -302,7 +302,7 @@
                       name="building-socioeconomics"
                       type="number"
                       v-model="form.socioeconomic"
-                      class="w-full text-center"
+                      class="w-full text-center text-sm"
                       placeholder="# estrato"
                       min="1"
                       max="100"
@@ -329,7 +329,7 @@
                       name="building-area"
                       type="number"
                       v-model="form.area"
-                      class="w-full text-center"
+                      class="w-full text-center text-sm"
                       placeholder="área"
                       min="1"
                       step="0.1"
@@ -353,7 +353,7 @@
                       name="building-private-area"
                       type="number"
                       v-model="form.private_area"
-                      class="w-full text-center"
+                      class="w-full text-center text-sm"
                       placeholder="área"
                       min="1"
                       step="0.1"
@@ -380,7 +380,7 @@
                       name="building-floor"
                       type="number"
                       v-model="form.floor"
-                      class="w-full text-center"
+                      class="w-full text-center text-sm"
                       placeholder="# piso"
                       min="1"
                       max="100"
@@ -389,6 +389,33 @@
                     <!-- Error -->
                     <jet-input-error
                       :message="form.errors.floor"
+                      class="mt-2"
+                    />
+                  </div>
+
+                  <!-- Antiguedad -->
+                  <div>
+                    <!-- Etiqueta -->
+                    <custom-label for="building-antiquity" class="mb-2">
+                      Antiguedad
+                      <span class="text-xs text-gray-400" v-if="antiquity"
+                        >[{{ antiquity }}]</span
+                      >
+                    </custom-label>
+                    <!-- Input -->
+                    <jet-input
+                      id="building-antiquity"
+                      name="building-antiquity"
+                      type="date"
+                      v-model="form.antiquity"
+                      class="w-full text-center text-sm"
+                      placeholder="Fecha"
+                      :max="maxDate"
+                    />
+
+                    <!-- Error -->
+                    <jet-input-error
+                      :message="form.errors.antiquity"
                       class="mt-2"
                     />
                   </div>
@@ -1033,6 +1060,33 @@
                   />
                 </div>
               </transition>
+              <!-- Codigo del inmueble -->
+              <div class="col-span-2 lg:col-span-1">
+                <div class="grid grid-cols-3 gap-2">
+                  <!-- Codigo -->
+                  <div>
+                    <!-- Etiqueta -->
+                    <custom-label
+                      for="building-code"
+                      class="mb-2"
+                      value="Codigo"
+                    />
+                    <!-- Input -->
+                    <jet-input
+                      id="building-code"
+                      name="building-code"
+                      type="number"
+                      v-model="form.code"
+                      class="w-full text-center text-sm"
+                      placeholder="0%"
+                      min="0"
+                    />
+
+                    <!-- Error -->
+                    <jet-input-error :message="form.errors.code" class="mt-2" />
+                  </div>
+                </div>
+              </div>
             </div>
           </input-group-section>
         </template>
@@ -1076,6 +1130,11 @@ import InputGroupSection from "@/Components/Form/InputGroupSection.vue";
 import CurrencyInput from "@/Components/CurrencyInput.vue";
 import Swal from "sweetalert2";
 
+import dayjs from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime";
+import locale_es_do from "dayjs/locale/es";
+import localizedFormat from "dayjs/plugin/localizedFormat";
+
 export default {
   components: {
     AppLayout,
@@ -1109,6 +1168,7 @@ export default {
       type: Array,
       default: [],
     },
+    code: Number,
   },
   setup(props) {
     const form = useForm({
@@ -1117,6 +1177,7 @@ export default {
       country_department_id: null,
       town_id: null,
       town_district_id: null,
+      code: props.code,
       image: null,
       description: null,
       features: null,
@@ -1129,6 +1190,7 @@ export default {
       area: null,
       private_area: null,
       floor: null,
+      antiquity: null,
       lease_fee: 0,
       admin_fee: 0,
       commission: 0,
@@ -1139,6 +1201,12 @@ export default {
       addOther: false,
     });
 
+    //----------------------------------------------------
+    // SE ESTABLECEN LOS PARAMETROS DE dayjs
+    //----------------------------------------------------
+    dayjs.locale(locale_es_do);
+    dayjs.extend(relativeTime);
+    dayjs.extend(localizedFormat);
     return { form };
   },
   data() {
@@ -1353,6 +1421,16 @@ export default {
         this.form.building_type === "apartment" ||
         this.form.building_type === "business"
       );
+    },
+    maxDate() {
+      return dayjs().format("YYYY-MM-DD");
+    },
+    antiquity() {
+      if (this.form.antiquity) {
+        return dayjs(this.form.antiquity).fromNow(true);
+      }
+
+      return null;
     },
   },
   watch: {
