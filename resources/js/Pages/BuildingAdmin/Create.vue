@@ -78,7 +78,6 @@
               for="adfirst_name"
               class="mb-2"
               value="Nombres del Administrador"
-              required
             />
             <!-- Input -->
             <jet-input
