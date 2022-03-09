@@ -97,6 +97,7 @@ class BuildingAdminController extends Controller
     $inputs = $request->all();
 
     $buildingAdmin->name = $inputs['name'];
+    $buildingAdmin->address = $inputs['address'];
     $buildingAdmin->admin_first_name = $inputs['admin_first_name'];
     $buildingAdmin->admin_last_name = $inputs['admin_last_name'];
     $buildingAdmin->admin_document_number = $inputs['admin_document_number'];
