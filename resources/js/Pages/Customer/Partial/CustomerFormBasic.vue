@@ -53,61 +53,6 @@
         <jet-input-error :message="form.errors.last_name" class="mt-2" />
       </div>
 
-      <!-- Correo del cliente -->
-      <div class="col-span-6 lg:col-span-3">
-        <!-- Etiqueta -->
-        <custom-label
-          for="customer-email"
-          class="mb-2"
-          value="Correo Electronico"
-        />
-
-        <!-- Campo -->
-        <jet-input
-          type="email"
-          id="customer-email"
-          class="w-full"
-          placeholder="ejemplo@ejemplo.com"
-          v-model="form.email"
-        />
-
-        <!-- Campo de error -->
-        <jet-input-error :message="form.errors.email" class="mt-2" />
-      </div>
-
-      <!-- Sexo del cliente -->
-      <div class="col-span-6 lg:col-span-3">
-        <!-- Etiqueta -->
-        <custom-label for="customer-sex" class="mb-2" value="Sexo" />
-
-        <!-- Campo -->
-        <select
-          name="customer-sex"
-          id="customer-sex"
-          v-model="form.sex"
-          class="
-            w-full
-            px-6
-            py-2
-            border border-gray-300
-            focus:border-indigo-300
-            focus:ring
-            focus:ring-indigo-200
-            focus:ring-opacity-50
-            rounded-md
-            shadow-sm
-            text-sm text-gray-800
-          "
-        >
-          <option :value="null">Selecciona el sexo</option>
-          <option value="f">Mujer</option>
-          <option value="m">Hombre</option>
-        </select>
-
-        <!-- Mensaje de error -->
-        <jet-input-error :message="form.errors.sex" class="mt-2" />
-      </div>
-
       <!-- Numero de identificación -->
       <div class="col-span-6 lg:col-span-3">
         <!-- Etiqueta -->
@@ -167,6 +112,61 @@
         </select>
 
         <jet-input-error :message="form.errors.document_type" class="mt-2" />
+      </div>
+
+      <!-- Sexo del cliente -->
+      <div class="col-span-6 lg:col-span-3">
+        <!-- Etiqueta -->
+        <custom-label for="customer-sex" class="mb-2" value="Sexo" />
+
+        <!-- Campo -->
+        <select
+          name="customer-sex"
+          id="customer-sex"
+          v-model="form.sex"
+          class="
+            w-full
+            px-6
+            py-2
+            border border-gray-300
+            focus:border-indigo-300
+            focus:ring
+            focus:ring-indigo-200
+            focus:ring-opacity-50
+            rounded-md
+            shadow-sm
+            text-sm text-gray-800
+          "
+        >
+          <option :value="null">Selecciona el sexo</option>
+          <option value="f">Mujer</option>
+          <option value="m">Hombre</option>
+        </select>
+
+        <!-- Mensaje de error -->
+        <jet-input-error :message="form.errors.sex" class="mt-2" />
+      </div>
+
+      <!-- Correo del cliente -->
+      <div class="col-span-6 lg:col-span-3">
+        <!-- Etiqueta -->
+        <custom-label
+          for="customer-email"
+          class="mb-2"
+          value="Correo Electronico"
+        />
+
+        <!-- Campo -->
+        <jet-input
+          type="email"
+          id="customer-email"
+          class="w-full"
+          placeholder="ejemplo@ejemplo.com"
+          v-model="form.email"
+        />
+
+        <!-- Campo de error -->
+        <jet-input-error :message="form.errors.email" class="mt-2" />
       </div>
     </template>
 
@@ -245,7 +245,7 @@ export default {
           preserveState: true,
           onSuccess: (page) => {
             this.updatForm();
-          }
+          },
         });
       } else {
         let url = route("customer.store");
