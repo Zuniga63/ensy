@@ -294,7 +294,6 @@ import localizedFormat from "dayjs/plugin/localizedFormat";
 import TransferForm from "./Components/TransferForm.vue";
 
 import Swal from "sweetalert2";
-import axios from "axios";
 
 export default {
   components: {
@@ -376,7 +375,7 @@ export default {
         backdrop: true,
         preConfirm: async () => {
           try {
-            const res = await axios.delete(url);
+            const res = await window.axios.delete(url);
             return res.data;
           } catch (error) {
             return {
