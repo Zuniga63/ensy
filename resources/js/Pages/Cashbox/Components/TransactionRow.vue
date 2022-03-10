@@ -97,8 +97,6 @@
 </template>
 
 <script>
-import Swal from "sweetalert2";
-import { Inertia } from "@inertiajs/inertia";
 import RowButton from "@/Components/Table/RowButton.vue";
 
 export default {
