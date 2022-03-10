@@ -17,35 +17,68 @@
     <div class="max-w-7xl mx-auto py-10 sm:px-6 lg:px-8">
       <div class="py-5 px-4 rounded-md bg-white shadow">
         <!-- Controles de busqueda -->
-        <div class="grid grid-cols-2 gap-4 w-full mb-4">
+        <div class="grid grid-cols-4 gap-4 w-full mb-4">
           <!-- Busqueda por nombre -->
           <div class="flex flex-col">
             <custom-label
-              for="searchByName"
-              value="Buscar por nombre"
-              class="uppercase mb-2 text-sm"
+              for="customerName"
+              value="Nombre del Cliente"
+              class="mb-2 text-sm"
             />
             <jet-input
               type="text"
-              id="searchByName"
-              placeholder="Escribe el nombre del cliente"
-              class="w-full"
-              v-model="searchByName"
+              id="customerName"
+              placeholder="Ej: Juanito Perez"
+              class="w-full text-sm"
+              v-model="customerName"
             />
           </div>
 
+          <!-- Busqueda por documento -->
           <div class="flex flex-col">
             <custom-label
-              for="searchByDocument"
-              value="Buscar por Numero de Documento"
-              class="uppercase mb-2 text-sm"
+              for="document"
+              value="Documento"
+              class="mb-2 text-sm"
             />
             <jet-input
               type="text"
-              id="searchByDocument"
-              placeholder="Escribe el nombre del cliente"
-              class="w-full"
-              v-model="searchByDocument"
+              id="document"
+              placeholder="Escribe el # de documento."
+              class="w-full text-sm"
+              v-model="document"
+            />
+          </div>
+
+          <!-- Buscar por email -->
+          <div class="flex flex-col">
+            <custom-label
+              for="searchByEmail"
+              value="Email"
+              class="mb-2 text-sm"
+            />
+            <jet-input
+              type="text"
+              id="searchByEmail"
+              placeholder="ejemplo@ejemplo.com"
+              class="w-full text-sm"
+              v-model="email"
+            />
+          </div>
+
+          <!-- Buscar por Bank Account -->
+          <div class="flex flex-col">
+            <custom-label
+              for="searchByBankAccount"
+              value="Numero de cuenta"
+              class="mb-2 text-sm"
+            />
+            <jet-input
+              type="text"
+              id="searchByBankAccount"
+              placeholder="Escribe el numero de cuenta."
+              class="w-full text-sm"
+              v-model="bankAccount"
             />
           </div>
         </div>
@@ -341,8 +374,22 @@ export default {
   },
   data() {
     return {
-      searchByName: null,
-      searchByDocument: null,
+      /**
+       * @type {Null|String} Nombre del cliente a buscar en el listado de clientes
+       */
+      customerName: null,
+      /**
+       * @type {String} Numero de documento del a buscar en el listado
+       */
+      document: null,
+      /**
+       * @type {string} Numero de cuenta del cliente a buscar
+       */
+      bankAccount: null,
+      /**
+       * @type {string} Correo electronico del cliente filtrar
+       */
+      email: null,
     };
   },
   methods: {
@@ -483,6 +530,40 @@ export default {
       });
     },
     /**
+     * Filtra los clientes por el correo electronico
+     * @param {String} email Correo electronico.
+     * @param {array} customers Listado de clientes a filtrar.
+     * @returns {Array}
+     */
+    filterByEmail(email, customers) {
+      email = this.normalizeString(email);
+      return customers.filter((c) => {
+        if (c.email) {
+          let customerEmail = this.normalizeString(c.email);
+          return customerEmail.includes(email);
+        }
+        return false;
+      });
+    },
+    /**
+     * Filtra los clientes por numero de cuenta.
+     * @param {String} bankAccount Numero de cuenta
+     * @param {array} customers Listado de clientes a filtrar.
+     * @returns {Array}
+     */
+    filterByBankAccount(bankAccount, customers) {
+      bankAccount = this.normalizeString(bankAccount);
+      return customers.filter((customer) => {
+        if (customer.information && customer.information.bank_account_number) {
+          let account = this.normalizeString(
+            customer.information.bank_account_number
+          );
+          return account.includes(bankAccount);
+        }
+        return false;
+      });
+    },
+    /**
      * Codigo que me permite seleccionar el texto de un elemento
      * tomado de: https://stackoverflow.com/questions/985272/selecting-text-in-an-element-akin-to-highlighting-with-your-mouse
      */
@@ -507,17 +588,11 @@ export default {
     customerList() {
       //Se da prioridad al nombre por ser un campo obligatorio.
       let result = this.customers;
-      let name = this.searchByName;
-      let document = this.searchByDocument;
 
-      if (name) {
-        result = this.filterByName(name, result);
-        if (document) {
-          result = this.filterByDocument(document, result);
-        }
-      } else if (document) {
-        result = this.filterByDocument(document, result);
-      }
+      if (this.customerName) result = this.filterByName(this.customerName, result);
+      if (this.document) result = this.filterByDocument(this.document, result);
+      if (this.email) result = this.filterByEmail(this.email, result);
+      if (this.bankAccount) result = this.filterByBankAccount(this.bankAccount, result);
 
       return result;
     },
