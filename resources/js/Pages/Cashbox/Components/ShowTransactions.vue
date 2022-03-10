@@ -56,19 +56,30 @@
     </div>
 
     <!-- desktop version -->
-    <div class="hidden lg:block" v-if="window.width >= 1024">
+    <div class="hidden lg:block pt-2" v-if="window.width >= 1024">
       <!-- Controles -->
-      <div class="flex justify-between items-center mb-4">
+      <div class="grid grid-cols-4 gap-4 mb-4">
         <!-- Controles de ordenamiento -->
-        <div class="flex flex-col">
-          <label for="desktopOrderBy" class="inline-block mb-2"
+        <div class="relative pt-4 px-2 pb-2 border border-gray-400 rounded-md">
+          <label
+            for="desktopOrderBy"
+            class="
+              absolute
+              top-0
+              left-4
+              p-1
+              bg-white
+              text-sm text-gray-400
+              transform
+              -translate-y-1/2
+            "
             >Ordenar por:</label
           >
           <select
             name="desktopOrderBY"
             id="desktopOrderBy"
             class="
-              w-80
+              w-full
               px-4
               py-2
               border-gray-300
@@ -84,19 +95,111 @@
           </select>
         </div>
 
+        <!-- Desde -->
+        <div>
+          <div
+            class="relative pt-4 px-2 pb-2 border border-gray-400 rounded-md"
+          >
+            <label
+              for="fromDate"
+              class="
+                absolute
+                top-0
+                left-4
+                p-1
+                bg-white
+                text-sm text-gray-400
+                transform
+                -translate-y-1/2
+              "
+              >Filtrar desde</label
+            >
+            <input
+              type="date"
+              id="fromDate"
+              placeholder="Selecciona una fecha"
+              v-model.lazy="fromDate"
+              class="
+                w-full
+                px-4
+                py-2
+                border-gray-300
+                focus:border-indigo-300
+                rounded-md
+                text-sm text-gray-800
+                focus:ring focus:ring-indigo-200 focus:ring-opacity-50
+              "
+            />
+          </div>
+          <!-- TODO: Input con el buscador -->
+        </div>
+
+        <!-- Hasta -->
+        <div>
+          <div
+            class="relative pt-4 px-2 pb-2 border border-gray-400 rounded-md"
+          >
+            <label
+              for="toDate"
+              class="
+                absolute
+                top-0
+                left-4
+                p-1
+                bg-white
+                text-sm text-gray-400
+                transform
+                -translate-y-1/2
+              "
+              >Filtrar hasta</label
+            >
+            <input
+              type="date"
+              id="toDate"
+              v-model.lazy="toDate"
+              :max="maxDate"
+              class="
+                w-full
+                px-4
+                py-2
+                border-gray-300
+                focus:border-indigo-300
+                rounded-md
+                text-sm text-gray-800
+                focus:ring focus:ring-indigo-200 focus:ring-opacity-50
+              "
+            />
+          </div>
+          <!-- TODO: Input con el buscador -->
+        </div>
+
         <!-- Control de busqueda -->
         <div>
-          <div class="flex flex-col">
-            <label for="desktopSearch" class="inline-block mb-2 text-gray-800"
+          <div
+            class="relative pt-4 px-2 pb-2 border border-gray-400 rounded-md"
+          >
+            <label
+              for="desktopSearch"
+              class="
+                absolute
+                top-0
+                left-4
+                p-1
+                bg-white
+                text-sm text-gray-400
+                transform
+                -translate-y-1/2
+              "
               >Filtrar por descripción</label
             >
             <input
               type="text"
-              name="searchByDescription"
+              id="desktopSearch"
+              name="desktopSearch"
               placeholder="Buscar por su descripción."
-              v-model="search"
+              v-model.lazy.trim="search"
               class="
-                w-80
+                w-full
                 px-4
                 py-2
                 border-gray-300
@@ -250,6 +353,10 @@ import JetButton from "@/Jetstream/Button.vue";
 import JetDangerButton from "@/Jetstream/DangerButton.vue";
 import TransactionCard from "@/Pages/Cashbox/Components/TransactionCard.vue";
 import TransactionRow from "@/Pages/Cashbox/Components/TransactionRow.vue";
+import dayjs from 'dayjs';
+import isBetween from 'dayjs/plugin/isBetween';
+import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
+import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
 
 export default {
   components: {
@@ -264,7 +371,7 @@ export default {
       default: [],
     },
   },
-  emits: ["updateTransaction", 'deleteTransaction'],
+  emits: ["updateTransaction", "deleteTransaction"],
   setup(props) {
     //---------------------------------------------------------
     // SE CONSTRUYE EL FORMATEADOR DE MONEDA
@@ -278,6 +385,10 @@ export default {
       currency,
       minimumFractionDigits: fractionDigits,
     });
+
+    dayjs.extend(isBetween);
+    dayjs.extend(isSameOrAfter);
+    dayjs.extend(isSameOrBefore);
 
     return { formater };
   },
@@ -295,6 +406,17 @@ export default {
        * @type {string}
        */
       search: "",
+      /**
+       * Establece la fecha en la que se van empezar a filtar las
+       * transacciones.
+       */
+      fromDate: dayjs().subtract(1, 'month').format('YYYY-MM-DD'),
+      /**
+       * Establece la fecha hasta la cual se van a filtrar las
+       * transacciones.
+       */
+      toDate: dayjs().format('YYYY-MM-DD'),
+      maxDate: dayjs().format('YYYY-MM-DD'),
       /**
        * Indica la pagina de transacciones que se estpa visualizando
        * @type {number}
@@ -325,8 +447,8 @@ export default {
     updateTransaction(data) {
       this.$emit("updateTransaction", data);
     },
-    deleteTransaction(data){
-      this.$emit('deleteTransaction', data);
+    deleteTransaction(data) {
+      this.$emit("deleteTransaction", data);
     },
     /**
      * Actualiza los parametros de la ventana cada que
@@ -340,7 +462,7 @@ export default {
      * Se encarga normalizar el texto y sirva para
      * realizar busqudas.
      * @param {string} text texto a normlaizar
-     * @returns {string}
+     * @return {string}
      */
     nomalizeText(text) {
       return text
@@ -351,18 +473,31 @@ export default {
     formatCurrency(number) {
       return this.formater.format(number);
     },
-  },
-  computed: {
-    sortedTransactions() {
-      let filtered = this.transactions.filter((item) => {
-        //Se recupera la descripción y se normaliza
+    /**
+     * Se encarga de recuperar las transacciones que
+     * presentan coincidencia con el texto pasado como
+     * parametro.
+     * @param {string} text Textoque sirve para comparar
+     * @param {array} list listado de transacciónes a filtrar.
+     */
+    filterByDescription(text, list) {
+      text = this.nomalizeText(text);
+      return list.filter((item) => {
+        /**
+         * @type {string}
+         */
         let description = this.nomalizeText(item.description);
-        let search = this.nomalizeText(this.search);
-
-        return description.includes(search);
+        return description.includes(text);
       });
-
-      return filtered.sort((t1, t2) => {
+    },
+    /**
+     * Ordena las transacciones de mas recientes o mas antiguas
+     * segun el control de usuario.
+     * @param {array} list listado de transacciones
+     * @return {array}
+     */
+    sortByDate(list) {
+      return list.sort((t1, t2) => {
         let reverse = this.sortBy === "recentFirst" ? true : false;
 
         if (t1.date.isBefore(t2.date)) {
@@ -404,6 +539,48 @@ export default {
         return 0;
       });
     },
+    /**
+     * Filtra las transacciones segun la fecha
+     * @param {dayjs} fromDate Fecha desde la cual se empieza a filtrar
+     * @param {dayjs} toDate fecha hasta la cual se filtra.
+     * @param {array} list listado de transacciones a filtrar.
+     */
+    filterBetweenDates(fromDate, toDate, list){
+      
+      return list.filter(item => {
+        let date = dayjs(item.date);
+
+        if(fromDate && toDate){
+          return date.isBetween(fromDate, toDate);
+        }
+
+        if(fromDate){
+          return date.isSameOrAfter(fromDate);
+        }
+
+        if(toDate){
+          return date.isSameOrBefore(toDate);
+        }
+
+        return true;
+      });
+
+    }
+  },
+  computed: {
+    sortedTransactions() {
+      let list = this.transactions.slice();
+      if (this.search) list = this.filterByDescription(this.search, list);
+
+      if(this.fromDate || this.toDate){
+        let from = this.fromDate ? dayjs(this.fromDate) : null;
+        let to = this.toDate ? dayjs(this.toDate).endOf('day') : null;
+        console.log(from, to);
+        list = this.filterBetweenDates(from, to, list);
+      }
+
+      return this.sortByDate(list);
+    },
     pages() {
       let page = 1;
       let transactions = [];
@@ -432,7 +609,9 @@ export default {
     },
     balance() {
       let allAmounts = this.sortedTransactions.map((item) => item.amount);
-      return allAmounts.length ? allAmounts.reduce((prev, next) => prev + next) : 0;
+      return allAmounts.length
+        ? allAmounts.reduce((prev, next) => prev + next)
+        : 0;
     },
   },
   watch: {
