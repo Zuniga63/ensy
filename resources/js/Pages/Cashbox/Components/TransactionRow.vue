@@ -4,7 +4,7 @@
     <td class="px-3 py-2 text-center text-gray-400">{{ transaction.id }}</td>
     <!-- Date and Time -->
     <td class="px-3 py-2 text-left text-gray-800 whitespace-nowrap">
-      <div>
+      <div class="text-center">
         <p>{{ date }}</p>
         <p class="text-sm text-gray-800 text-opacity-80">
           {{ time }} - {{ dateFromNow }}
@@ -97,8 +97,6 @@
 </template>
 
 <script>
-import Swal from "sweetalert2";
-import { Inertia } from "@inertiajs/inertia";
 import RowButton from "@/Components/Table/RowButton.vue";
 
 export default {

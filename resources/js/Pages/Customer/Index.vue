@@ -21,32 +21,32 @@
           <!-- Busqueda por nombre -->
           <div class="flex flex-col">
             <custom-label
-              for="searchByName"
+              for="customerName"
               value="Nombre del Cliente"
               class="mb-2 text-sm"
             />
             <jet-input
               type="text"
-              id="searchByName"
+              id="customerName"
               placeholder="Ej: Juanito Perez"
               class="w-full text-sm"
-              v-model="searchByName"
+              v-model="customerName"
             />
           </div>
 
           <!-- Busqueda por documento -->
           <div class="flex flex-col">
             <custom-label
-              for="searchByDocument"
+              for="document"
               value="Documento"
               class="mb-2 text-sm"
             />
             <jet-input
               type="text"
-              id="searchByDocument"
+              id="document"
               placeholder="Escribe el # de documento."
               class="w-full text-sm"
-              v-model="searchByDocument"
+              v-model="document"
             />
           </div>
 
@@ -62,7 +62,7 @@
               id="searchByEmail"
               placeholder="ejemplo@ejemplo.com"
               class="w-full text-sm"
-              v-model="searchByEmail"
+              v-model="email"
             />
           </div>
 
@@ -78,7 +78,7 @@
               id="searchByBankAccount"
               placeholder="Escribe el numero de cuenta."
               class="w-full text-sm"
-              v-model="searchByBankAccount"
+              v-model="bankAccount"
             />
           </div>
 
@@ -425,11 +425,27 @@ export default {
   },
   data() {
     return {
-      searchByName: null,
-      searchByDocument: null,
-      searchByBankAccount: null,
-      searchByEmail: null,
+      /**
+       * Define si se muestra unicamente a los propietarios
+       * @type{boolean} 
+       */
       showOnlyOwner: false,
+      /**
+       * @type {Null|String} Nombre del cliente a buscar en el listado de clientes
+       */
+      customerName: null,
+      /**
+       * @type {String} Numero de documento del a buscar en el listado
+       */
+      document: null,
+      /**
+       * @type {string} Numero de cuenta del cliente a buscar
+       */
+      bankAccount: null,
+      /**
+       * @type {string} Correo electronico del cliente filtrar
+       */
+      email: null,
     };
   },
   methods: {
@@ -582,7 +598,6 @@ export default {
           let customerEmail = this.normalizeString(c.email);
           return customerEmail.includes(email);
         }
-
         return false;
       });
     },
@@ -601,7 +616,6 @@ export default {
           );
           return account.includes(bankAccount);
         }
-
         return false;
       });
     },
@@ -637,15 +651,11 @@ export default {
     customerList() {
       //Se da prioridad al nombre por ser un campo obligatorio.
       let result = this.customers;
-      let name = this.searchByName;
-      let document = this.searchByDocument;
-      let email = this.searchByEmail;
-      let bankAccount = this.searchByBankAccount;
 
-      if (name) result = this.filterByName(name, result);
-      if (document) result = this.filterByDocument(document, result);
-      if (email) result = this.filterByEmail(email, result);
-      if (bankAccount) result = this.filterByBankAccount(bankAccount, result);
+      if (this.customerName) result = this.filterByName(this.customerName, result);
+      if (this.document) result = this.filterByDocument(this.document, result);
+      if (this.email) result = this.filterByEmail(this.email, result);
+      if (this.bankAccount) result = this.filterByBankAccount(this.bankAccount, result);
       if (this.showOnlyOwner) result = this.filterByOwner(result);
 
       return result;

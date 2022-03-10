@@ -172,10 +172,8 @@
   </div>
 </template>
 <script>
-import Swal from "sweetalert2";
 import JetButton from "@/Jetstream/Button.vue";
 import JetDangerButton from "@/Jetstream/DangerButton.vue";
-import { Inertia } from "@inertiajs/inertia";
 
 export default {
   components: {

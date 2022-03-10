@@ -1,5 +1,5 @@
 <template>
-  <app-layout title="Cajas">
+  <app-layout :title="cashbox.name">
     <template #header>
       <h2 class="font-semibold text-xl text-gray-800 leading-tight">
         {{ cashbox.name }}
@@ -282,8 +282,6 @@ import { Inertia } from "@inertiajs/inertia";
 // import Swal from "sweetalert2";
 
 import AppLayout from "@/Layouts/AppLayout.vue";
-import JetButton from "@/Jetstream/Button.vue";
-import JetDangerButton from "@/Jetstream/DangerButton.vue";
 import ShowTransactions from "@/Pages/Cashbox/Components/ShowTransactions.vue";
 import ShowBoxInfo from "@/Pages/Cashbox/Components/ShowBoxInfo.vue";
 import ShowBoxClosures from "@/Pages/Cashbox/Components/ShowBoxClosures.vue";
@@ -296,13 +294,10 @@ import localizedFormat from "dayjs/plugin/localizedFormat";
 import TransferForm from "./Components/TransferForm.vue";
 
 import Swal from "sweetalert2";
-import axios from "axios";
 
 export default {
   components: {
     AppLayout,
-    JetButton,
-    JetDangerButton,
     ShowTransactions,
     ShowBoxInfo,
     ShowBoxClosures,
@@ -380,7 +375,7 @@ export default {
         backdrop: true,
         preConfirm: async () => {
           try {
-            const res = await axios.delete(url);
+            const res = await window.axios.delete(url);
             return res.data;
           } catch (error) {
             return {
