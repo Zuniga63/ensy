@@ -282,8 +282,6 @@ import { Inertia } from "@inertiajs/inertia";
 // import Swal from "sweetalert2";
 
 import AppLayout from "@/Layouts/AppLayout.vue";
-import JetButton from "@/Jetstream/Button.vue";
-import JetDangerButton from "@/Jetstream/DangerButton.vue";
 import ShowTransactions from "@/Pages/Cashbox/Components/ShowTransactions.vue";
 import ShowBoxInfo from "@/Pages/Cashbox/Components/ShowBoxInfo.vue";
 import ShowBoxClosures from "@/Pages/Cashbox/Components/ShowBoxClosures.vue";
@@ -301,8 +299,6 @@ import axios from "axios";
 export default {
   components: {
     AppLayout,
-    JetButton,
-    JetDangerButton,
     ShowTransactions,
     ShowBoxInfo,
     ShowBoxClosures,
