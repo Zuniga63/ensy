@@ -22,7 +22,7 @@ class BuildingController extends Controller
    */
   public function index()
   {
-    $buildings = Building::orderBy('code')->get();
+    $buildings = Building::latest()->get();
 
     return Inertia::render('Building/Index', compact('buildings'));
   }
