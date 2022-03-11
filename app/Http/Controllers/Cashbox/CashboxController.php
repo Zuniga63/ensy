@@ -10,7 +10,6 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redirect;
-use Illuminate\Support\Facades\URL;
 use Inertia\Inertia;
 
 class CashboxController extends Controller
@@ -38,11 +37,13 @@ class CashboxController extends Controller
       }])
       ->get(['id', 'name', 'code', 'slug']);
 
+    $accumulated = 0;
+
     /**
      * Se transforman cada uno de los elementos para agregar
      * los datos requeridos por la vista
      */
-    $boxs->map(function ($box, $key) {
+    $boxs->map(function ($box, $key) use(&$accumulated) {
       $box->base = 0;
       $box->lastClosure = null;
       $box->balanceIsWrong = false;
@@ -50,6 +51,10 @@ class CashboxController extends Controller
       $this->getCashAmount($box);
       $this->formatCashProperties($box);
       $this->validateBoxBalance($box);
+
+      $accumulated += $box->balance;
+      $box->accumulated = $accumulated;
+
 
       //Se elimina el arreglo de los closures
       unset($box->closures);

@@ -19,11 +19,22 @@
         <!-- Controles de busqueda -->
         <div class="grid grid-cols-4 gap-4 w-full mb-4">
           <!-- Busqueda por nombre -->
-          <div class="flex flex-col">
+          <div
+            class="relative pt-4 px-2 pb-2 border border-gray-400 rounded-md"
+          >
             <custom-label
               for="customerName"
               value="Nombre del Cliente"
-              class="mb-2 text-sm"
+              class="
+                absolute
+                top-0
+                left-4
+                p-1
+                bg-white
+                text-sm text-gray-400
+                transform
+                -translate-y-1/2
+              "
             />
             <jet-input
               type="text"
@@ -35,11 +46,22 @@
           </div>
 
           <!-- Busqueda por documento -->
-          <div class="flex flex-col">
+          <div
+            class="relative pt-4 px-2 pb-2 border border-gray-400 rounded-md"
+          >
             <custom-label
               for="document"
               value="Documento"
-              class="mb-2 text-sm"
+              class="
+                absolute
+                top-0
+                left-4
+                p-1
+                bg-white
+                text-sm text-gray-400
+                transform
+                -translate-y-1/2
+              "
             />
             <jet-input
               type="text"
@@ -51,11 +73,22 @@
           </div>
 
           <!-- Buscar por email -->
-          <div class="flex flex-col">
+          <div
+            class="relative pt-4 px-2 pb-2 border border-gray-400 rounded-md"
+          >
             <custom-label
               for="searchByEmail"
               value="Email"
-              class="mb-2 text-sm"
+              class="
+                absolute
+                top-0
+                left-4
+                p-1
+                bg-white
+                text-sm text-gray-400
+                transform
+                -translate-y-1/2
+              "
             />
             <jet-input
               type="text"
@@ -67,11 +100,22 @@
           </div>
 
           <!-- Buscar por Bank Account -->
-          <div class="flex flex-col">
+          <div
+            class="relative pt-4 px-2 pb-2 border border-gray-400 rounded-md"
+          >
             <custom-label
               for="searchByBankAccount"
               value="Numero de cuenta"
-              class="mb-2 text-sm"
+              class="
+                absolute
+                top-0
+                left-4
+                p-1
+                bg-white
+                text-sm text-gray-400
+                transform
+                -translate-y-1/2
+              "
             />
             <jet-input
               type="text"
@@ -652,7 +696,8 @@ export default {
       //Se da prioridad al nombre por ser un campo obligatorio.
       let result = this.customers;
 
-      if (this.customerName) result = this.filterByName(this.customerName, result);
+      if (this.customerName)
+        result = this.filterByName(this.customerName, result);
       if (this.document) result = this.filterByDocument(this.document, result);
       if (this.email) result = this.filterByEmail(this.email, result);
       if (this.bankAccount) result = this.filterByBankAccount(this.bankAccount, result);

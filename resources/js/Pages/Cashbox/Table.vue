@@ -71,6 +71,20 @@
               >
                 Saldo
               </th>
+              <!-- Acumulado -->
+              <th
+                scope="col"
+                class="
+                  px-6
+                  py-3
+                  text-center text-sm text-gray-500
+                  uppercase
+                  tracking-widest
+                "
+              >
+                Acumulado
+              </th>
+
               <!-- Actions -->
               <th scope="col" class="relative px-6 py-3">
                 <span class="sr-only">Edit</span>
@@ -142,7 +156,7 @@
                     </div>
                   </div>
                 </td>
-<!-- Expenses -->
+                <!-- Expenses -->
                 <td class="px-6 py-2 whitespace-nowrap text-right">
                   <div class="flex flex-col">
                     <span class="text-red-500">{{
@@ -189,6 +203,16 @@
                       class="text-sm text-red-800 text-opacity-90 -mt-1"
                     >
                       Existen inconsistencias.
+                    </span>
+                  </div>
+                </td>
+                <!-- Acumulado -->
+                <td
+                  class="px-6 py-2 whitespace-nowrap text-gray-800 text-right"
+                >
+                  <div class="flex flex-col">
+                    <span>
+                      {{ formatCurrency(box.accumulated) }}
                     </span>
                   </div>
                 </td>
@@ -312,7 +336,9 @@
                 <td class="px-6 py-2 text-right text-sm font-bold">
                   <div class="flex flex-col">
                     <span class="text-green-500">{{ incomes }}</span>
-                    <div class="flex items-center justify-between text-indigo-500">
+                    <div
+                      class="flex items-center justify-between text-indigo-500"
+                    >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         class="h-4 w-4 mr-2"
@@ -337,7 +363,9 @@
                 >
                   <div class="flex flex-col">
                     <span class="text-red-500">{{ expenses }}</span>
-                    <div class="flex items-center justify-between text-orange-500">
+                    <div
+                      class="flex items-center justify-between text-orange-500"
+                    >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         class="h-4 w-4 mr-2"
@@ -358,7 +386,8 @@
                 </td>
                 <!-- Balance -->
                 <td
-                  class="px-6 py-2 text-right text-sm text-gray-500 font-bold"
+                  colspan="2"
+                  class="px-6 py-2 text-center text-xl text-gray-500 font-bold"
                 >
                   {{ balance }}
                 </td>
