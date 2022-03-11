@@ -30,274 +30,253 @@
             />
           </div>
         </div>
-        <table class="w-full border-collapse border border-slate-500 text-sm">
-          <thead>
-            <tr class="text-sm bg-slate-100">
-              <!-- Imagen -->
-              <th class="w-20 border border-slate-500 text-gray-800">
-                <div class="flex justify-center">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="h-6 w-6"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    stroke-width="2"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                    />
-                  </svg>
-                </div>
-              </th>
-              <th class="border border-slate-500 text-gray-800">Dirección</th>
-              <th class="border border-slate-500 text-gray-800">Propietario</th>
-              <th class="border border-slate-500 text-gray-800">
-                Administración
-              </th>
-              <th class="border border-slate-500 text-gray-800">Canon</th>
-              <th class="border border-slate-500 text-gray-800">Aseguradora</th>
-              <th class="border border-slate-500 text-gray-800">Resumen</th>
-              <th class="border border-slate-500 text-gray-800"></th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="item in buildingList" :key="item.id">
-              <!-- Imagen -->
-              <td class="w-20 h-20 border border-slate-500">
-                <img
-                  :src="item.image_url"
-                  :alt="item.address?.address"
-                  class="block w-full h-full object-cover object-center"
-                  v-if="item.image_url"
-                  loading="lazy"
-                />
-              </td>
-
-              <!-- Dirección -->
-              <td class="px-2 py-1 text-gray-800 border border-slate-500">
-                <div class="flex flex-col items-start">
-                  <!-- Dirección -->
-                  <p>
-                    <span class="font-bold">{{ item.address?.address }}</span>
-                    {{ item.building_admin?.name }}
-                    <span
-                      v-if="item.building_type && item.address?.apartment"
-                      class="font-bold"
+        <div class="h-[28rem] border border-slate-500 rounded overflow-auto">
+          <table class="relative w-full border-collapse text-sm table-sticky">
+            <thead
+              class="sticky top-0 p-0 ring-1 ring-slate-500 ring-opacity-100"
+            >
+              <tr class="text-sm bg-slate-100 divide-x divide-slate-500">
+                <!-- Imagen -->
+                <th class="w-20 p-0 text-gray-800">
+                  <div class="flex justify-center">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      class="h-6 w-6"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      stroke-width="2"
                     >
-                      <span v-if="item.building_type == 'apartment'">Apt.</span>
-                      <span v-if="item.building_type == 'business'">Local</span>
-                      {{ item.address.apartment }}
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                      />
+                    </svg>
+                  </div>
+                </th>
+                <th class="p-0 text-gray-800">Dirección</th>
+                <th class="p-0 text-gray-800">Propietario</th>
+                <th class="p-0 text-gray-800">Administración</th>
+                <th class="p-0 text-gray-800">Canon</th>
+                <th class="p-0 text-gray-800">Aseguradora</th>
+                <th class="p-0 text-gray-800">Resumen</th>
+                <th class="p-0 text-gray-800"></th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-500">
+              <tr
+                v-for="item in buildingList"
+                :key="item.id"
+                class="divide-x divide-slate-500"
+              >
+                <!-- Imagen -->
+                <td class="w-20 py-2 px-1">
+                  <div class="flex flex-col items-center">
+                    <div class="w-20 h-20 mb-2 overflow-hidden rounded-full" v-if="item.image_url">
+                      <img
+                        :src="item.image_url"
+                        :alt="item.address?.address"
+                        class="block w-full h-full object-cover object-center"
+                        loading="lazy"
+                      />
+                    </div>
+                    <p class="text-gray-400">
+                      Código: 
+                      <span class="font-bold">{{ item.code }}</span> 
+                    </p>
+                  </div>
+                </td>
+
+                <!-- Dirección -->
+                <td class="px-2 py-1 text-gray-800">
+                  <div
+                    class="flex flex-col items-center justify-start text-center"
+                  >
+                    <!-- Dirección -->
+                    <p>
+                      <span class="font-bold">{{ item.address?.address }}</span>
+                      {{ item.building_admin?.name }}
+                      <span
+                        v-if="item.building_type && item.address?.apartment"
+                        class="font-bold"
+                      >
+                        <span v-if="item.building_type == 'apartment'"
+                          >Apt.</span
+                        >
+                        <span v-if="item.building_type == 'business'"
+                          >Local</span
+                        >
+                        {{ item.address.apartment }}
+                      </span>
+                    </p>
+                    <!-- Barrio -->
+                    <p>
+                      Barrio
+                      <span class="font-bold">
+                        {{ item.address?.district.name }}
+                        (<span class="text-xs">
+                          {{ item.address?.town.name }} </span
+                        >)
+                      </span>
+                    </p>
+                    <!-- Observación -->
+                    <span class="text-gray-400">
+                      {{ item.address?.observation }}
                     </span>
-                  </p>
-                  <!-- Barrio -->
-                  <p>
-                    Barrio
+                    <!-- Codigo de Archivo -->
+                    <p class="text-gray-600">
+                      Codigo: <span class="font-bold">{{ item.code }}</span> -
+                      <span v-if="item.available">Diponible.</span>
+                      <span v-else>No disponible.</span>
+                    </p>
+                  </div>
+                </td>
+
+                <!-- Propietario -->
+                <td class="px-2 py-1 text-gray-800 whitespace-nowrap">
+                  <div class="flex flex-col items-center" v-if="item.owner">
+                    <!-- Nombre del propietario -->
+                    <span> {{ item.owner.full_name }} </span>
+                    <!-- Documento de identificaicón -->
+                    <p
+                      class="text-xs text-gray-400"
+                      v-if="item.owner.document_number"
+                    >
+                      <span> {{ item.owner.document_type }} : </span>
+                      <span> {{ item.owner.document_number }} </span>
+                    </p>
+                    <!-- Email -->
+                    <span v-if="item.owner.email" class="text-gray-400 text-xs">
+                      {{ item.owner.email }}
+                    </span>
+                    <!-- Telefonos -->
+                    <p
+                      v-if="item.owner.contacts?.length"
+                      class="text-gray-400 tracking-widest"
+                    >
+                      <span> {{ item.owner.contacts[0].number }} </span>
+                      <span v-if="item.owner.contacts?.length > 1">
+                        - {{ item.owner.contacts[1].number }}
+                      </span>
+                    </p>
+                    <span class="mb-1 font-bold">
+                      {{ calculateOwnerFee(item.lease_fee, item.commission) }}
+                    </span>
+                  </div>
+                  <span v-else class="block text-center">No Reg.</span>
+                </td>
+
+                <!-- Administración -->
+                <td class="px-2 py-1 text-gray-800 whitespace-nowrap">
+                  <div
+                    class="flex flex-col items-center"
+                    v-if="item.building_admin"
+                  >
+                    <span> {{ item.building_admin.name }} </span>
+                    <span> {{ item.building_admin.full_name }} </span>
+                    <span
+                      v-if="item.building_admin.email"
+                      class="text-gray-400 text-xs"
+                    >
+                      {{ item.building_admin.email }}
+                    </span>
+                    <p
+                      v-if="item.building_admin.phones?.length"
+                      class="text-gray-400 tracking-widest"
+                    >
+                      <span> {{ item.building_admin.phones[0].number }} </span>
+                      <span v-if="item.building_admin.phones?.length > 1">
+                        - {{ item.building_admin.phones[1].number }}
+                      </span>
+                    </p>
+
                     <span class="font-bold">
-                      {{ item.address?.district.name }}
-                      (<span class="text-xs">
-                        {{ item.address?.town.name }} </span
-                      >)
+                      {{ formatCurrency(item.admin_fee) }}
                     </span>
-                  </p>
-                  <!-- Observación -->
-                  <span class="text-gray-400">
-                    {{ item.address?.observation }}
-                  </span>
-                  <!-- Codigo de Archivo -->
-                  <p class="text-gray-600">
-                    Codigo: <span class="font-bold">{{ item.code }}</span> -
-                    <span v-if="item.available">Diponible.</span>
-                    <span v-else>No disponible.</span>
-                  </p>
-                </div>
-              </td>
+                  </div>
+                  <span v-else class="block text-center">No Reg.</span>
+                </td>
 
-              <!-- Propietario -->
-              <td
-                class="
-                  px-2
-                  py-1
-                  text-gray-800
-                  border border-slate-500
-                  whitespace-nowrap
-                "
-              >
-                <div class="flex flex-col items-center" v-if="item.owner">
-                  <!-- Nombre del propietario -->
-                  <span> {{ item.owner.full_name }} </span>
-                  <!-- Documento de identificaicón -->
-                  <p
-                    class="text-xs text-gray-400"
-                    v-if="item.owner.document_number"
-                  >
-                    <span> {{ item.owner.document_type }} : </span>
-                    <span> {{ item.owner.document_number }} </span>
-                  </p>
-                  <!-- Email -->
-                  <span v-if="item.owner.email" class="text-gray-400 text-xs">
-                    {{ item.owner.email }}
-                  </span>
-                  <!-- Telefonos -->
-                  <p
-                    v-if="item.owner.contacts?.length"
-                    class="text-gray-400 tracking-widest"
-                  >
-                    <span> {{ item.owner.contacts[0].number }} </span>
-                    <span v-if="item.owner.contacts?.length > 1">
-                      - {{ item.owner.contacts[1].number }}
+                <!-- Canon -->
+                <td class="px-2 py-1 text-gray-800 text-center">
+                  <div class="flex flex-col items-center">
+                    <!-- Canon -->
+                    <span class="font-bold mb-1">
+                      {{ formatCurrency(item.lease_fee) }}
                     </span>
-                  </p>
-                  <span class="mb-1 font-bold">
-                    {{ calculateOwnerFee(item.lease_fee, item.commission) }}
-                  </span>
-                </div>
-                <span v-else class="block text-center">No Reg.</span>
-              </td>
-
-              <!-- Administración -->
-              <td
-                class="
-                  px-2
-                  py-1
-                  text-gray-800
-                  border border-slate-500
-                  whitespace-nowrap
-                "
-              >
-                <div
-                  class="flex flex-col items-center"
-                  v-if="item.building_admin"
-                >
-                  <span> {{ item.building_admin.name }} </span>
-                  <span> {{ item.building_admin.full_name }} </span>
-                  <span
-                    v-if="item.building_admin.email"
-                    class="text-gray-400 text-xs"
-                  >
-                    {{ item.building_admin.email }}
-                  </span>
-                  <p
-                    v-if="item.building_admin.phones?.length"
-                    class="text-gray-400 tracking-widest"
-                  >
-                    <span> {{ item.building_admin.phones[0].number }} </span>
-                    <span v-if="item.building_admin.phones?.length > 1">
-                      - {{ item.building_admin.phones[1].number }}
+                    <span class="text-gray-400 text-xs">Comisión</span>
+                    <span class="italic">
+                      {{ calculateCommission(item.lease_fee, item.commission) }}
                     </span>
-                  </p>
+                    <span class="text-xs text-green-500">
+                      ({{ printPercentage(item.commission) }})
+                    </span>
+                  </div>
+                </td>
 
-                  <span class="font-bold">
-                    {{ formatCurrency(item.admin_fee) }}
-                  </span>
-                </div>
-                <span v-else class="block text-center">No Reg.</span>
-              </td>
+                <!-- Seguro -->
+                <td class="px-2 py-1 text-gray-800 whitespace-nowrap">
+                  <div class="flex flex-col items-center">
+                    <!-- Nombre del propietario -->
+                    <span> {{ item.insurance_carrier }} </span>
+                    <span class="mb-1"> {{ item.insurance_type }} </span>
+                    <span class="text-gray-400 text-xs">Comisión</span>
+                    <span class="font-bold">
+                      {{
+                        calculateCommission(
+                          item.lease_fee,
+                          item.insurance_commission
+                        )
+                      }}
+                    </span>
+                    <span class="text-xs text-green-400">
+                      ({{ printPercentage(item.insurance_commission) }})
+                    </span>
+                  </div>
+                </td>
 
-              <!-- Canon -->
-              <td
-                class="
-                  px-2
-                  py-1
-                  text-gray-800
-                  border border-slate-500
-                  text-center
-                "
-              >
-                <div class="flex flex-col items-center">
-                  <!-- Canon -->
-                  <span class="font-bold mb-1">
-                    {{ formatCurrency(item.lease_fee) }}
-                  </span>
-                  <span class="text-gray-400 text-xs">Comisión</span>
-                  <span class="italic">
-                    {{ calculateCommission(item.lease_fee, item.commission) }}
-                  </span>
-                  <span class="text-xs text-green-500">
-                    ({{ printPercentage(item.commission) }})
-                  </span>
-                </div>
-              </td>
+                <!-- Resumen -->
+                <td class="px-2 py-1 text-gray-800 whitespace-nowrap">
+                  <div class="flex flex-col items-center">
+                    <span class="text-gray-400 text-xs">Total Recaudar</span>
+                    <span class="mb-1">
+                      {{ calculateCollection(item.lease_fee, item.admin_fee) }}
+                    </span>
+                    <span class="text-gray-400 text-xs">Utilidad</span>
+                    <span class="mb-1 text-green-500">
+                      {{
+                        calculateUtility(
+                          item.lease_fee,
+                          item.commission,
+                          item.insurance_commission
+                        )
+                      }}
+                    </span>
+                  </div>
+                </td>
 
-              <!-- Seguro -->
-              <td
-                class="
-                  px-2
-                  py-1
-                  text-gray-800
-                  border border-slate-500
-                  whitespace-nowrap
-                "
-              >
-                <div class="flex flex-col items-center">
-                  <!-- Nombre del propietario -->
-                  <span> {{ item.insurance_carrier }} </span>
-                  <span class="mb-1"> {{ item.insurance_type }} </span>
-                  <span class="text-gray-400 text-xs">Comisión</span>
-                  <span class="font-bold">
-                    {{
-                      calculateCommission(
-                        item.lease_fee,
-                        item.insurance_commission
-                      )
-                    }}
-                  </span>
-                  <span class="text-xs text-green-400">
-                    ({{ printPercentage(item.insurance_commission) }})
-                  </span>
-                </div>
-              </td>
+                <!-- Actions -->
+                <td class="px-2 py-1">
+                  <div class="flex flex-col items-center">
+                    <row-button
+                      type="edit"
+                      class="mb-1"
+                      title="Editar Inmueble"
+                      :href="route('building.edit', item.id)"
+                    />
 
-              <!-- Resumen -->
-              <td
-                class="
-                  px-2
-                  py-1
-                  text-gray-800
-                  border border-slate-500
-                  whitespace-nowrap
-                "
-              >
-                <div class="flex flex-col items-center">
-                  <span class="text-gray-400 text-xs">Total Recaudar</span>
-                  <span class="mb-1">
-                    {{ calculateCollection(item.lease_fee, item.admin_fee) }}
-                  </span>
-                  <span class="text-gray-400 text-xs">Utilidad</span>
-                  <span class="mb-1 text-green-500">
-                    {{
-                      calculateUtility(
-                        item.lease_fee,
-                        item.commission,
-                        item.insurance_commission
-                      )
-                    }}
-                  </span>
-                </div>
-              </td>
-
-              <!-- Actions -->
-              <td class="px-2 py-1 border border-slate-500">
-                <div class="flex flex-col items-center">
-                  <row-button
-                    type="edit"
-                    class="mb-1"
-                    title="Editar Inmueble"
-                    :href="route('building.edit', item.id)"
-                  />
-
-                  <row-button
-                    type="delete"
-                    @click="deleteBuilding(item)"
-                    title="Eliminar Inmueble"
-                  />
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+                    <row-button
+                      type="delete"
+                      @click="deleteBuilding(item)"
+                      title="Eliminar Inmueble"
+                    />
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   </app-layout>
@@ -499,7 +478,7 @@ export default {
     filterByAddress(address, list) {
       address = this.normalizeString(address);
       return list.filter((item) => {
-        if(item.address.address){
+        if (item.address.address) {
           let itemAddress = this.normalizeString(item.address.address);
           return itemAddress.includes(address);
         }
@@ -509,11 +488,11 @@ export default {
     },
   },
   computed: {
-    buildingList(){
+    buildingList() {
       let result = this.buildings;
-      if(this.address) result = this.filterByAddress(this.address, result);
+      if (this.address) result = this.filterByAddress(this.address, result);
       return result;
-    }
+    },
   },
 };
 </script>
