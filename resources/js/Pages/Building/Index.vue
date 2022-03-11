@@ -29,6 +29,16 @@
               v-model="address"
             />
           </div>
+          <!-- Codigo -->
+          <div class="flex flex-col">
+            <jet-input
+              type="number"
+              id="searchByCodde"
+              placeholder="Buscar por codigo."
+              class="w-full text-sm"
+              v-model.number="code"
+            />
+          </div>
         </div>
         <div class="h-[28rem] border border-slate-500 rounded overflow-auto">
           <table class="relative w-full border-collapse text-sm table-sticky">
@@ -68,12 +78,15 @@
               <tr
                 v-for="item in buildingList"
                 :key="item.id"
-                class="divide-x divide-slate-500"
+                class="divide-x divide-slate-500 border-b border-slate-500"
               >
                 <!-- Imagen -->
                 <td class="w-20 py-2 px-1">
                   <div class="flex flex-col items-center">
-                    <div class="w-20 h-20 mb-2 overflow-hidden rounded-full" v-if="item.image_url">
+                    <div
+                      class="w-20 h-20 mb-2 overflow-hidden rounded-full"
+                      v-if="item.image_url"
+                    >
                       <img
                         :src="item.image_url"
                         :alt="item.address?.address"
@@ -82,8 +95,8 @@
                       />
                     </div>
                     <p class="text-gray-400">
-                      Código: 
-                      <span class="font-bold">{{ item.code }}</span> 
+                      Código:
+                      <span class="font-bold">{{ item.code }}</span>
                     </p>
                   </div>
                 </td>
@@ -319,6 +332,7 @@ export default {
   data() {
     return {
       address: null,
+      code: null,
     };
   },
   methods: {
@@ -486,10 +500,20 @@ export default {
         return false;
       });
     },
+    /**
+     * Filtra los inmuebles por el codigo
+     * @param {number} code
+     * @param {Array} list Listado a filtrar.
+     */
+    filterByCode(code, list) {
+      console.log(code, typeof list[0].code, list[0].code)
+      return list.filter((item) => item.code === code);
+    },
   },
   computed: {
     buildingList() {
       let result = this.buildings;
+      if(this.code) result = this.filterByCode(this.code, result);
       if (this.address) result = this.filterByAddress(this.address, result);
       return result;
     },
