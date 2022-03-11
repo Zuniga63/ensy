@@ -40,6 +40,7 @@ class BuildingController extends Controller
     $allDistricts = TownDistrict::orderBy('name')->with('town')->get();
     $code = Building::max('code') + 1;
 
+
     return Inertia::render('Building/Create', compact('customers', 'admins', 'departments', 'allDistricts', 'code'));
   }
 
@@ -392,10 +393,12 @@ class BuildingController extends Controller
    */
   protected function getCountryDepartments()
   {
-    return CountryDepartment::orderBy('name')->with([
+    return CountryDepartment::orderBy('name')
+      ->has('towns.districts')->with([
       'towns' => function ($query) {
         $query->select(['id', 'country_department_id', 'name'])
           ->orderBY('name')
+          ->has('districts')
           ->with(['districts' => function ($query) {
             $query->select(['id', 'town_id', 'name'])
               ->with('town')
