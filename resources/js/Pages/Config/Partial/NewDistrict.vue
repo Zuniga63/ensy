@@ -9,70 +9,36 @@
     </template>
 
     <template #form>
-      <!-- SELECCIÓN DEL DEPARTAMENTO -->
+      <!-- Seleccionar departamento -->
       <div class="col-span-3">
-        <select
-          name="department"
-          id="countryDepartment"
+        <Select2
           v-model="form.department_id"
-          class="
-            w-full
-            px-6
-            py-2
-            border border-gray-300
-            focus:border-indigo-300
-            focus:ring
-            focus:ring-indigo-200
-            focus:ring-opacity-50
-            rounded-md
-            shadow-sm
-            text-sm text-gray-800
-          "
-        >
-          <option :value="null">Selecciona un departamento</option>
-          <option
-            v-for="department in departments"
-            :key="department.id"
-            :value="department.id"
-          >
-            {{ department.name }} ({{ department.towns.length }} Municipios)
-          </option>
-        </select>
+          :options="departmentList"
+          :settings="{
+            width: '100%',
+            selectOnClose: true,
+          }"
+          class="font-bold"
+          placeholder="Selecciona un departamento."
+        />
+
         <JetInputError
           :message="form.errors.department_id"
           class="mt-1 ml-2"
         ></JetInputError>
       </div>
-
-      <!-- SELECCIÓN DEL MUNICIPIO -->
+      <!-- Seleccionar municipio -->
       <div class="col-span-3">
-        <select
-          name="town"
-          id="townOfDepartment"
+        <Select2
           v-model="form.town_id"
-          class="
-            w-full
-            px-6
-            py-2
-            border border-gray-300
-            focus:border-indigo-300
-            focus:ring
-            focus:ring-indigo-200
-            focus:ring-opacity-50
-            rounded-md
-            shadow-sm
-            text-sm text-gray-800
-          "
-        >
-          <option :value="null">Selecciona un municipio</option>
-          <option
-            v-for="town in townsOfDepartment"
-            :key="town.id"
-            :value="town.id"
-          >
-            {{ town.name }}
-          </option>
-        </select>
+          :options="townList"
+          :settings="{
+            width: '100%',
+          }"
+          class="font-bold"
+          placeholder="Selecciona un municipio."
+        />
+
         <JetInputError
           :message="form.errors.town_id"
           class="mt-2 ml-2"
@@ -146,6 +112,7 @@
           </svg>
         </a>
       </div>
+
       <!-- Listado de barrios -->
       <div class="col-span-6">
         <ul
@@ -162,7 +129,7 @@
           "
         >
           <li
-            v-for="district in districtOfTown"
+            v-for="district in town?.districts"
             :key="district.id"
             class="
               px-4
@@ -255,7 +222,7 @@
           </li>
         </ul>
         <p class="mr-4 text-sm text-gray-800 text-opacity-70 text-right">
-          Barrios: <span class="font-bold">{{ districtOfTown.length }}</span>
+          Barrios: <span class="font-bold">{{ town?.districts.length }}</span>
         </p>
       </div>
     </template>
@@ -284,6 +251,8 @@ import JetInputError from "@/Jetstream/InputError.vue";
 import JetLabel from "@/Jetstream/Label.vue";
 import JetActionMessage from "@/Jetstream/ActionMessage.vue";
 import JetSecondaryButton from "@/Jetstream/SecondaryButton.vue";
+import Select2 from "vue3-select2-component";
+
 import { useForm } from "@inertiajs/inertia-vue3";
 import { Inertia } from "@inertiajs/inertia";
 import Swal from "sweetalert2";
@@ -303,6 +272,7 @@ export default {
     JetInputError,
     JetLabel,
     JetSecondaryButton,
+    Select2,
   },
 
   props: {
@@ -325,6 +295,7 @@ export default {
     return {
       types: FormType,
       type: FormType.CREATE,
+      myValue: "",
     };
   },
   methods: {
@@ -404,13 +375,13 @@ export default {
           let res = page.props.flash.message;
 
           if (res) {
-            let message = `El barrio <b>${res.district.name}</b>`
+            let message = `El barrio <b>${res.district.name}</b>`;
             let icon = "success";
             let title = "¡Barrio Eliminado!";
 
-            if(res.ok){
+            if (res.ok) {
               message += " se eliminó correctamente.";
-            }else{
+            } else {
               title = "¡Oops, algo pasó!";
               message += " ya fue eliminado.";
               icon = "info";
@@ -419,8 +390,8 @@ export default {
             Swal.fire({
               title,
               icon,
-              html: message
-            })
+              html: message,
+            });
           }
         },
       });
@@ -428,43 +399,67 @@ export default {
   },
   computed: {
     /**
-     * Se encarga de recuperar los municipios del
-     * departamento seleccionado por el usuario.
-     */
-    townsOfDepartment() {
-      if (this.form.department_id) {
-        let id = this.form.department_id;
-        let townId = this.form.town_id;
-        //Se recupera el departamento
-        let department = this.departments.find((item) => item.id === id);
-
-        if (townId && !department?.towns.some((tw) => tw.id === townId)) {
-          this.form.town_id = null;
-        }
-        return department?.towns;
-      }
-      return [];
-    },
-    /**
-     * Se encarga de recuperar los nombres de los barrios
-     * que están suscritos al pueblo seleccionado por el usuario.
-     */
-    districtOfTown() {
-      if (this.form.town_id) {
-        let townId = this.form.town_id;
-        let town = this.townsOfDepartment.find((tw) => tw.id === townId);
-        return town.districts;
-      }
-
-      return [];
-    },
-    /**
      * Define si se muestra u oculta el boton
      * para resetear formulario de creación o actualización.
      */
     showCancelButton() {
       return this.form.name || this.type === FormType.UPDATE;
     },
+    /**
+     * Se encarga de crear la lista de departamentos que usa el
+     * select3 de vue
+     */
+    departmentList() {
+      let list = [];
+      this.departments.forEach((item) => {
+        list.push({
+          id: item.id,
+          text: `${item.name} (${item.towns.length} municipios)`,
+        });
+      });
+
+      return list;
+    },
+    /**
+     * Se encarga de montar en memoria la instancia del departamento
+     * seleccionado.
+     */
+    department() {
+      let id = parseInt(this.form.department_id);
+      if (!isNaN(id)) {
+        return this.departments.find((item) => item.id === id);
+      }
+
+      return null;
+    },
+    townList() {
+      let list = [];
+      if (this.department) {
+        this.department.towns.forEach((item) => {
+          list.push({
+            id: item.id,
+            text: `${item.name} (${item.districts.length} barrios)`,
+          });
+        });
+      }
+
+      return list;
+    },
+    town() {
+      let id = parseInt(this.form.town_id);
+      if (!isNaN(id) && this.department) {
+        return this.department.towns.find((item) => item.id === id);
+      }
+
+      return null;
+    },
+  },
+  watch: {
+    department(newValue, oldValue){
+      if(!newValue && (oldValue && newValue.id !== oldValue.id)){
+        this.form.town_id = null;
+      }
+    }
   },
 };
 </script>
