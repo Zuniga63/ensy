@@ -108,8 +108,10 @@
                   >
                     <!-- Dirección -->
                     <p>
-                      <span class="font-bold">{{ item.address?.address }}</span>
-                      {{ item.building_admin?.name }}
+                      <!-- Dirección fisica -->
+                      <span class="font-bold">{{ item.address?.address }} </span>&nbsp;
+                      <span class="italic"> {{ item.building_admin?.name }} </span>&nbsp; 
+                      <!-- Apartamento o Local -->                 
                       <span
                         v-if="item.building_type && item.address?.apartment"
                         class="font-bold"
@@ -138,10 +140,9 @@
                       {{ item.address?.observation }}
                     </span>
                     <!-- Codigo de Archivo -->
-                    <p class="text-gray-600">
-                      Codigo: <span class="font-bold">{{ item.code }}</span> -
-                      <span v-if="item.available">Diponible.</span>
-                      <span v-else>No disponible.</span>
+                    <p>
+                      <span v-if="item.available" class="text-green-500">Diponible.</span>
+                      <span v-else class="text-gray-400">No disponible.</span>
                     </p>
                   </div>
                 </td>
