@@ -24,7 +24,7 @@
             <jet-input
               type="text"
               id="searchByAddress"
-              placeholder="Buscar por dirección."
+              placeholder="Buscar"
               class="w-full text-sm"
               v-model="address"
             />
@@ -34,8 +34,8 @@
             <jet-input
               type="number"
               id="searchByCodde"
-              placeholder="Buscar por codigo."
-              class="w-full text-sm"
+              placeholder="Codigo"
+              class="w-1/2 text-sm text-center"
               v-model.number="code"
             />
           </div>
@@ -109,9 +109,12 @@
                     <!-- Dirección -->
                     <p>
                       <!-- Dirección fisica -->
-                      <span class="font-bold">{{ item.address?.address }} </span>&nbsp;
-                      <span class="italic"> {{ item.building_admin?.name }} </span>&nbsp; 
-                      <!-- Apartamento o Local -->                 
+                      <span class="font-bold">{{ item.address?.address }} </span
+                      >&nbsp;
+                      <span class="italic">
+                        {{ item.building_admin?.name }} </span
+                      >&nbsp;
+                      <!-- Apartamento o Local -->
                       <span
                         v-if="item.building_type && item.address?.apartment"
                         class="font-bold"
@@ -141,7 +144,9 @@
                     </span>
                     <!-- Codigo de Archivo -->
                     <p>
-                      <span v-if="item.available" class="text-green-500">Diponible.</span>
+                      <span v-if="item.available" class="text-green-500"
+                        >Diponible.</span
+                      >
                       <span v-else class="text-gray-400">No disponible.</span>
                     </p>
                   </div>
@@ -494,7 +499,20 @@ export default {
       address = this.normalizeString(address);
       return list.filter((item) => {
         if (item.address.address) {
-          let itemAddress = this.normalizeString(item.address.address);
+          //Se construye la cadena de busqueda
+          let itemAddress = item.address.address;
+          //Se agrega el nombre de la administracion
+          itemAddress += item.building_admin
+            ? " " + item.building_admin.name
+            : " ";
+
+          //Se agrega el barrio
+          itemAddress += item.address.district.name + " ";
+          itemAddress += item.address.town.name + " ";
+          itemAddress += item.owner ? item.owner.full_name + ' ' : '';
+          itemAddress += item.address.observation;
+
+          itemAddress = this.normalizeString(itemAddress);
           return itemAddress.includes(address);
         }
 
@@ -507,14 +525,14 @@ export default {
      * @param {Array} list Listado a filtrar.
      */
     filterByCode(code, list) {
-      console.log(code, typeof list[0].code, list[0].code)
+      console.log(code, typeof list[0].code, list[0].code);
       return list.filter((item) => item.code === code);
     },
   },
   computed: {
     buildingList() {
       let result = this.buildings;
-      if(this.code) result = this.filterByCode(this.code, result);
+      if (this.code) result = this.filterByCode(this.code, result);
       if (this.address) result = this.filterByAddress(this.address, result);
       return result;
     },
