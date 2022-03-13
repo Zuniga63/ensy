@@ -575,7 +575,6 @@ export default {
       if(this.fromDate || this.toDate){
         let from = this.fromDate ? dayjs(this.fromDate) : null;
         let to = this.toDate ? dayjs(this.toDate).endOf('day') : null;
-        console.log(from, to);
         list = this.filterBetweenDates(from, to, list);
       }
 
