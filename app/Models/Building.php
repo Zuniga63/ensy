@@ -99,7 +99,14 @@ class Building extends Model
   {
     $url = null;
     if($this->image_path){
-      $path = urlencode($this->image_path);
+      //Recupero cada una de las partes de la url separadas por "/"
+      $path = explode('/', $this->image_path);
+      //Transformo cada uno de los elementos con urlencode
+      $path = array_map(function($item){
+        return urlencode($item);
+      }, $path);
+      //Se vuelven a juntar todas las partes para obtener la url
+      $path = implode('/', $path);
       $url = asset('storage/' . $path);
     }
 
