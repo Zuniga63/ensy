@@ -81,6 +81,7 @@
                     text-sm text-gray-800
                     focus:ring focus:ring-indigo-400 focus:ring-opacity-50
                   "
+                  v-if="boxs.length"
                 >
                   <option :value="null">Selecciona la caja a visitar</option>
                   <option v-for="box in boxs" :key="box.id" :value="box.slug">
@@ -96,13 +97,14 @@
                   class="
                     p-2
                     border border-gray-400
-                    rounded
+                    rounded-full
                     bg-gray-200
                     text-gray-700
                     hover:ring
                     hover:ring-gray-500
                     hover:ring-opacity-20
                     hover:bg-gray-50
+                    transition-colors
                   "
                 >
                   <svg
