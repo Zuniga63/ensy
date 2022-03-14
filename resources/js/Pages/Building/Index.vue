@@ -66,19 +66,31 @@
                   </div>
                 </th>
                 <th class="p-0 text-gray-800">Dirección</th>
+                <th class="p-0 text-gray-800">Canon</th>
+                <th class="p-0 text-gray-800">Arrendatario</th>
                 <th class="p-0 text-gray-800">Propietario</th>
                 <th class="p-0 text-gray-800">Administración</th>
-                <th class="p-0 text-gray-800">Canon</th>
                 <th class="p-0 text-gray-800">Aseguradora</th>
                 <th class="p-0 text-gray-800">Resumen</th>
                 <th class="p-0 text-gray-800"></th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-slate-500">
+            <tbody
+              class="
+                divide-y divide-slate-500
+                last:border-b last:border-slate-500
+              "
+            >
               <tr
                 v-for="item in buildingList"
                 :key="item.id"
-                class="divide-x divide-slate-500 border-b border-slate-500"
+                class="
+                  divide-x divide-slate-500
+                  border-b border-slate-500
+                  odd:bg-slate-50
+                  hover:bg-slate-100
+                  transition-colors
+                "
               >
                 <!-- Imagen -->
                 <td class="w-20 py-2 px-1">
@@ -152,71 +164,6 @@
                   </div>
                 </td>
 
-                <!-- Propietario -->
-                <td class="px-2 py-1 text-gray-800 whitespace-nowrap">
-                  <div class="flex flex-col items-center" v-if="item.owner">
-                    <!-- Nombre del propietario -->
-                    <span> {{ item.owner.full_name }} </span>
-                    <!-- Documento de identificaicón -->
-                    <p
-                      class="text-xs text-gray-400"
-                      v-if="item.owner.document_number"
-                    >
-                      <span> {{ item.owner.document_type }} : </span>
-                      <span> {{ item.owner.document_number }} </span>
-                    </p>
-                    <!-- Email -->
-                    <span v-if="item.owner.email" class="text-gray-400 text-xs">
-                      {{ item.owner.email }}
-                    </span>
-                    <!-- Telefonos -->
-                    <p
-                      v-if="item.owner.contacts?.length"
-                      class="text-gray-400 tracking-widest"
-                    >
-                      <span> {{ item.owner.contacts[0].number }} </span>
-                      <span v-if="item.owner.contacts?.length > 1">
-                        - {{ item.owner.contacts[1].number }}
-                      </span>
-                    </p>
-                    <span class="mb-1 font-bold">
-                      {{ calculateOwnerFee(item.lease_fee, item.commission) }}
-                    </span>
-                  </div>
-                  <span v-else class="block text-center">No Reg.</span>
-                </td>
-
-                <!-- Administración -->
-                <td class="px-2 py-1 text-gray-800 whitespace-nowrap">
-                  <div
-                    class="flex flex-col items-center"
-                    v-if="item.building_admin"
-                  >
-                    <span> {{ item.building_admin.name }} </span>
-                    <span> {{ item.building_admin.full_name }} </span>
-                    <span
-                      v-if="item.building_admin.email"
-                      class="text-gray-400 text-xs"
-                    >
-                      {{ item.building_admin.email }}
-                    </span>
-                    <p
-                      v-if="item.building_admin.phones?.length"
-                      class="text-gray-400 tracking-widest"
-                    >
-                      <span> {{ item.building_admin.phones[0].number }} </span>
-                      <span v-if="item.building_admin.phones?.length > 1">
-                        - {{ item.building_admin.phones[1].number }}
-                      </span>
-                    </p>
-
-                    <span class="font-bold">
-                      {{ formatCurrency(item.admin_fee) }}
-                    </span>
-                  </div>
-                  <span v-else class="block text-center">No Reg.</span>
-                </td>
-
                 <!-- Canon -->
                 <td class="px-2 py-1 text-gray-800 text-center">
                   <div class="flex flex-col items-center">
@@ -225,13 +172,85 @@
                       {{ formatCurrency(item.lease_fee) }}
                     </span>
                     <span class="text-gray-400 text-xs">Comisión</span>
-                    <span class="italic">
+                    <span class="italic text-xs">
                       {{ calculateCommission(item.lease_fee, item.commission) }}
                     </span>
                     <span class="text-xs text-green-500">
                       ({{ printPercentage(item.commission) }})
                     </span>
                   </div>
+                </td>
+
+                <!-- Arrendatario -->
+                <td class="px-2 py-1 text-gray-800 whitespace-nowrap">
+                  <div class="flex flex-col items-center" v-if="true">
+                    <span>No Arrendado.</span>
+                    <span class="text-xs text-green-600 font-semibold">
+                      {{ calculateCollection(item.lease_fee, item.admin_fee) }}
+                    </span>
+                  </div>
+                  <span v-else class="block text-center">No Reg.</span>
+                </td>
+
+                <!-- Propietario -->
+                <td class="px-2 py-1 text-gray-800 whitespace-nowrap">
+                  <div class="flex flex-col items-center" v-if="item.owner">
+                    <!-- Nombre del propietario -->
+                    <span> {{ item.owner.full_name }} </span>
+                    <!-- Documento de identificaicón -->
+                    <p class="text-gray-400" v-if="item.owner.document_number">
+                      <span> {{ item.owner.document_type }} : </span>
+                      <span class="font-semibold lining-nums">
+                        {{ documentPattern(item.owner.document_number) }}
+                      </span>
+                    </p>
+                    <!-- Email -->
+                    <!--span v-if="item.owner.email" class="text-gray-400 text-xs">
+                      {{ item.owner.email }}
+                    </span-->
+                    <!-- Telefonos -->
+                    <p
+                      v-if="item.owner.contacts?.length"
+                      class="text-gray-400 tracking-widest"
+                    >
+                      <span>
+                        {{ telPattern(item.owner.contacts[0].number) }}
+                      </span>
+                      <span v-if="item.owner.contacts?.length > 1">
+                        - {{ telPattern(item.owner.contacts[1].number) }}
+                      </span>
+                    </p>
+                    <span class="mb-1 font-semibold text-red-800 text-xs">
+                      {{ calculateOwnerFee(item.lease_fee, item.commission) }}
+                    </span>
+                  </div>
+                  <span v-else class="block text-center">No Reg.</span>
+                </td>
+
+                <!-- Administración -->
+                <td class="px-2 py-1 text-gray-800">
+                  <div
+                    class="flex flex-col items-center"
+                    v-if="item.building_admin"
+                  >
+                    <span class="font-semibold">
+                      {{ item.building_admin.name }}
+                    </span>
+                    <p
+                      v-if="item.building_admin.phones?.length"
+                      class="text-gray-400 tracking-widest"
+                    >
+                      <span> {{ telPattern(item.building_admin.phones[0].number) }} </span>
+                      <span v-if="item.building_admin.phones?.length > 1">
+                        - {{ telPattern(item.building_admin.phones[1].number) }}
+                      </span>
+                    </p>
+
+                    <span class="font-semibold text-xs text-red-800">
+                      {{ formatCurrency(item.admin_fee) }}
+                    </span>
+                  </div>
+                  <span v-else class="block text-center">No Reg.</span>
                 </td>
 
                 <!-- Seguro -->
@@ -241,7 +260,7 @@
                     <span> {{ item.insurance_carrier }} </span>
                     <span class="mb-1"> {{ item.insurance_type }} </span>
                     <span class="text-gray-400 text-xs">Comisión</span>
-                    <span class="font-bold">
+                    <span class="font-bold text-red-800 text-xs">
                       {{
                         calculateCommission(
                           item.lease_fee,
@@ -249,7 +268,7 @@
                         )
                       }}
                     </span>
-                    <span class="text-xs text-green-400">
+                    <span class="text-xs text-red-400">
                       ({{ printPercentage(item.insurance_commission) }})
                     </span>
                   </div>
@@ -258,12 +277,8 @@
                 <!-- Resumen -->
                 <td class="px-2 py-1 text-gray-800 whitespace-nowrap">
                   <div class="flex flex-col items-center">
-                    <span class="text-gray-400 text-xs">Total Recaudar</span>
-                    <span class="mb-1">
-                      {{ calculateCollection(item.lease_fee, item.admin_fee) }}
-                    </span>
                     <span class="text-gray-400 text-xs">Utilidad</span>
-                    <span class="mb-1 text-green-500">
+                    <span class="mb-1 text-green-500 text-xs font-semibold">
                       {{
                         calculateUtility(
                           item.lease_fee,
@@ -271,6 +286,11 @@
                           item.insurance_commission
                         )
                       }}
+                    </span>
+
+                    <span class="text-gray-400 text-xs">Acumulado</span>
+                    <span class="mb-1 text-green-500 text-xs font-semibold">
+                      {{ formatCurrency(item.accumulated) }}
                     </span>
                   </div>
                 </td>
@@ -353,39 +373,71 @@ export default {
       commission = parseFloat(commission);
       return `${Math.round(commission * 100)}%`;
     },
+    /**
+     * Se encarga de darle formato numerico
+     * al numero pasado como paramentro.
+     * @param {string|number} number Numero a formatear
+     * @return {string} numero formateado
+     */
     formatCurrency(number) {
       return this.formater.format(number);
     },
+    /**
+     * Se encarga de calcular el valor de la comisión
+     * @param {string|number} base el valor del canon
+     * @param {string|number} commision fracción de la comisión float
+     * @return {string} valor de la comisión en pesos formateado
+     */
     calculateCommission(base, commission) {
       commission = parseFloat(commission);
       base = parseFloat(base);
 
       return this.formatCurrency(base * commission);
     },
+    /**
+     * Calcula le monto total a recolectar al arrendatario
+     * @param {string|number} leaseFee valor de la cuota de arrendamiento
+     * @param {string|number} adminFee valor de la cuota de adminsitración
+     * @return {string} importe total cobrado al arrendatario
+     */
     calculateCollection(leaseFee, adminFee) {
       leaseFee = parseFloat(leaseFee);
       adminFee = parseFloat(adminFee);
 
       return this.formatCurrency(leaseFee + adminFee);
     },
+    /**
+     * Calcula el monto que le corresponde al propietario
+     * @param {string|number} leaseFee valor de la cuota de adminsitración
+     * @param {string|number} commission valor de la comission en fracción
+     * @return {string|number} El monto a cobrar al arrendatario formateado.
+     */
     calculateOwnerFee(leaseFee, commission) {
       leaseFee = parseFloat(leaseFee);
       commission = parseFloat(commission);
 
       return this.formatCurrency(leaseFee - leaseFee * commission);
     },
-    calculateUtility(leaseFee, commission, insuranceCommissión) {
+    /**
+     * Calula el valor de la utilidad del inmuebel
+     * @param {string|number} leaseFee cuota de arrendamiento
+     * @param {string|number} commissión Comisión cobrada por la arrendataria
+     * @param {string|number} insuranceCommission Comisión cobrada por la aseguradora
+     * @return {string} valor total de la utilidad formateado.
+     */
+    calculateUtility(leaseFee, commission, insuranceCommission) {
       leaseFee = parseFloat(leaseFee);
       commission = parseFloat(commission);
-      insuranceCommissión = parseFloat(insuranceCommissión);
+      insuranceCommission = parseFloat(insuranceCommission);
 
-      let utility = leaseFee * commission - leaseFee * insuranceCommissión;
+      let utility = leaseFee * commission - leaseFee * insuranceCommission;
 
       return this.formatCurrency(utility);
     },
     /**
      * Muestra el modal donde le solicita al usuario
      * que confirme la eliminación del cliente.
+     * @param {object} building instancia del inmueble a eliminar
      */
     deleteBuilding(building) {
       //Url de la petición
@@ -444,6 +496,7 @@ export default {
     /**
      * Se encarga de remover la instancia del cliente
      * que ya fue removida de la base de datos.
+     * @param {number} buildingId identificador del inmueble a retirar del listado
      */
     removeBuilding(buildingId) {
       //Se busca el index del cliente
@@ -509,7 +562,7 @@ export default {
           //Se agrega el barrio
           itemAddress += item.address.district.name + " ";
           itemAddress += item.address.town.name + " ";
-          itemAddress += item.owner ? item.owner.full_name + ' ' : '';
+          itemAddress += item.owner ? item.owner.full_name + " " : "";
           itemAddress += item.address.observation;
 
           itemAddress = this.normalizeString(itemAddress);
@@ -528,13 +581,80 @@ export default {
       console.log(code, typeof list[0].code, list[0].code);
       return list.filter((item) => item.code === code);
     },
+    /**
+     * Se encarga de actualizar el valor de la
+     * utilidad acumulada del listado de inmuebles.
+     * @param {array} list
+     */
+    calculateAccumulated(list) {
+      let accumulated = 0;
+      list.map((item) => {
+        let leaseFee = parseFloat(item.lease_fee);
+        let commission = leaseFee * parseFloat(item.commission);
+        let insurance = leaseFee * parseFloat(item.insurance_commission);
+        accumulated += commission - insurance;
+
+        item.accumulated = accumulated;
+      });
+
+      return list;
+    },
+    /**
+     * Le agrega un patron a la cadena de docmuento ###.###.###
+     * @param {string} document numero de documento a formatear
+     * @return {string}
+     */
+    documentPattern(document) {
+      //Se recupera cada elemento de forma inversa
+      let elements = document.split("").reverse();
+      let result = [];
+
+      for (let index = 0; index < elements.length; index++) {
+        const element = elements[index];
+        result.push(element);
+
+        if ((index + 1) % 3 === 0) {
+          result.push(".");
+        }
+      }
+
+      return result.reverse().join("");
+    },
+    /**
+     * Agrega un formato al numero de telefono ### ### ####
+     * @param {string} tel numero de telefono a formatear
+     * @return {string}
+     */
+    telPattern(tel) {
+      let elements = tel.split("").reverse();
+      let result = [];
+
+      elements.forEach((element, index) => {
+        let count = index + 1;
+        let count2 = count - 4;
+
+        result.push(element);
+
+        if (count == 4 || (count > 4 && count2 % 3 == 0)) {
+          result.push(" ");
+        }
+      });
+
+      return result.reverse().join("");
+    },
   },
   computed: {
+    /**
+     * Crea el listado de inmuebles segun los parametros
+     * de busqueda.
+     * @return {array}
+     */
     buildingList() {
-      let result = this.buildings;
+      let result = this.buildings.slice();
       if (this.code) result = this.filterByCode(this.code, result);
       if (this.address) result = this.filterByAddress(this.address, result);
-      return result;
+
+      return this.calculateAccumulated(result);
     },
   },
 };
