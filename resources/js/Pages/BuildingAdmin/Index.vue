@@ -37,14 +37,7 @@
         </div>
 
         <!-- Tabla con los datos de los clientes -->
-        <div
-          class="
-            h-[28rem]
-            shadow
-            border-b border-gray-300
-            overflow-y-auto overflow-x-auto
-          "
-        >
+        <div class="h-[28rem] shadow border-b border-gray-300 overflow-y-auto">
           <table class="relative min-w-full table-auto">
             <thead class="sticky top-0 bg-gray-50">
               <tr>
@@ -81,7 +74,7 @@
                   class="
                     px-4
                     py-3
-                    text-left text-gray-500
+                    text-center text-gray-500
                     tracking-wider
                     uppercase
                   "
@@ -95,7 +88,7 @@
                   class="
                     px-4
                     py-3
-                    text-left text-gray-500
+                    text-center text-gray-500
                     tracking-wider
                     uppercase
                   "
@@ -103,21 +96,7 @@
                   Telefono
                 </th>
 
-                <!-- Correo -->
-                <th
-                  scope="col"
-                  class="
-                    px-4
-                    py-3
-                    text-left text-gray-500
-                    tracking-wider
-                    uppercase
-                  "
-                >
-                  Correo
-                </th>
-
-                <!-- Inmuebels -->
+                <!-- Inmuebles -->
                 <th
                   scope="col"
                   class="
@@ -128,9 +107,10 @@
                     uppercase
                   "
                 >
-                  <svg
+                  <div class="flex justify-center">
+                    <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    class="h-6 w-6"
+                    class=" h-6 w-6"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -142,6 +122,21 @@
                       d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
                     />
                   </svg>
+                  </div>
+                </th>
+
+                <!-- Telefono -->
+                <th
+                  scope="col"
+                  class="
+                    px-4
+                    py-3
+                    text-center text-gray-500
+                    tracking-wider
+                    uppercase
+                  "
+                >
+                  Tarifas
                 </th>
 
                 <th scope="col" class="relative px-4 py-3">
@@ -164,30 +159,58 @@
                 <td class="px-2 py-2 text-gray-800 whitespace-nowrap">
                   <div class="flex flex-col">
                     <p>{{ admin.name }}</p>
-                    <span v-if="admin.address" class="text-sm text-gray-400"
-                      >{{ admin.address }}
-                    </span>
+                    <!-- Address -->
+                    <p class="text-sm text-gray-400">
+                      <!-- DIrección -->
+                      <span v-if="admin.address" class=""
+                        >{{ admin.address }}
+                      </span>
+                      <!-- Barrio -->
+                      <span v-if="admin.district">
+                        &nbsp; Barrio {{ admin.district.name }}
+                      </span>
+                    </p>
+                    <!-- Town and Department -->
+                    <p class="text-sm text-gray-400" v-if="admin.town">
+                      <span class="text-xs"> {{ admin.town.name }} </span>
+                      <span v-if="admin.department">
+                        &#32;&#40;{{ admin.department.name }} &#41;</span
+                      >
+                    </p>
+                    <!-- /.end address -->
                   </div>
                 </td>
 
                 <!-- Administrador -->
-                <td class="px-2 py-2 text-gray-800">
-                  <div class="flex flex-col justify-center" v-if="admin.full_name">
+                <td class="px-2 py-2 text-gray-800 whitespace-nowrap">
+                  <div
+                    class="flex flex-col justify-center items-center"
+                    v-if="admin.full_name"
+                  >
+                    <!-- Name -->
                     <p>{{ admin.full_name }}</p>
+                    <!-- Email -->
+                    <p class="text-sm text-gray-600" v-if="admin.email">
+                      {{ admin.email }}
+                    </p>
+                    <!-- Document -->
                     <span
-                      class="text-sm text-gray-400"
+                      class="text-sm text-gray-400 tracking-widest"
                       v-if="admin.admin_document_number"
                     >
-                      CC: <span>{{ admin.admin_document_number }}</span>
+                      CC:
+                      <span>{{
+                        formatDocument(admin.admin_document_number)
+                      }}</span>
                     </span>
                   </div>
-                  <p v-else class="text-gray-400">No Registrado.</p>
+                  <p v-else class="text-gray-400 text-center">No Registrado.</p>
                 </td>
 
-                <!-- Documento -->
+                <!-- Telefono -->
                 <td class="px-2 py-2 text-gray-800">
-                  <div v-if="admin.phones" class="flex flex-col">
-                    {{ admin.phones[0].number }}
+                  <div v-if="admin.phones" class="flex flex-col items-center">
+                    {{ formatPhone(admin.phones[0].number) }}
                     <div>
                       <span
                         v-for="(ext, index) in admin.phones[0].exts"
@@ -198,24 +221,17 @@
                       </span>
                     </div>
                   </div>
-                  <div v-else>No registrado.</div>
-                </td>
-
-                <!-- Correo Electronico -->
-                <td class="px-2 py-2 text-gray-800">
-                  <span
-                    v-if="admin.email"
-                    :class="{
-                      'text-sm': admin.email.length > 30,
-                    }"
-                    >{{ admin.email }}</span
-                  >
-                  <span v-else class="text-gray-400">No registrado.</span>
+                  <div v-else class="text-center">No registrado.</div>
                 </td>
 
                 <!-- Inmuebles -->
                 <td class="px-2 py-2 text-center text-gray-800">
                   {{ admin.buildings_count }}
+                </td>
+
+                <!-- Tarifas -->
+                <td class="px-2 py-2 text-gray-800 text-center">
+                  {{ formatCurrency(admin.fees) }}
                 </td>
 
                 <!-- Acciones -->
@@ -378,6 +394,65 @@ export default {
         let itemName = this.normalizeString(item.name);
         return itemName.includes(name);
       });
+    },
+    /**
+     *  Se encarga de formatear el numero a moneda
+     * @param {string} numero a formatear.
+     */
+    formatCurrency(number) {
+      let fractionDigits = 0;
+      let style = "currency";
+      let currency = "COP";
+
+      const formater = new Intl.NumberFormat("es-CO", {
+        style,
+        currency,
+        minimumFractionDigits: fractionDigits,
+      });
+
+      return formater.format(number);
+    },
+    /**
+     * Se encarga de poner un punto cada tercer numero
+     * de un documento
+     * @param {string} document numero de documento
+     * @return {string}
+     */
+    formatDocument(document) {
+      //Se recupera cada elemento de forma inversa
+      /**@type {array} */
+      let elements = document.split("").reverse();
+      let result = [];
+
+      elements.forEach((item, index) => {
+        let count = index + 1;
+        result.push(item);
+
+        if (count % 3 === 0) result.push(".");
+      });
+
+      return result.reverse().join("");
+    },
+    /**
+     * Se encarga de dar un formato basico ### ### ####
+     * a los numeros de telefono
+     */
+    formatPhone(phone) {
+      let elements = phone.split("").reverse();
+      let result = [];
+
+      elements.forEach((element, index) => {
+        let count = index + 1;
+        let count2 = count - 4;
+
+        result.push(element);
+
+        if (count == 4 || (count > 4 && count2 % 3 == 0)) {
+          result.push(" ");
+        }
+      });
+
+      return result.reverse().join("");
     },
   },
   computed: {
