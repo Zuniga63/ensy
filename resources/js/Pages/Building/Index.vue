@@ -95,6 +95,7 @@
                 <!-- Imagen -->
                 <td class="w-20 py-2 px-1">
                   <div class="flex flex-col items-center">
+                    <!-- Imagen del inmueble -->
                     <div
                       class="w-20 h-20 mb-2 overflow-hidden rounded-full"
                       v-if="item.image_url"
@@ -106,10 +107,11 @@
                         loading="lazy"
                       />
                     </div>
-                    <p class="text-gray-400">
-                      Código:
-                      <span class="font-bold">{{ item.code }}</span>
-                    </p>
+                    <!-- Codigo del inmueble -->
+                    <div v-if="item.code" class="text-center">
+                      <p class="text-xs text-gray-400">Codigo</p>
+                      <p class="font-semibold text-gray-600"> {{item.code}} </p>
+                    </div>
                   </div>
                 </td>
 
@@ -196,11 +198,12 @@
                 <td class="px-2 py-1 text-gray-800 whitespace-nowrap">
                   <div class="flex flex-col items-center" v-if="item.owner">
                     <!-- Nombre del propietario -->
-                    <span> {{ item.owner.full_name }} </span>
+                    <span class="tracking-wider font-semibold"> {{ item.owner.first_name }} </span>
+                    <span class="tracking-wider text-sm tracking-wider"> {{ item.owner.last_name }} </span>
                     <!-- Documento de identificaicón -->
                     <p class="text-gray-400" v-if="item.owner.document_number">
                       <span> {{ item.owner.document_type }} : </span>
-                      <span class="font-semibold lining-nums">
+                      <span class="font-semibold lining-nums text-gray-600 tracking-widest">
                         {{ documentPattern(item.owner.document_number) }}
                       </span>
                     </p>
@@ -211,7 +214,7 @@
                     <!-- Telefonos -->
                     <p
                       v-if="item.owner.contacts?.length"
-                      class="text-gray-400 tracking-widest"
+                      class="text-gray-400"
                     >
                       <span>
                         {{ telPattern(item.owner.contacts[0].number) }}
@@ -233,12 +236,12 @@
                     class="flex flex-col items-center"
                     v-if="item.building_admin"
                   >
-                    <span class="font-semibold">
+                    <span class="font-semibold text-center">
                       {{ item.building_admin.name }}
                     </span>
                     <p
                       v-if="item.building_admin.phones?.length"
-                      class="text-gray-400 tracking-widest"
+                      class="text-gray-400"
                     >
                       <span> {{ telPattern(item.building_admin.phones[0].number) }} </span>
                       <span v-if="item.building_admin.phones?.length > 1">
