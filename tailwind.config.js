@@ -13,7 +13,10 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Poppins', 'sans-serif', ...defaultTheme.fontFamily.sans],
+        //sans: ['Poppins', 'sans-serif', ...defaultTheme.fontFamily.sans],
+        //sans: ['Open Sans', 'sans-serif', ...defaultTheme.fontFamily.sans],
+        //sans: ['Roboto', 'sans-serif', ...defaultTheme.fontFamily.sans],
+        sans: ['Ubuntu', 'sans-serif', ...defaultTheme.fontFamily.sans],
       },
     },
   },
