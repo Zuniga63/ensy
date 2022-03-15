@@ -33,7 +33,8 @@
                       relative
                       w-60
                       h-60
-                      mb-2 mt-1
+                      mb-2
+                      mt-1
                       ring ring-gray-500
                       rounded-sm
                       overflow-hidden
@@ -566,45 +567,88 @@
                 />
               </div>
 
-              <!-- Tipo de inmuebles -->
+              <!-- Tipo de inmueble y otros-->
               <div class="col-span-2 lg:col-span-1">
-                <!-- Etiqueta -->
-                <custom-label
-                  for="buildign-type"
-                  class="mb-2"
-                  value="Tipo de Inmueble"
-                />
+                <div class="grid grid-cols-3 gap-2">
+                  <!-- Selector del tipo -->
+                  <div class="col-span-2">
+                    <!-- Etiqueta -->
+                    <custom-label
+                      for="buildign-type"
+                      class="mb-2"
+                      value="Tipo de Inmueble"
+                    />
 
-                <!-- Campo -->
-                <select
-                  name="buildign-type"
-                  id="buildign-type"
-                  v-model="form.building_type"
-                  class="
-                    w-full
-                    px-6
-                    py-2
-                    border border-gray-300
-                    focus:border-indigo-300
-                    focus:ring
-                    focus:ring-indigo-200
-                    focus:ring-opacity-50
-                    rounded-md
-                    shadow-sm
-                    text-sm text-gray-800
-                  "
-                >
-                  <option :value="null">Indefinido</option>
-                  <option value="house">Casa</option>
-                  <option value="apartment">Apartamento</option>
-                  <option value="business">Comercio</option>
-                </select>
+                    <!-- Campo -->
+                    <select
+                      name="buildign-type"
+                      id="buildign-type"
+                      v-model="form.building_type"
+                      class="
+                        w-full
+                        px-6
+                        py-2
+                        border border-gray-300
+                        focus:border-indigo-300
+                        focus:ring
+                        focus:ring-indigo-200
+                        focus:ring-opacity-50
+                        rounded-md
+                        shadow-sm
+                        text-sm text-gray-800
+                      "
+                    >
+                      <option :value="null">Indefinido</option>
+                      <option value="house">Casa</option>
+                      <option value="apartment">Apartamento</option>
+                      <option value="business">Local</option>
+                    </select>
 
-                <!-- Mensaje de error -->
-                <jet-input-error
-                  :message="form.errors.building_type"
-                  class="mt-2"
-                />
+                    <!-- Mensaje de error -->
+                    <jet-input-error
+                      :message="form.errors.building_type"
+                      class="mt-2"
+                    />
+                  </div>
+
+                  <!-- Numero del local o apartamento -->
+                  <div>
+                    <!-- Etiqueta -->
+                    <custom-label
+                      for="building-address-apartment"
+                      class="mb-2 transition-opacity duration-300"
+                      :class="{
+                        'text-opacity-20': !additionalAddress,
+                      }"
+                    >
+                      <span v-if="form.building_type === 'business'"
+                        >Local</span
+                      >
+                      <span v-else>Apartamento</span>
+                    </custom-label>
+                    <!-- Input -->
+                    <jet-input
+                      id="building-address-apartment"
+                      name="building-address-apartment"
+                      type="number"
+                      v-model="address.apartment"
+                      class="w-full text-center text-sm text-gray-800"
+                      :class="{
+                        'border-opacity-40': !additionalAddress,
+                        'text-opacity-40': !additionalAddress,
+                      }"
+                      placeholder="Ej: 401"
+                      min="1"
+                      :disabled="!additionalAddress"
+                    />
+
+                    <!-- Error -->
+                    <jet-input-error
+                      :message="form.errors.socioeconomic"
+                      class="mt-2"
+                    />
+                  </div>
+                </div>
               </div>
 
               <!-- Departamento -->
@@ -740,74 +784,27 @@
                 />
               </div>
 
-              <!-- Dirección y apartamento/local -->
+              <!-- Dirección -->
               <div class="col-span-2 lg:col-span-1">
-                <div class="grid grid-cols-3 gap-2">
-                  <!-- Dirección -->
-                  <div class="col-span-2">
-                    <!-- Etiqueta -->
-                    <custom-label
-                      for="building-address"
-                      class="mb-2"
-                      value="Dirección"
-                      required
-                    />
+                <!-- Etiqueta -->
+                <custom-label
+                  for="building-address"
+                  class="mb-2"
+                  value="Dirección"
+                  required
+                />
 
-                    <!-- Campo -->
-                    <jet-input
-                      type="text"
-                      id="building-address"
-                      class="w-full text-sm"
-                      placeholder="Ejemplo: Calle 5 #24-34"
-                      v-model="address.address"
-                    />
+                <!-- Campo -->
+                <jet-input
+                  type="text"
+                  id="building-address"
+                  class="w-full text-sm"
+                  placeholder="Ejemplo: Calle 5 #24-34"
+                  v-model="address.address"
+                />
 
-                    <!-- Mensaje de error -->
-                    <jet-input-error
-                      :message="form.errors.address"
-                      class="mt-2"
-                    />
-                  </div>
-
-                  <transition
-                    enter-active-class="transition ease-out duration-200"
-                    enter-from-class="opacity-0 scale-90"
-                    enter-to-class="opacity-100 scale-100"
-                    leave-active-class="transition ease-in duration-200"
-                    leave-from-class="opacity-100 scale-100"
-                    leave-to-class="opacity-0 scale-90"
-                  >
-                    <!-- Estrato -->
-                    <div v-show="additionalAddress">
-                      <!-- Etiqueta -->
-                      <custom-label
-                        for="building-address-apartment"
-                        class="mb-2"
-                      >
-                        <span v-if="form.building_type === 'apartment'"
-                          >Apartamento</span
-                        >
-                        <span v-else>Local</span>
-                      </custom-label>
-                      <!-- Input -->
-                      <jet-input
-                        id="building-address-apartment"
-                        name="building-address-apartment"
-                        type="number"
-                        v-model="address.apartment"
-                        class="w-full text-center text-sm"
-                        placeholder="Ej: 401"
-                        min="1"
-                      />
-
-                      <!-- Error -->
-                      <jet-input-error
-                        :message="form.errors.socioeconomic"
-                        class="mt-2"
-                      />
-                    </div>
-                  </transition>
-                </div>
+                <!-- Mensaje de error -->
+                <jet-input-error :message="form.errors.address" class="mt-2" />
               </div>
 
               <!-- Obsrvación -->
@@ -1481,20 +1478,42 @@ export default {
       }
     },
     "form.building_admin_id"(newValue, oldValue) {
+      //Se recupera las instancias de las adiministraciones y la dirección.
       let newAdmin = this.admins.find((item) => item.id == newValue);
       let oldAdmin = this.admins.find((item) => item.id == oldValue);
       let address = this.address.address;
 
+      //Se la instancia de la administración tiene valor
       if (newAdmin) {
-        if (oldAdmin && address == oldAdmin.address) {
+        //Se modifica los campos si la dirección es cero o si la que tiene es
+        //la misma que la de la adminsitración anterior.
+        if (!address || (oldAdmin && address == oldAdmin.address)) {
+          //Se establece la dirección igual a la de la adminsitración
           this.address.address = newAdmin.address;
-        } else if (!address) {
-          this.address.address = newAdmin.address;
+
+          //Se establece lel indicador del departamento
+          if (newAdmin.department)
+            this.form.country_department_id = newAdmin.department.id;
+
+          //Se establece el indicador para el pueblo
+          if (newAdmin.town) {
+            setTimeout(() => {
+              this.form.town_id = newAdmin.town.id;
+            }, 50);
+          }
+
+          //Se establece el indicador para el barrio
+          if (newAdmin.district) {
+            setTimeout(() => {
+              this.form.town_district_id = newAdmin.district.id;
+            }, 100);
+          }
         }
-      } else {
-        if (oldAdmin && address && address == oldAdmin.address) {
-          this.address.address = null;
-        }
+      } else if (oldAdmin && address && address == oldAdmin.address) {
+        //Si no tiene valor entoneces se resetean los cmapos solo si la direcció
+        //es la misma que la de la vieja dministración.
+        this.address.address = null;
+        this.form.country_department_id = null;
       }
     },
   },

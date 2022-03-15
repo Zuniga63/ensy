@@ -35,7 +35,7 @@ class BuildingController extends Controller
   public function create()
   {
     $customers = Customer::orderBy('first_name')->orderBy('last_name')->get(['id', 'first_name', 'last_name']);
-    $admins = BuildingAdmin::orderBy('name')->get(['id', 'name', 'address']);
+    $admins = BuildingAdmin::orderBy('name')->get();
     $departments = $this->getCountryDepartments();
     $allDistricts = TownDistrict::orderBy('name')->with('town')->get();
     $code = Building::max('code') + 1;
@@ -151,7 +151,7 @@ class BuildingController extends Controller
   public function edit(Building $building)
   {
     $customers = Customer::orderBy('first_name')->orderBy('last_name')->get(['id', 'first_name', 'last_name']);
-    $admins = BuildingAdmin::orderBy('name')->get(['id', 'name', 'address']);
+    $admins = BuildingAdmin::orderBy('name')->get();
     $departments = $this->getCountryDepartments();
     $allDistricts = TownDistrict::orderBy('name')->with('town')->get();
 
