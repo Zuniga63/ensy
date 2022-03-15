@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\BuildingAdmin;
+use App\Models\CountryDepartment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
 use Inertia\Inertia;
@@ -27,7 +28,8 @@ class BuildingAdminController extends Controller
    */
   public function create()
   {
-    return Inertia::render('BuildingAdmin/Create');
+    $departments = $this->getCountryDepartments();
+    return Inertia::render('BuildingAdmin/Create', compact('departments'));
   }
 
   /**
@@ -79,7 +81,8 @@ class BuildingAdminController extends Controller
    */
   public function edit(BuildingAdmin $buildingAdmin)
   {
-    return Inertia::render('BuildingAdmin/Edit', compact('buildingAdmin'));
+    $departments = $this->getCountryDepartments();
+    return Inertia::render('BuildingAdmin/Edit', compact('buildingAdmin', 'departments'));
   }
 
   /**
@@ -130,6 +133,34 @@ class BuildingAdminController extends Controller
     ];
 
     return $result;
+  }
+
+  //-------------------------------------------------------------------------------
+  //-------------------------------------------------------------------------------
+  //  UTILIDADES
+  //-------------------------------------------------------------------------------
+  //-------------------------------------------------------------------------------
+
+  /**
+   * Recupera de la base de datos los departamentos y
+   * municipios que tienen asignados barrios.
+   * @return Collection
+   */
+  protected function getCountryDepartments()
+  {
+    return CountryDepartment::orderBy('name')
+      ->has('towns.districts')->with([
+        'towns' => function ($query) {
+          $query->select(['id', 'country_department_id', 'name'])
+            ->orderBY('name')
+            ->has('districts')
+            ->with(['districts' => function ($query) {
+              $query->select(['id', 'town_id', 'name'])
+                ->with('town')
+                ->orderBY('name');
+            }]);
+        }
+      ])->get(['id', 'name']);
   }
 
   /**
