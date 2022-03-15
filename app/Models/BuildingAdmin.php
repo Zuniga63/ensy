@@ -22,6 +22,9 @@ class BuildingAdmin extends Model
    */
   protected $fillable = [
     'name',
+    'country_department_id',
+    'town_id',
+    'town_district_id',
     'address',
     'admin_first_name',
     'admin_last_name',
@@ -41,6 +44,12 @@ class BuildingAdmin extends Model
 
   protected $appends = ['full_name'];
 
+  /**
+   * The relationships that should always be loaded.
+   *
+   * @var array
+   */
+  protected $with = ['department', 'town', 'district'];
   /**
    * Retorna el nombre completo del cliente
    */
@@ -65,5 +74,32 @@ class BuildingAdmin extends Model
   public function buildings()
   {
     return $this->hasMany(Building::class);
+  }
+
+  /**
+   * Recupera el departamento en el que se encuentra
+   * la administración de edificio.
+   */
+  public function department()
+  {
+    return $this->belongsTo(CountryDepartment::class, 'country_department_id');
+  }
+
+  /**
+   * Recupera el municipio en el que se 
+   * registró la administración del edificio.
+   */
+  public function town()
+  {
+    return $this->belongsTo(Town::class);
+  }
+
+  /**
+   * Se registra el barrio en el que se registró 
+   * la administración del edificio.
+   */
+  public function district()
+  {
+    return $this->belongsTo(TownDistrict::class, 'town_district_id');
   }
 }
