@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\BuildingAdmin;
 use App\Models\CountryDepartment;
+use App\Models\TownDistrict;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redirect;
 use Inertia\Inertia;
@@ -17,7 +18,14 @@ class BuildingAdminController extends Controller
    */
   public function index()
   {
-    $admins = BuildingAdmin::withCount('buildings')->orderBy('name')->get();
+    /**
+     * @var BuildingAdmin
+     */
+    $admins = BuildingAdmin::orderBy('name')
+      ->withCount('buildings')
+      ->withSum('buildings as fees', 'admin_fee')
+      ->get();
+
     return Inertia::render('BuildingAdmin/Index', compact('admins'));
   }
 
@@ -29,7 +37,8 @@ class BuildingAdminController extends Controller
   public function create()
   {
     $departments = $this->getCountryDepartments();
-    return Inertia::render('BuildingAdmin/Create', compact('departments'));
+    $allDistricts = TownDistrict::orderBy('name')->with('town')->get();
+    return Inertia::render('BuildingAdmin/Create', compact('departments', 'allDistricts'));
   }
 
   /**
@@ -82,7 +91,8 @@ class BuildingAdminController extends Controller
   public function edit(BuildingAdmin $buildingAdmin)
   {
     $departments = $this->getCountryDepartments();
-    return Inertia::render('BuildingAdmin/Edit', compact('buildingAdmin', 'departments'));
+    $allDistricts = TownDistrict::orderBy('name')->with('town')->get();
+    return Inertia::render('BuildingAdmin/Edit', compact('buildingAdmin', 'departments', 'allDistricts'));
   }
 
   /**
