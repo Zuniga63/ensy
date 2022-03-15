@@ -880,15 +880,15 @@
               </div>
 
               <!-- Canon de arrendamiento  y comission-->
-              <div class="col-span-2 lg:col-span-1">
-                <div class="grid grid-cols-3 gap-2">
+              <div class="col-span-2">
+                <div class="grid grid-cols-8 gap-2 items-center">
                   <!-- Canon de arrendamiento -->
-                  <div class="col-span-2">
+                  <div class="col-span-3">
                     <custom-label
                       for="building-lease-fee"
                       class="inline-block mb-1 text-sm text-gray-800"
                       required
-                      value="Canon de Arrendamiento"
+                      value="Canon"
                     />
 
                     <CurrencyInput
@@ -906,13 +906,42 @@
                       class="col-span-12 mt-2"
                     />
                   </div>
+                  <!-- Cuota de administración -->
+                  <div class="col-span-3">
+                    <custom-label
+                      for="building-admin-fee"
+                      class="mb-2"
+                      :class="{
+                        'text-opacity-40' : !hasAdmin
+                      }"
+                      :required="hasAdmin"
+                      value="Administración"
+                    />
+
+                    <CurrencyInput
+                      name="building-admin-fee"
+                      id="building-admin-fee"
+                      type="text"
+                      class="w-full text-sm text-gray-800 text-right px-4"
+                      :class="{'text-opacity-40': !hasAdmin}"
+                      v-model="form.admin_fee"
+                      placeholder="Ingresa la cuota de adminsitración."
+                      autocomplete="off"
+                      :disabled="!hasAdmin"
+                    />
+
+                    <jet-input-error
+                      :message="form.errors.admin_fee"
+                      class="col-span-12 mt-2"
+                    />
+                  </div>
 
                   <!-- Comision -->
-                  <div>
+                  <div class="col-span-2">
                     <!-- Etiqueta -->
                     <custom-label
                       for="building-commission"
-                      class="mb-2"
+                      class="mb-1"
                       value="Comisión [%]"
                       required
                     />
@@ -1020,43 +1049,6 @@
                 </div>
               </div>
 
-              <!-- Cuota de administración -->
-              <transition
-                enter-active-class="transition ease-out duration-200"
-                enter-from-class="opacity-0 scale-90"
-                enter-to-class="opacity-100 scale-100"
-                leave-active-class="transition ease-in duration-200"
-                leave-from-class="opacity-100 scale-100"
-                leave-to-class="opacity-0 scale-90"
-              >
-                <div
-                  class="col-span-2 lg:col-span-1"
-                  v-if="form.building_admin_id"
-                >
-                  <custom-label
-                    for="building-admin-fee"
-                    class="mb-2"
-                    required
-                    value="Cuota de Administración"
-                  />
-
-                  <CurrencyInput
-                    name="building-admin-fee"
-                    id="building-admin-fee"
-                    type="text"
-                    class="w-full text-sm text-gray-800 text-right px-4"
-                    v-model="form.admin_fee"
-                    placeholder="Ingresa la cuota de adminsitración."
-                    autocomplete="off"
-                    :disabled="!form.building_admin_id"
-                  />
-
-                  <jet-input-error
-                    :message="form.errors.admin_fee"
-                    class="col-span-12 mt-2"
-                  />
-                </div>
-              </transition>
               <!-- Codigo del inmueble -->
               <div class="col-span-2 lg:col-span-1">
                 <div class="grid grid-cols-3 gap-2">
@@ -1431,6 +1423,12 @@ export default {
       }
 
       return null;
+    },
+    /**
+     * Define si el inmueble tiene administración
+     */
+    hasAdmin() {
+      return this.form.building_admin_id ? true : false;
     },
   },
   watch: {
