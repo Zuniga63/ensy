@@ -24,62 +24,203 @@
         </template>
 
         <template #form>
-          <!-- Nombre del grupo adnimistrativo -->
-          <div class="col-span-6 lg:col-span-3">
-            <!-- Etiqueta -->
-            <custom-label
-              for="admin-building-name"
-              class="mb-2"
-              value="Nombre del Edificio"
-              required
-            />
-            <!-- Input -->
-            <jet-input
-              id="admin-building-name"
-              name="admin-building-name"
-              type="text"
-              v-model="form.name"
-              class="w-full"
-              placeholder="Escribe el nombre del edificio aquí."
-              ref="input"
-            />
+          <input-group title="Ubicación" class="col-span-6">
+            <div class="grid grid-cols-2 gap-4 p-1">
+              <!-- Nombre del edificio -->
+              <div class="relative col-span-2 mt-3">
+                <!-- Etiqueta -->
+                <custom-label
+                  for="admin-building-name"
+                  class="
+                    absolute
+                    top-0
+                    left-4
+                    px-4
+                    border border-gray-200
+                    rounded-full
+                    bg-white
+                    text-gray-400 text-xs
+                    transform
+                    -translate-y-1/2
+                  "
+                  value="Nombre del Edificio"
+                  required
+                />
+                <!-- Input -->
+                <jet-input
+                  id="admin-building-name"
+                  name="admin-building-name"
+                  type="text"
+                  v-model="form.name"
+                  class="w-full pt-4"
+                  placeholder="Escribe el nombre del edificio aquí."
+                  ref="input"
+                />
 
-            <!-- Error -->
-            <jet-input-error :message="form.errors.name" class="mt-2" />
-          </div>
+                <!-- Error -->
+                <jet-input-error :message="form.errors.name" class="mt-2" />
+              </div>
 
-          <!-- Dirección de la administración -->
-          <div class="col-span-6 lg:col-span-3">
-            <!-- Etiqueta -->
-            <custom-label
-              for="admin-building-address"
-              class="mb-2"
-              value="Dirección"
-            />
-            <!-- Input -->
-            <jet-input
-              id="admin-building-address"
-              name="admin-building-address"
-              type="text"
-              v-model="form.address"
-              class="w-full"
-              placeholder="Escribe la dirección aquí."
-            />
+              <!-- Departamento -->
+              <div class="col-span-2 lg:col-span-1">
+                <!-- Etiqueta -->
+                <custom-label
+                  for="buildign-department"
+                  class="mb-2"
+                  value="Departamento"
+                />
 
-            <!-- Error -->
-            <jet-input-error :message="form.errors.address" class="mt-2" />
-          </div>
+                <!-- Campo -->
+                <select
+                  name="buildign-department"
+                  id="buildign-department"
+                  v-model="form.country_department_id"
+                  class="
+                    w-full
+                    px-6
+                    py-2
+                    border border-gray-300
+                    focus:border-indigo-300
+                    focus:ring
+                    focus:ring-indigo-200
+                    focus:ring-opacity-50
+                    rounded-md
+                    shadow-sm
+                    text-sm text-gray-800
+                  "
+                >
+                  <option :value="null">Selecciona un Departamento</option>
+                  <option
+                    v-for="department in departments"
+                    :key="department.id"
+                    :value="department.id"
+                  >
+                    {{ department.name }} ({{ department.towns.length }}
+                    municipios)
+                  </option>
+                </select>
+
+                <!-- Mensaje de error -->
+                <jet-input-error
+                  :message="form.errors.country_department_id"
+                  class="mt-2"
+                />
+              </div>
+
+              <!-- Municipio -->
+              <div class="col-span-2 lg:col-span-1">
+                <!-- Etiqueta -->
+                <custom-label
+                  for="buildign-town"
+                  class="mb-2"
+                  value="Municipio"
+                />
+
+                <!-- Campo -->
+                <select
+                  name="buildign-town"
+                  id="buildign-town"
+                  v-model="form.town_id"
+                  class="
+                    w-full
+                    px-6
+                    py-2
+                    border border-gray-300
+                    focus:border-indigo-300
+                    focus:ring
+                    focus:ring-indigo-200
+                    focus:ring-opacity-50
+                    rounded-md
+                    shadow-sm
+                    text-sm text-gray-800
+                  "
+                >
+                  <option :value="null">Selecciona un Municipio</option>
+                  <option v-for="town in towns" :key="town.id" :value="town.id">
+                    {{ town.name }} ({{ town.districts.length }}
+                    barrios)
+                  </option>
+                </select>
+
+                <!-- Mensaje de error -->
+                <jet-input-error :message="form.errors.town_id" class="mt-2" />
+              </div>
+
+              <!-- Barrio -->
+              <div class="col-span-2 lg:col-span-1">
+                <!-- Etiqueta -->
+                <custom-label
+                  for="buildign-district"
+                  class="mb-2"
+                  value="Barrio"
+                />
+
+                <!-- Campo -->
+                <select
+                  name="buildign-district"
+                  id="buildign-district"
+                  v-model="form.town_district_id"
+                  class="
+                    w-full
+                    px-6
+                    py-2
+                    border border-gray-300
+                    focus:border-indigo-300
+                    focus:ring
+                    focus:ring-indigo-200
+                    focus:ring-opacity-50
+                    rounded-md
+                    shadow-sm
+                    text-sm text-gray-800
+                  "
+                >
+                  <option :value="null">Selecciona un Barrio</option>
+                  <option
+                    v-for="district in districts"
+                    :key="district.id"
+                    :value="district.id"
+                  >
+                    {{ district.name }} ({{ district.town.name }})
+                  </option>
+                </select>
+
+                <!-- Mensaje de error -->
+                <jet-input-error
+                  :message="form.errors.town_district_id"
+                  class="mt-2"
+                />
+              </div>
+
+              <!-- Dirección de la administración -->
+              <div class="col-span-2 lg:col-span-1">
+                <!-- Etiqueta -->
+                <custom-label
+                  for="admin-building-address"
+                  class="mb-2"
+                  value="Dirección"
+                />
+                <!-- Input -->
+                <jet-input
+                  id="admin-building-address"
+                  name="admin-building-address"
+                  type="text"
+                  v-model="form.address"
+                  class="w-full"
+                  placeholder="Escribe la dirección aquí."
+                />
+
+                <!-- Error -->
+                <jet-input-error :message="form.errors.address" class="mt-2" />
+              </div>
+            </div>
+          </input-group>
 
           <input-group title="Información del Administrador" class="col-span-6">
             <div class="grid grid-cols-6 gap-4">
               <!-- Nombre del administrador -->
               <div class="col-span-6 lg:col-span-2">
                 <!-- Etiqueta -->
-                <custom-label
-                  for="adfirst_name"
-                  class="mb-2"
-                  value="Nombres"
-                />
+                <custom-label for="adfirst_name" class="mb-2" value="Nombres" />
                 <!-- Input -->
                 <jet-input
                   id="adfirst_name"
@@ -376,10 +517,13 @@ export default {
     LinkButton,
     InputGroup,
   },
-  props: ["buildingAdmin"],
+  props: ["buildingAdmin", "departments", "allDistricts"],
   setup(props) {
     const form = useForm({
       name: props.buildingAdmin.name,
+      country_department_id: props.buildingAdmin.country_department_id,
+      town_id: props.buildingAdmin.town_id,
+      town_district_id: props.buildingAdmin.town_district_id,
       address: props.buildingAdmin.address,
       admin_first_name: props.buildingAdmin.admin_first_name,
       admin_last_name: props.buildingAdmin.admin_last_name,
@@ -457,6 +601,114 @@ export default {
 
       this.form.put(url);
     },
-  },
+  }, //.end method
+  computed: {
+    /**
+     * Recupera la instancia del departamento
+     * seleccionada.
+     * @return {object|null}
+     */
+    department() {
+      if (this.form.country_department_id) {
+        return this.departments.find(
+          (item) => item.id === this.form.country_department_id
+        );
+      }
+
+      return null;
+    },
+    /**
+     * Se encarga de recuperar la lista de muicipios
+     * a partir del departamento creado
+     * @return {array} listado de municipios
+     */
+    towns() {
+      if (this.department) {
+        return this.department.towns;
+      }
+
+      return [];
+    },
+    /**
+     * Recupera la isntancia del municipio seleccionada
+     * @return {object | null}
+     */
+    town() {
+      if (this.form.town_id) {
+        return this.towns.find((item) => item.id === this.form.town_id);
+      }
+
+      return null;
+    },
+    /**
+     * Recupera el listado de barrios del municipio seleccionado.
+     * @return {array}
+     */
+    districts() {
+      if (this.town) {
+        return this.town.districts;
+      }
+
+      return this.allDistricts;
+    },
+    /**
+     * Recupera la instancia del barrio seleccionado
+     * @return {object|null}
+     */
+    district() {
+      if (this.form.town_district_id) {
+        return this.districts.find(
+          (dis) => dis.id === this.form.town_district_id
+        );
+      }
+
+      return null;
+    },
+  }, //.end computed
+  watch: {
+    "form.country_department_id"(newValue) {
+      //Se define si el pueblo está en el listado del departamento.
+      let departmentHasTown = this.towns.some(
+        (item) => item.id === this.form.town_id
+      );
+
+      /**
+       * Si el departamento es null, el municipio es null.
+       * Si el departamento no es null y el municipio no está en el listado
+       * entonces el municipio es null.
+       */
+      if (!newValue || (!departmentHasTown && newValue)) {
+        this.form.town_id = null;
+      }
+    },
+    "form.town_id"(newValue) {
+      let townHasDistrict = this.districts.some(
+        (item) => item.id === this.form.town_district_id
+      );
+
+      /**
+       * Se define el si se resetea el valor del distrito
+       * Si el municipio no tiene valor, el distrito es null
+       * Si el municipio tiene valor pero no esta el distrito, entonces es null
+       */
+      if (!newValue || (!townHasDistrict && newValue)) {
+        this.form.town_district_id = null;
+      }
+    },
+    "form.town_district_id"(newValue) {
+      //Se actualizan los ID del departamento y del municipio si estas no tienen asignado uno
+      if (
+        (!this.form.town_id || !this.form.country_department_id) &&
+        newValue
+      ) {
+        //Se busca la instancia del barrio en cuestion
+        let district = this.allDistricts.find((item) => item.id === newValue);
+        this.form.country_department_id = district.town.country_department_id;
+        setTimeout(() => {
+          this.form.town_id = district.town.id;
+        }, 50);
+      }
+    },
+  },//.end watch
 };
 </script>
