@@ -94,15 +94,17 @@ class BuildingAdminController extends Controller
     $rules = $this->getRules();
     $attr = $this->getAttr();
     $request->validate($rules, [], $attr);
-    $inputs = $request->all();
 
-    $buildingAdmin->name = $inputs['name'];
-    $buildingAdmin->address = $inputs['address'];
-    $buildingAdmin->admin_first_name = $inputs['admin_first_name'];
-    $buildingAdmin->admin_last_name = $inputs['admin_last_name'];
-    $buildingAdmin->admin_document_number = $inputs['admin_document_number'];
-    $buildingAdmin->phones = $inputs['phones'];
-    $buildingAdmin->email = $inputs['email'];
+    $buildingAdmin->name = $request->input('name');
+    $buildingAdmin->country_department_id = $request->input('country_department_id');
+    $buildingAdmin->town_id = $request->input('town_id');
+    $buildingAdmin->town_district_id = $request->input('town_district_id');
+    $buildingAdmin->address = $request->input('address');
+    $buildingAdmin->admin_first_name = $request->input('admin_first_name');
+    $buildingAdmin->admin_last_name = $request->input('admin_last_name');
+    $buildingAdmin->admin_document_number = $request->input('admin_document_number');
+    $buildingAdmin->phones = $request->input('phones');
+    $buildingAdmin->email = $request->input('email');
     $buildingAdmin->save();
 
     $result = [
@@ -138,6 +140,9 @@ class BuildingAdminController extends Controller
   {
     return [
       'name' => 'required|string|min:3|max:45',
+      'country_department_id' => 'nullable|integer|exists:country_department,id',
+      'town_id' => 'nullable|integer|exists:town,id',
+      'town_district_id' => 'nullable|integer|exists:town_district,id',
       'address' => 'nullable|string|min:3|max:255',
       'admin_first_name' => 'nullable|string|min:3|max:45',
       'admin_last_name' => 'nullable|string|min:3|max:45',
@@ -151,6 +156,9 @@ class BuildingAdminController extends Controller
   {
     return [
       'name' => 'nombre',
+      'country_department_id' => 'departamento',
+      'town_id' => 'municipio',
+      'town_district_id' => 'barrio',
       'address' => 'dirección',
       'admin_first_name' => 'nombres del administrador',
       'admin_last_name' => 'apellidos del adminsitrador',
