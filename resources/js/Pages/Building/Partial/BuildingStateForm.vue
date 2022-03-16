@@ -235,6 +235,28 @@
           </div>
         </div>
       </div>
+
+      <!-- Checkers -->
+      <div class="col-span-6">
+        <div class="flex">
+          <!-- Has mandate contract -->
+          <label class="flex items-center mr-3">
+            <jet-checkbox
+              name="mandateContract"
+              v-model:checked="form.mandate_contract"
+            />
+            <span class="ml-2 text-sm text-gray-600"
+              >Tiene contrato de mandato</span
+            >
+          </label>
+
+          <!-- Available -->
+          <label class="flex items-center mr-3">
+            <jet-checkbox name="available" v-model:checked="form.available" />
+            <span class="ml-2 text-sm text-gray-600">Inmueble disponible</span>
+          </label>
+        </div>
+      </div>
     </template>
 
     <template #actions>
@@ -263,6 +285,7 @@ import CustomLabel from "@/Components/Form/Label.vue";
 import JetActionMessage from "@/Jetstream/ActionMessage.vue";
 import { useForm } from "@inertiajs/inertia-vue3";
 import CurrencyInput from "@/Components/CurrencyInput.vue";
+import JetCheckbox from "@/Jetstream/Checkbox.vue";
 
 export default {
   components: {
@@ -275,6 +298,7 @@ export default {
     CustomLabel,
     JetActionMessage,
     CurrencyInput,
+    JetCheckbox,
   },
   props: {
     building: {
@@ -300,6 +324,8 @@ export default {
       insurance_carrier: props.building.insurance_carrier,
       insurance_type: props.building.insurance_type,
       insurance_commission: props.building.insurance_commission * 100,
+      available: props.building.available,
+      mandate_contract: props.building.mandate_contract,
     });
 
     return { form };

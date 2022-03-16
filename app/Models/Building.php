@@ -47,7 +47,8 @@ class Building extends Model
     'insurance_carrier',
     'insurance_commission',
     'insurance_type',
-    'available'
+    'available',
+    'mandate_contract',
   ];
 
   /**
@@ -59,6 +60,7 @@ class Building extends Model
     'features' => 'array',
     'address' => 'array',
     'available' => 'boolean',
+    'mandate_contract' => 'boolean',
   ];
 
   /**
@@ -98,11 +100,11 @@ class Building extends Model
   public function getImageUrlAttribute()
   {
     $url = null;
-    if($this->image_path){
+    if ($this->image_path) {
       //Recupero cada una de las partes de la url separadas por "/"
       $path = explode('/', $this->image_path);
       //Transformo cada uno de los elementos con urlencode
-      $path = array_map(function($item){
+      $path = array_map(function ($item) {
         return urlencode($item);
       }, $path);
       //Se vuelven a juntar todas las partes para obtener la url

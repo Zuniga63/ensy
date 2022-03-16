@@ -220,16 +220,6 @@
             <!-- Error -->
             <jet-input-error :message="form.errors.description" class="mt-2" />
           </div>
-
-          <!-- Diponibilidad -->
-          <div class="self-start mt-3">
-            <label class="flex items-center mr-3">
-              <jet-checkbox name="available" v-model:checked="form.available" />
-              <span class="ml-2 text-sm text-gray-600"
-                >Inmueble disponible</span
-              >
-            </label>
-          </div>
         </div>
       </div>
       <!-- Información general -->

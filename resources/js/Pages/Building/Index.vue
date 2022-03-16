@@ -110,7 +110,7 @@
                     <!-- Codigo del inmueble -->
                     <div v-if="item.code" class="text-center">
                       <p class="text-xs text-gray-400">Codigo</p>
-                      <p class="font-semibold text-gray-600"> {{item.code}} </p>
+                      <p class="font-semibold text-gray-600">{{ item.code }}</p>
                     </div>
                   </div>
                 </td>
@@ -156,13 +156,28 @@
                     <span class="text-gray-400">
                       {{ item.address?.observation }}
                     </span>
-                    <!-- Codigo de Archivo -->
-                    <p>
-                      <span v-if="item.available" class="text-green-500"
-                        >Diponible.</span
+                    <!-- Estado -->
+                    <div class="flex justify-evenly self-stretch">
+                      <!-- Disponible -->
+                      <p class="mr-2">
+                        <span v-if="item.available" class="text-green-500"
+                          >Disponible</span
+                        >
+                        <span v-else class="text-gray-400">No disponible.</span>
+                      </p>
+
+                      <!-- Contrato de mandato -->
+                      <p
+                        :class="{
+                          'text-green-500': item.mandate_contract,
+                          'text-red-500': !item.mandate_contract,
+                        }"
                       >
-                      <span v-else class="text-gray-400">No disponible.</span>
-                    </p>
+                        Contrato de mandato:
+                        <span v-if="item.mandate_contract">Si</span>
+                        <span v-else>No</span>
+                      </p>
+                    </div>
                   </div>
                 </td>
 
@@ -198,12 +213,23 @@
                 <td class="px-2 py-1 text-gray-800 whitespace-nowrap">
                   <div class="flex flex-col items-center" v-if="item.owner">
                     <!-- Nombre del propietario -->
-                    <span class="tracking-wider font-semibold"> {{ item.owner.first_name }} </span>
-                    <span class="tracking-wider text-sm tracking-wider"> {{ item.owner.last_name }} </span>
+                    <span class="tracking-wider font-semibold">
+                      {{ item.owner.first_name }}
+                    </span>
+                    <span class="tracking-wider text-sm tracking-wider">
+                      {{ item.owner.last_name }}
+                    </span>
                     <!-- Documento de identificaicón -->
                     <p class="text-gray-400" v-if="item.owner.document_number">
                       <span> {{ item.owner.document_type }} : </span>
-                      <span class="font-semibold lining-nums text-gray-600 tracking-widest">
+                      <span
+                        class="
+                          font-semibold
+                          lining-nums
+                          text-gray-600
+                          tracking-widest
+                        "
+                      >
                         {{ documentPattern(item.owner.document_number) }}
                       </span>
                     </p>
@@ -212,10 +238,7 @@
                       {{ item.owner.email }}
                     </span-->
                     <!-- Telefonos -->
-                    <p
-                      v-if="item.owner.contacts?.length"
-                      class="text-gray-400"
-                    >
+                    <p v-if="item.owner.contacts?.length" class="text-gray-400">
                       <span>
                         {{ telPattern(item.owner.contacts[0].number) }}
                       </span>
@@ -243,7 +266,9 @@
                       v-if="item.building_admin.phones?.length"
                       class="text-gray-400"
                     >
-                      <span> {{ telPattern(item.building_admin.phones[0].number) }} </span>
+                      <span>
+                        {{ telPattern(item.building_admin.phones[0].number) }}
+                      </span>
                       <span v-if="item.building_admin.phones?.length > 1">
                         - {{ telPattern(item.building_admin.phones[1].number) }}
                       </span>

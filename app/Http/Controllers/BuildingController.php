@@ -332,7 +332,7 @@ class BuildingController extends Controller
     if (!$building->building_admin_id) {
       $building->admin_fee = 0;
     }
-    
+
     $building->save();
 
     return Redirect::route('building.edit', $building->id);
@@ -356,6 +356,7 @@ class BuildingController extends Controller
       : 0;
     $building->admin_fee = $request->input('admin_fee', 0.00);
     $building->code = $request->input('code');
+    $building->mandate_contract = $request->input('mandate_contract', false);
 
     $building->save();
 
@@ -433,7 +434,6 @@ class BuildingController extends Controller
       'floor' => 'nullable|integer|min:1|max:100',
       'antiquity' => 'nullable|string|date',
       'features' => 'nullable|array',
-      'available' => 'required|boolean',
     ];
 
     $addressRules = [
@@ -453,7 +453,9 @@ class BuildingController extends Controller
       'insurance_carrier' => 'nullable|string|max:45',
       'insurance_type' => 'nullable|string|max:45',
       'insurance_commission' => 'required|integer|min:0|max:100',
-      'code' => 'nullable|integer|min:0|max:32000|unique:building,code,' . $buildingId
+      'code' => 'nullable|integer|min:0|max:32000|unique:building,code,' . $buildingId,
+      'available' => 'required|boolean',
+      'mandate_contract' => 'boolean',
     ];
 
 

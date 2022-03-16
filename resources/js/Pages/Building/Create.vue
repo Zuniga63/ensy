@@ -189,19 +189,6 @@
                       class="mt-2"
                     />
                   </div>
-
-                  <!-- Diponibilidad -->
-                  <div class="self-start mt-3">
-                    <label class="flex items-center mr-3">
-                      <jet-checkbox
-                        name="available"
-                        v-model:checked="form.available"
-                      />
-                      <span class="ml-2 text-sm text-gray-600"
-                        >Inmueble disponible</span
-                      >
-                    </label>
-                  </div>
                 </div>
               </div>
 
@@ -836,7 +823,7 @@
 
           <!-- Estado del inmueble -->
           <input-group-section title="Estado del Inmueble">
-            <div class="grid grid-cols-2 gap-6">
+            <div class="grid grid-cols-2 gap-6 p-2">
               <!-- Propietario -->
               <div class="col-span-2 lg:col-span-1">
                 <!-- Etiqueta -->
@@ -912,7 +899,7 @@
                       for="building-admin-fee"
                       class="mb-2"
                       :class="{
-                        'text-opacity-40' : !hasAdmin
+                        'text-opacity-40': !hasAdmin,
                       }"
                       :required="hasAdmin"
                       value="Administración"
@@ -923,7 +910,7 @@
                       id="building-admin-fee"
                       type="text"
                       class="w-full text-sm text-gray-800 text-right px-4"
-                      :class="{'text-opacity-40': !hasAdmin}"
+                      :class="{ 'text-opacity-40': !hasAdmin }"
                       v-model="form.admin_fee"
                       placeholder="Ingresa la cuota de adminsitración."
                       autocomplete="off"
@@ -1076,6 +1063,33 @@
                   </div>
                 </div>
               </div>
+
+              <!-- Checkers -->
+              <div class="col-span-2">
+                <div class="flex">
+                  <!-- Has mandate contract -->
+                  <label class="flex items-center mr-3">
+                    <jet-checkbox
+                      name="mandateContract"
+                      v-model:checked="form.mandate_contract"
+                    />
+                    <span class="ml-2 text-sm text-gray-600"
+                      >Tiene contrato de mandato</span
+                    >
+                  </label>
+
+                  <!-- Available -->
+                  <label class="flex items-center mr-3">
+                    <jet-checkbox
+                      name="available"
+                      v-model:checked="form.available"
+                    />
+                    <span class="ml-2 text-sm text-gray-600"
+                      >Inmueble disponible</span
+                    >
+                  </label>
+                </div>
+              </div>
             </div>
           </input-group-section>
         </template>
@@ -1187,6 +1201,7 @@ export default {
       insurance_type: null,
       insurance_commission: 0,
       available: false,
+      mandate_contract: false,
       addOther: false,
     });
 
