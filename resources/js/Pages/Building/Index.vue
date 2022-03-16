@@ -157,27 +157,25 @@
                       {{ item.address?.observation }}
                     </span>
                     <!-- Estado -->
-                    <div class="flex justify-evenly self-stretch">
-                      <!-- Disponible -->
-                      <p class="mr-2">
-                        <span v-if="item.available" class="text-green-500"
-                          >Disponible</span
-                        >
-                        <span v-else class="text-gray-400">No disponible.</span>
-                      </p>
-
-                      <!-- Contrato de mandato -->
-                      <p
-                        :class="{
-                          'text-green-500': item.mandate_contract,
-                          'text-red-500': !item.mandate_contract,
-                        }"
+                    <p class="text-xs">
+                      <span v-if="item.available" class="text-green-500"
+                        >Disponible</span
                       >
-                        Contrato de mandato:
-                        <span v-if="item.mandate_contract">Si</span>
-                        <span v-else>No</span>
-                      </p>
-                    </div>
+                      <span v-else class="text-gray-400">No disponible</span>
+                    </p>
+                    <!-- Contrato de mandato -->
+                    <p
+                      class="text-xs"
+                      :class="{
+                        'text-green-500': item.mandate_contract,
+                        'text-red-500': !item.mandate_contract,
+                      }"
+                    >
+                      <span v-if="item.mandate_contract"
+                        >Tiene contrato de mandato</span
+                      >
+                      <span v-else>No tiene contrato de mandato</span>
+                    </p>
                   </div>
                 </td>
 
@@ -238,7 +236,7 @@
                       {{ item.owner.email }}
                     </span-->
                     <!-- Telefonos -->
-                    <p v-if="item.owner.contacts?.length" class="text-gray-400">
+                    <p v-if="item.owner.contacts?.length" class="text-gray-500">
                       <span>
                         {{ telPattern(item.owner.contacts[0].number) }}
                       </span>
