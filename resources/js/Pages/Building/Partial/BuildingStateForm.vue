@@ -334,6 +334,7 @@ export default {
   },
   beforeUpdate() {
     this.form.building_admin_id = this.building.building_admin_id;
+    this.form.admin_fee = this.building.admin_fee;
   },
 };
 </script>

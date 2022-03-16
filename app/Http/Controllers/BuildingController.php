@@ -327,6 +327,12 @@ class BuildingController extends Controller
     $building->town_id = $request->input('town_id');
     $building->town_district_id = $request->input('town_district_id');
     $building->address = $request->input('address');
+
+    //Si el inmueble es null entonces se resetea el valor de la cuota de administración
+    if (!$building->building_admin_id) {
+      $building->admin_fee = 0;
+    }
+    
     $building->save();
 
     return Redirect::route('building.edit', $building->id);
@@ -395,17 +401,17 @@ class BuildingController extends Controller
   {
     return CountryDepartment::orderBy('name')
       ->has('towns.districts')->with([
-      'towns' => function ($query) {
-        $query->select(['id', 'country_department_id', 'name'])
-          ->orderBY('name')
-          ->has('districts')
-          ->with(['districts' => function ($query) {
-            $query->select(['id', 'town_id', 'name'])
-              ->with('town')
-              ->orderBY('name');
-          }]);
-      }
-    ])->get(['id', 'name']);
+        'towns' => function ($query) {
+          $query->select(['id', 'country_department_id', 'name'])
+            ->orderBY('name')
+            ->has('districts')
+            ->with(['districts' => function ($query) {
+              $query->select(['id', 'town_id', 'name'])
+                ->with('town')
+                ->orderBY('name');
+            }]);
+        }
+      ])->get(['id', 'name']);
   }
 
   /**
