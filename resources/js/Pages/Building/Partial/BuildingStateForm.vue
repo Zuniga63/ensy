@@ -213,7 +213,7 @@
       </div>
 
       <!-- Codigo del inmueble -->
-      <div class="col-span-3 lg:col-span-1">
+      <div class="col-span-6 lg:col-span-3">
         <div class="grid grid-cols-3 gap-2">
           <!-- Codigo -->
           <div>
