@@ -823,7 +823,7 @@
 
           <!-- Estado del inmueble -->
           <input-group-section title="Estado del Inmueble">
-            <div class="grid grid-cols-2 gap-6 p-2">
+            <div class="grid grid-cols-2 items-end gap-6 p-2">
               <!-- Propietario -->
               <div class="col-span-2 lg:col-span-1">
                 <!-- Etiqueta -->
@@ -865,6 +865,14 @@
                 <!-- Mensaje de error -->
                 <jet-input-error :message="form.errors.owner_id" class="mt-2" />
               </div>
+
+              <sumary-info
+                :owner="owner"
+                :lease-fee="form.lease_fee"
+                :commission="form.commission"
+                :insured="form.insured"
+                :insurance-commission="form.insurance_commission"
+              />
 
               <!-- Canon de arrendamiento  y comission-->
               <div class="col-span-2">
@@ -937,7 +945,7 @@
                       id="building-commission"
                       name="building-commission"
                       type="number"
-                      v-model="form.commission"
+                      v-model.number="form.commission"
                       class="w-full text-center text-sm"
                       placeholder="0%"
                       min="0"
@@ -1053,7 +1061,7 @@
                       id="building-insurance-commission"
                       name="building-insurance-commission"
                       type="number"
-                      v-model="form.insurance_commission"
+                      v-model.number="form.insurance_commission"
                       class="w-full text-center text-gray-800"
                       :class="{
                         'text-opacity-50': !form.insured,
@@ -1169,6 +1177,7 @@ import TrashIcon from "@/Components/Svgs/Trash.vue";
 import InputGroupSection from "@/Components/Form/InputGroupSection.vue";
 import CurrencyInput from "@/Components/CurrencyInput.vue";
 import Swal from "sweetalert2";
+import SumaryInfo from "./Partial/SumaryInfo.vue";
 
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
@@ -1190,6 +1199,7 @@ export default {
     TrashIcon,
     InputGroupSection,
     CurrencyInput,
+    SumaryInfo,
   },
   props: {
     departments: {
@@ -1389,7 +1399,7 @@ export default {
         this.form.admin_fee = 0;
 
       //Se resetean los campos del seguro
-      if(this.form.insured){
+      if (this.form.insured) {
         this.form.insurance_carrier = null;
         this.form.insurance_type = null;
         this.insurance_commission = 0;
@@ -1427,7 +1437,7 @@ export default {
         text: message,
       });
     },
-  },
+  }, //.end method
   computed: {
     department() {
       if (this.form.country_department_id) {
@@ -1490,7 +1500,17 @@ export default {
     hasAdmin() {
       return this.form.building_admin_id ? true : false;
     },
-  },
+    /**
+     * Recupera la instancia del propietario seleccionada
+     */
+    owner() {
+      if (this.form.owner_id) {
+        return this.customers.find((item) => item.id === this.form.owner_id);
+      }
+
+      return null;
+    },
+  }, //.end computed
   watch: {
     "form.country_department_id"(newValue) {
       //Se define si el pueblo está en el listado del departamento.

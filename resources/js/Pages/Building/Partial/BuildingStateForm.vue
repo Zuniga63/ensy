@@ -45,6 +45,16 @@
         <jet-input-error :message="form.errors.owner_id" class="mt-2" />
       </div>
 
+      <div class="col-span-6 lg:col-span-3">
+        <sumary-info
+          :owner="owner"
+          :lease-fee="form.lease_fee"
+          :commission="form.commission"
+          :insured="form.insured"
+          :insurance-commission="form.insurance_commission"
+        />
+      </div>
+
       <!-- Canon de arrendamiento  y comission-->
       <div class="col-span-6">
         <div class="grid grid-cols-8 gap-2 items-center">
@@ -318,6 +328,7 @@ import JetActionMessage from "@/Jetstream/ActionMessage.vue";
 import { useForm } from "@inertiajs/inertia-vue3";
 import CurrencyInput from "@/Components/CurrencyInput.vue";
 import JetCheckbox from "@/Jetstream/Checkbox.vue";
+import SumaryInfo from "./SumaryInfo.vue";
 
 export default {
   components: {
@@ -331,6 +342,7 @@ export default {
     JetActionMessage,
     CurrencyInput,
     JetCheckbox,
+    SumaryInfo,
   },
   props: {
     building: {
@@ -390,13 +402,25 @@ export default {
     hasAdmin() {
       return this.form.building_admin_id ? true : false;
     },
+    /**
+     * Recupera la instancia del propietario seleccionada
+     */
+    owner() {
+      if (this.form.owner_id) {
+        return this.customers.find((item) => item.id === this.form.owner_id);
+      }
+
+      return null;
+    },
   },
   beforeUpdate() {
     this.form.building_admin_id = this.building.building_admin_id;
     this.form.admin_fee = this.building.admin_fee;
     this.form.insurance_carrier = this.building.insurance_carrier;
     this.form.insurance_type = this.building.insurance_type;
-    this.form.insurance_commission = Math.round(this.building.insurance_commission * 100);
+    this.form.insurance_commission = Math.round(
+      this.building.insurance_commission * 100
+    );
   },
 };
 </script>
