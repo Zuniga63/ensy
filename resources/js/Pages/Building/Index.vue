@@ -276,15 +276,19 @@
                       {{ formatCurrency(item.admin_fee) }}
                     </span>
                   </div>
-                  <span v-else class="block text-center">No Reg.</span>
+                  <span v-else class="block text-center text-xs"
+                    >No se cobra adminsitración.</span
+                  >
                 </td>
 
                 <!-- Seguro -->
                 <td class="px-2 py-1 text-gray-800 whitespace-nowrap">
-                  <div class="flex flex-col items-center">
-                    <!-- Nombre del propietario -->
+                  <div class="flex flex-col items-center" v-if="item.insured">
+                    <!-- Nombre del seguro -->
                     <span> {{ item.insurance_carrier }} </span>
+                    <!-- Tipo de seguro -->
                     <span class="mb-1"> {{ item.insurance_type }} </span>
+                    <!-- Comisión -->
                     <span class="text-gray-400 text-xs">Comisión</span>
                     <span class="font-bold text-red-800 text-xs">
                       {{
@@ -298,6 +302,7 @@
                       ({{ printPercentage(item.insurance_commission) }})
                     </span>
                   </div>
+                  <p v-else class="text-gray-800 text-xs">No está asegurado.</p>
                 </td>
 
                 <!-- Resumen -->

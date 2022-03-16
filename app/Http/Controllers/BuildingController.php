@@ -107,6 +107,13 @@ class BuildingController extends Controller
       //Se guarda la ruta del archivo
       $input['image_path'] = $imagePath;
 
+      //Se define si el inmueble está asegurado
+      if (!$input['insured']) {
+        $input['insurance_carrier'] = null;
+        $input['insurance_type'] = null;
+        $input['insurance_commission'] = 0;
+      }
+
       //Se guarda el inmueble en la base de datos
       $building = Building::create($input);
 
@@ -349,11 +356,20 @@ class BuildingController extends Controller
     $building->owner_id = $request->input('owner_id');
     $building->lease_fee = $request->input('lease_fee', 0.00);
     $building->commission = $request->input('commission') ? floatval($request->input('commission')) / 100 : 0;
-    $building->insurance_carrier = $request->input('insurance_carrier');
-    $building->insurance_type = $request->input('insurance_type');
-    $building->insurance_commission = $request->input('insurance_commission')
-      ? floatval($request->input('insurance_commission')) / 100
-      : 0;
+    $building->insured = $request->boolean('insured');
+
+    if ($building->insured) {
+      $building->insurance_carrier = $request->input('insurance_carrier');
+      $building->insurance_type = $request->input('insurance_type');
+      $building->insurance_commission = $request->input('insurance_commission')
+        ? floatval($request->input('insurance_commission')) / 100
+        : 0;
+    } else {
+      $building->insurance_carrier = null;
+      $building->insurance_type = null;
+      $building->insurance_commission = 0;
+    }
+
     $building->admin_fee = $request->input('admin_fee', 0.00);
     $building->code = $request->input('code');
     $building->mandate_contract = $request->input('mandate_contract', false);
@@ -450,6 +466,7 @@ class BuildingController extends Controller
       'lease_fee' => 'required|numeric|min:0|max:99999999.99',
       'commission' => 'required|integer|min:0|max:100',
       'admin_fee' => 'required|numeric|min:0|max:99999999.99',
+      'insured' => 'required|boolean',
       'insurance_carrier' => 'nullable|string|max:45',
       'insurance_type' => 'nullable|string|max:45',
       'insurance_commission' => 'required|integer|min:0|max:100',

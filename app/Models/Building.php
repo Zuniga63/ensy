@@ -44,6 +44,7 @@ class Building extends Model
     'lease_fee',
     'admin_fee',
     'commission',
+    'insured',
     'insurance_carrier',
     'insurance_commission',
     'insurance_type',
@@ -59,6 +60,7 @@ class Building extends Model
   protected $casts = [
     'features' => 'array',
     'address' => 'array',
+    'insured' => 'boolean',
     'available' => 'boolean',
     'mandate_contract' => 'boolean',
   ];

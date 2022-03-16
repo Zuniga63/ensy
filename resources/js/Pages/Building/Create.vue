@@ -953,12 +953,31 @@
                 </div>
               </div>
 
+              <!-- Checker for insured -->
+              <div class="col-span-2">
+                <div class="flex">
+                  <!-- Has mandate contract -->
+                  <label class="flex items-center mr-3">
+                    <jet-checkbox
+                      name="insured"
+                      v-model:checked="form.insured"
+                    />
+                    <span class="ml-2 text-sm text-gray-600"
+                      >¿Está Asegurado?</span
+                    >
+                  </label>
+                </div>
+              </div>
+
               <!-- Aseguradora -->
               <div class="col-span-2 lg:col-span-1">
                 <!-- Etiqueta -->
                 <custom-label
                   for="building-insurance-carrier"
                   class="mb-2"
+                  :class="{
+                    'text-opacity-50': !form.insured,
+                  }"
                   value="Aseguradora"
                 />
 
@@ -966,9 +985,13 @@
                 <jet-input
                   type="text"
                   id="building-insurance-carrier"
-                  class="w-full"
-                  placeholder="Aseguradora Suprene"
+                  class="w-full text-gray-800 transition-opacity"
+                  placeholder="Escribe el nombre aquí."
                   v-model="form.insurance_carrier"
+                  :class="{
+                    'text-opacity-50': !form.insured,
+                  }"
+                  :disabled="!form.insured"
                 />
 
                 <!-- Mensaje de error -->
@@ -986,17 +1009,24 @@
                     <!-- Etiqueta -->
                     <custom-label
                       for="building-insurance-type"
-                      class="mb-2"
+                      class="mb-2 text-gray-800"
                       value="Tipo de seguro"
+                      :class="{
+                        'text-opacity-50': !form.insured,
+                      }"
                     />
 
                     <!-- Campo -->
                     <jet-input
                       type="text"
                       id="building-insurance-type"
-                      class="w-full"
+                      class="w-full text-gray-800"
                       placeholder="Escribe el tipo de seguro."
                       v-model="form.insurance_type"
+                      :class="{
+                        'text-opacity-50': !form.insured,
+                      }"
+                      :disabled="!form.insured"
                     />
 
                     <!-- Mensaje de error -->
@@ -1013,7 +1043,10 @@
                       for="building-insurance-commission"
                       class="mb-2"
                       value="Comisión [%]"
-                      required
+                      :class="{
+                        'text-opacity-50': !form.insured,
+                      }"
+                      :required="!form.insured"
                     />
                     <!-- Input -->
                     <jet-input
@@ -1021,7 +1054,11 @@
                       name="building-insurance-commission"
                       type="number"
                       v-model="form.insurance_commission"
-                      class="w-full text-center text-sm"
+                      class="w-full text-center text-gray-800"
+                      :class="{
+                        'text-opacity-50': !form.insured,
+                      }"
+                      :disabled="!form.insured"
                       placeholder="0%"
                       min="0"
                       max="100"
@@ -1197,6 +1234,7 @@ export default {
       lease_fee: 0,
       admin_fee: 0,
       commission: 0,
+      insured: false,
       insurance_carrier: null,
       insurance_type: null,
       insurance_commission: 0,
@@ -1349,6 +1387,13 @@ export default {
       if (!this.form.lease_fee) this.form.lease_fee = 0;
       if (!this.form.admin_fee || !this.form.building_admin_id)
         this.form.admin_fee = 0;
+
+      //Se resetean los campos del seguro
+      if(this.form.insured){
+        this.form.insurance_carrier = null;
+        this.form.insurance_type = null;
+        this.insurance_commission = 0;
+      }
     },
     /**
      * Se encarga de volver a setear los campos de departamento,

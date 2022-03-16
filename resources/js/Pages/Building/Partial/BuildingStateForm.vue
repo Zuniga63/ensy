@@ -129,12 +129,26 @@
         </div>
       </div>
 
+      <!-- Checker for insured -->
+      <div class="col-span-6">
+        <div class="flex">
+          <!-- Has mandate contract -->
+          <label class="flex items-center mr-3">
+            <jet-checkbox name="insured" v-model:checked="form.insured" />
+            <span class="ml-2 text-sm text-gray-600">¿Está Asegurado?</span>
+          </label>
+        </div>
+      </div>
+
       <!-- Aseguradora -->
-      <div class="col-span-26 lg:col-span-3">
+      <div class="col-span-6 lg:col-span-3">
         <!-- Etiqueta -->
         <custom-label
           for="building-insurance-carrier"
           class="mb-2"
+          :class="{
+            'text-opacity-50': !form.insured,
+          }"
           value="Aseguradora"
         />
 
@@ -142,9 +156,13 @@
         <jet-input
           type="text"
           id="building-insurance-carrier"
-          class="w-full"
-          placeholder="Aseguradora Suprene"
+          class="w-full text-gray-800"
+          :class="{
+            'text-opacity-50': !form.insured,
+          }"
+          placeholder="Escribe el nombre aquí."
           v-model="form.insurance_carrier"
+          :disabled="!form.insured"
         />
 
         <!-- Mensaje de error -->
@@ -164,15 +182,22 @@
               for="building-insurance-type"
               class="mb-2"
               value="Tipo de seguro"
+              :class="{
+                'text-opacity-50': !form.insured,
+              }"
             />
 
             <!-- Campo -->
             <jet-input
               type="text"
               id="building-insurance-type"
-              class="w-full"
+              class="w-full text-gray-800"
               placeholder="Escribe el tipo de seguro."
               v-model="form.insurance_type"
+              :class="{
+                'text-opacity-50': !form.insured,
+              }"
+              :disabled="!form.insured"
             />
 
             <!-- Mensaje de error -->
@@ -189,7 +214,10 @@
               for="building-insurance-commission"
               class="mb-2"
               value="Comisión [%]"
-              required
+              :class="{
+                'text-opacity-50': !form.insured,
+              }"
+              :required="!form.insured"
             />
             <!-- Input -->
             <jet-input
@@ -197,7 +225,11 @@
               name="building-insurance-commission"
               type="number"
               v-model="form.insurance_commission"
-              class="w-full text-center text-sm"
+              class="w-full text-center text-gray-800"
+              :class="{
+                'text-opacity-50': !form.insured,
+              }"
+              :disabled="!form.insured"
               placeholder="0%"
               min="0"
               max="100"
@@ -320,7 +352,8 @@ export default {
       lease_fee: props.building.lease_fee,
       admin_fee: props.building.admin_fee,
       code: props.building.code,
-      commission: props.building.commission * 100,
+      commission: Math.round(props.building.commission * 100),
+      insured: props.building.insured,
       insurance_carrier: props.building.insurance_carrier,
       insurance_type: props.building.insurance_type,
       insurance_commission: props.building.insurance_commission * 100,
@@ -342,7 +375,7 @@ export default {
         preserveScroll: true,
         preserveState: true,
         onSuccess: (page) => {
-          //console.log(page.props.flash.message);
+          //TODO
         },
         onError: (errors) => {
           console.log(errors);
@@ -361,6 +394,9 @@ export default {
   beforeUpdate() {
     this.form.building_admin_id = this.building.building_admin_id;
     this.form.admin_fee = this.building.admin_fee;
+    this.form.insurance_carrier = this.building.insurance_carrier;
+    this.form.insurance_type = this.building.insurance_type;
+    this.form.insurance_commission = Math.round(this.building.insurance_commission * 100);
   },
 };
 </script>
