@@ -2,6 +2,8 @@
 
 namespace App\Models\Customer;
 
+use App\Models\Invoice\Invoice;
+use App\Models\Invoice\InvoicePayment;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -105,5 +107,21 @@ class Customer extends Model
   public function financialData()
   {
     return $this->hasOne(CustomerFinancialData::class);
+  }
+
+  /**
+   * Get the invoice that this user has registered.
+   */
+  public function invoices()
+  {
+    return $this->hasMany(Invoice::class, 'customer_id');
+  }
+
+  /**
+   * Get the payment registered for this customer
+   */
+  public function invoicePayments()
+  {
+    return $this->hasMany(InvoicePayment::class, 'customer_id');
   }
 }
