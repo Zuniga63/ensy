@@ -13,8 +13,8 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        //sans: ['Poppins', 'sans-serif', ...defaultTheme.fontFamily.sans],
-        sans: ['Montserrat', 'sans-serif', ...defaultTheme.fontFamily.sans],
+        sans: ['Poppins', 'sans-serif', ...defaultTheme.fontFamily.sans],
+        //sans: ['Montserrat', 'sans-serif', ...defaultTheme.fontFamily.sans],
       },
     },
   },
