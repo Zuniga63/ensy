@@ -495,6 +495,7 @@ export default {
         { id: 1, name: "Panel", routeName: "dashboard" },
         { id: 2, name: "Cajas", routeName: "cashbox.index" },
         { id: 3, name: "Clientes", routeName: "customer.index" },
+        { id: 4, name: "Facturación", routeName: "invoice.index" },
       ],
     };
   },
