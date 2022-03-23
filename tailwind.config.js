@@ -16,6 +16,10 @@ module.exports = {
         sans: ['Poppins', 'sans-serif', ...defaultTheme.fontFamily.sans],
         //sans: ['Montserrat', 'sans-serif', ...defaultTheme.fontFamily.sans],
       },
+      transitionProperty: {
+        'height': 'height',
+        'spacing': 'margin, padding',
+      }
     },
   },
 
