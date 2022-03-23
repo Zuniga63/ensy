@@ -1,5 +1,5 @@
 <template>
-  <label class="block font-medium text-sm text-gray-700" :class="{required}">
+  <label class="block" :class="requireClass">
     <span v-if="value">{{ value }}</span>
     <span v-else><slot></slot></span>
   </label>
@@ -11,12 +11,12 @@ export default {
     value: String,
     required: Boolean
   },
+  computed: {
+    requireClass(){
+      return {
+        "after:content-['*'] after:ml-0.5 after:text-red-500": this.required
+      }
+    }
+  },
 };
 </script>
-
-<style scoped>
-.required:after {
-  content: " *";
-  color: #e73d4a;
-}
-</style>
