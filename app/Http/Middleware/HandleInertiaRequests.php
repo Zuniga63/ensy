@@ -63,6 +63,7 @@ class HandleInertiaRequests extends Middleware
       'name' => $config->name,
       'logo' => $config->logo ? asset('storage/' . $config->logo) : null,
       'favicon' => $config->favicon ? asset('storage/' . $config->favicon) : null,
+      'nit' => $config->nit,
       'phone' => [
         'number' => $config->phone,
         'show' => $config->show_phone ? true : false,
