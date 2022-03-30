@@ -3,6 +3,7 @@
 use App\Http\Controllers\BusinessConfigController;
 use App\Http\Controllers\Cashbox\CashboxController;
 use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\DailyActivityController;
 use App\Http\Controllers\UserController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -116,5 +117,13 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     ->name('customer.sotreContact');
   Route::delete('/clientes/{customer}/{customer_contact}', [CustomerController::class, 'destroyCustomerContact'])
     ->name('customer.destroyContact');
-  
 });
+
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+// RUTAS PARA ADMINSITRAR ACTIVIDADES DIARIAS
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+Route::get('actividades-diarias', [DailyActivityController::class, 'index'])->name('dailyActivity.index');
+Route::post('actividades-diarias', [DailyActivityController::class, 'store'])->name('dailyActivity.store');
+Route::delete('actividades-diarias/{dailyActivity}',  [DailyActivityController::class, 'destroy'])->name('dailyActivity.destroy');
