@@ -18,6 +18,7 @@ class CreateInvoiceItemTable extends Migration
       $table->float('quantity', 8, 4);
       $table->string('description');
       $table->decimal('unit_value', 10, 2);
+      $table->decimal('discount', 10, 2);
       $table->decimal('amount', 10, 2);
       $table->boolean('cancel')->default(0);
       $table->string('cancel_message')->nullable();
