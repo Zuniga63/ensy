@@ -14,4 +14,16 @@ class BusinessConfig extends Model
    * @var string 
    */
   protected $table = 'business_config';
+
+  protected $appends = ['logo_url'];
+
+  public function getLogoUrlAttribute()
+  {
+    $url = null;
+    if ($this->logo) {
+      $url = asset('storage/' . $this->logo);
+    }
+
+    return $this->attributes['imageUrl'] = $url;
+  }
 }
