@@ -15,12 +15,13 @@ class CreateInvoicePaymentTable extends Migration
   {
     Schema::create('invoice_payment', function (Blueprint $table) {
       $table->id();
+      $table->foreignId('invoice_id')->constrained('invoice');
       $table->foreignId('customer_id')->nullable()->constrained('customer')->nullOnDelete();
-      $table->timestamp('payment_date');
-      $table->decimal('amount', 10, 2);
+      $table->timestamp('payment_date')->useCurrent();
+      $table->decimal('amount', 10, 2);                   //{0.00 - 99'999'999'.99}
+      $table->string('transaction_code')->nullable();
       $table->boolean('cancel')->default(0);
       $table->string('cancel_message')->nullable();
-      $table->string('transaction_code')->nullable();
       $table->timestamps();
     });
   }

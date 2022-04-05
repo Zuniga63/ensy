@@ -17,21 +17,23 @@ class CreateInvoiceTable extends Migration
       $table->id();
       $table->foreignId('seller_id')->nullable()->constrained('users')->nullOnDelete();
       $table->foreignId('customer_id')->nullable()->constrained('customer')->nullOnDelete();
-      $table->string('prefix', 10)->nullable();
-      $table->unsignedInteger('number');
-      $table->string('customer', 90);
-      $table->string('customer_document', 90);
-      $table->string('customer_address', 150)->nullable();
-      $table->string('customer_phone')->nullable();
-      $table->string('seller', 90)->nullable();
+      $table->string('prefix', 10)->nullable();                 //{0-10}
+      $table->unsignedInteger('number');                        //{0-4.294.967.295}
+      $table->string('customer_name', 90)                            //{0-90}
+        ->default('Mostrador');
+      $table->string('customer_document', 45)->nullable();      //{0-45}
+      $table->string('customer_address', 150)->nullable();      //{0-150}
+      $table->string('customer_phone', 20)->nullable();
+      $table->string('seller_name', 90)->nullable();
       $table->timestamp('expedition_date')->useCurrent();
       $table->timestamp('expiration_date')->useCurrent();
-      $table->decimal('subtotal', 10,2)->nullable();
-      $table->decimal('discount', 10,2)->nullable();
-      $table->decimal('amount', 10, 2);
-      $table->decimal('cash', 10, 2)->nullable();
-      $table->decimal('credit', 10, 2)->nullable();
-      $table->decimal('balance', 10, 2)->nullable();
+      $table->decimal('subtotal', 10, 2)->nullable();           //{0.00 - 99'999'999'.99}
+      $table->decimal('discount', 10, 2)->nullable();           //{0.00 - 99'999'999'.99}
+      $table->decimal('amount', 10, 2);                         //{0.00 - 99'999'999'.99}
+      $table->decimal('cash', 10, 2)->nullable();               //{0.00 - 99'999'999'.99}
+      $table->decimal('credit', 10, 2)->nullable();             //{0.00 - 99'999'999'.99}
+      $table->decimal('cash_change', 10, 2)->nullable();        //{0.00 - 99'999'999'.99}
+      $table->decimal('balance', 10, 2)->nullable();            //{0.00 - 99'999'999'.99}
       $table->boolean('cancel')->default(0);
       $table->string('cancel_message')->nullable();
       $table->unique(['prefix', 'number'], 'unique_invoice');
