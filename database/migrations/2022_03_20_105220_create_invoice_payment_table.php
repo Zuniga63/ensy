@@ -18,6 +18,7 @@ class CreateInvoicePaymentTable extends Migration
       $table->foreignId('invoice_id')->constrained('invoice');
       $table->foreignId('customer_id')->nullable()->constrained('customer')->nullOnDelete();
       $table->timestamp('payment_date')->useCurrent();
+      $table->string('description', 150)->nullable();
       $table->decimal('amount', 10, 2);                   //{0.00 - 99'999'999'.99}
       $table->string('transaction_code')->nullable();
       $table->boolean('cancel')->default(0);
