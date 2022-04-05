@@ -23,36 +23,63 @@ class Invoice extends Model
   protected $fillable = [
     'seller_id',
     'customer_id',
-    'customer',
+    'prefix',
+    'number',
+    'customer_name',
     'customer_document',
-    'seller',
-    'invoice_prefix',
-    'invoice_number',
-    'invoice_date',
+    'customer_address',
+    'customer_phone',
+    'seller_name',
+    'expedition_date',
+    'expiration_date',
+    'subtotal',
+    'discount',
     'amount',
     'cash',
     'credit',
+    'cash_change',
     'balance',
     'cancel',
     'cancel_message',
-    'transaction_code',
+  ];
+
+  protected $appends = ['invoice_number'];
+
+  /**
+   * Retorna el nombre completo del cliente
+   */
+  public function getInvoiceNumberAttribute()
+  {
+    $prefix = $this->prefix ? "$this->prefix" . "-" : "";
+    $number = $this->number;
+
+
+    if($number < 10){
+      $number = "000" . $number;
+    }else if($number < 100){
+      $number = "00" . $number;
+    }else if($number < 1000){
+      $number  = "0" . $number;
+    }
+
+    return $this->attributes['invoiceNumber'] = $prefix . $number;
+  }
+
+  /**
+   * The attributes that should be cast.
+   *
+   * @var array
+   */
+  protected $casts = [
+    'cancel' => 'boolean',
   ];
 
   /**
-     * The attributes that should be cast.
-     *
-     * @var array
-     */
-    protected $casts = [
-      'cancel' => 'boolean',
-  ];
-
-      /**
-     * The relationships that should always be loaded.
-     *
-     * @var array
-     */
-    protected $with = ['items'];
+   * The relationships that should always be loaded.
+   *
+   * @var array
+   */
+  protected $with = ['items'];
 
   /**
    * Get the seller of this invoice
