@@ -1,7 +1,7 @@
 <template>
   <div class="shadow h-40 overflow-y-auto">
     <table class="relative w-full divide-y divide-gray-200">
-      <thead class="sticky top-0 bg-gray-100">
+      <thead class="sticky top-0 bg-gray-100 z-10">
         <tr>
           <th scope="col" class="px-4 py-2 text-xs text-gray-700 tracking-wider text-center">#</th>
           <th scope="col" class="px-4 py-2 text-xs text-gray-700 tracking-wider text-center">Fecha</th>
