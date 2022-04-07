@@ -12,7 +12,7 @@
     <div class="max-w-screen-xl mx-auto mt-4 pb-20">
       <div class="grid grid-cols-4 gap-4 items-start">
         <!-- Sidebar -->
-        <sidebar @enabled-form="enabledForm" :invoices="invoices" @load-invoice="getInvoice" />
+        <sidebar @enabled-form="showFormModal" :invoices="invoices" @load-invoice="getInvoice" />
 
         <!-- Content -->
         <div class="relative col-span-3 min-h-full rounded-md overflow-hidden cogs shadow">
@@ -22,7 +22,7 @@
             :invoice="invoice"
             :show="showingInvoice"
             @closeInvoice="showingInvoice = false"
-            @showForm="enabledForm"
+            @showForm="showFormModal"
           />
           <!-- Modal para cargar datos -->
           <waiting-spin :show="loadingResource"></waiting-spin>
@@ -30,9 +30,10 @@
       </div>
     </div>
 
-    <modal :show="showingModal" @close="closeModal" max-width="4xl" :closeable="!lockModal">
+    <!-- Modal para Formularios Principales -->
+    <modal :show="formModal.show" @close="closeFormModal" max-width="4xl" :closeable="!formModal.lock">
       <new-invoice
-        v-if="form === 'new-invoice'"
+        v-if="formModal.form === 'new-invoice'"
         :customers="customers"
         :boxs="boxs"
         :config="config"
@@ -40,7 +41,7 @@
       />
 
       <add-payment-form
-        v-if="form === 'add-payment'"
+        v-if="formModal.form === 'add-payment'"
         :boxs="boxs"
         :invoice="invoice"
         @lockModal="lockModal = true"
@@ -50,6 +51,8 @@
 
       <div v-show="form === 'add-item'">Formulario para agregar items a facturas.</div>
     </modal>
+
+    <!-- Modal Para Cancelaciones -->
   </app-layout>
 </template>
 
@@ -78,31 +81,33 @@ export default {
   props: ["customers", "boxs", "config", "invoices"],
   data() {
     return {
-      showingModal: false, //Habilita o deshabilita el backdrop
-      lockModal: false,
-      form: null, //[new-invoice, edit-invoice]
       processing: false, //Se habilita cuando se está haciendo una solicitud
       loadingResource: false,
       invoice: null,
       showingInvoice: false,
+      formModal: {
+        show: false,
+        lock: false,
+        form: null, //[new-invoice, add-payment]
+      },
     };
   },
   methods: {
-    showModal() {
-      this.showingModal = true;
+    /**
+     * @param {string} form Nombre del formulario a habilitar
+     */
+    showFormModal(form) {
+      this.formModal.show = true;
+      this.formModal.form = form;
     },
-    closeModal() {
-      this.showingModal = false;
-      this.newInvoiceForm = false;
-      this.form = null;
-    },
-    enabledForm(form) {
-      this.form = form;
-      this.showModal();
+    closeFormModal() {
+      this.formModal.show = false;
+      this.formModal.lock = false;
+      this.formModal.form = null;
     },
     addInvoice(invoice) {
       this.invoices.push(invoice);
-      this.closeModal();
+      this.closeFormModal();
 
       let description = `Se guardó satisfactoriamente la factura N° ${invoice.number} `;
       description += `por valor de ${formatCurrency(invoice.amount)} `;
@@ -139,7 +144,7 @@ export default {
       }
 
       this.getInvoice(invoice.id);
-      this.closeModal();
+      this.closeFormModal();
 
       Swal.fire({
         title: `¡Factura Actualizada!`,
