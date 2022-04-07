@@ -22,6 +22,7 @@ class InvoicePayment extends Model
 	protected $fillable = [
 		'customer_id',
 		'payment_date',
+		'description',
 		'amount',
 		'cancel',
 		'transaction_code',
