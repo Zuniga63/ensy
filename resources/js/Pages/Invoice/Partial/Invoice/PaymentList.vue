@@ -13,7 +13,7 @@
         </tr>
       </thead>
       <tbody class="bg-white divide-y divide-gray-200">
-        <tr v-for="(item, index) in payments" :key="index" :class="{ 'bg-red-50': item.error }">
+        <tr v-for="(item, index) in payments" :key="index" :class="{ 'opacity-50 line-through': item.cancel }" :title="item.cancel_message">
           <!-- # -->
           <td class="px-4 py-2 text-xs text-gray-800 text-center">
             {{ index + 1 }}
