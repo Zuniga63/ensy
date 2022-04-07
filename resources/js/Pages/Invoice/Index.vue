@@ -63,6 +63,7 @@
         @lockModal="cancelModal.lock = true"
         @unlockModal="cancelModal.lock = false"
         @updateInvoice="updateInvoice"
+        @close="closeCancelModal"
       />
     </modal>
   </app-layout>

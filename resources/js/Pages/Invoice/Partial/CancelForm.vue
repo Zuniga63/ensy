@@ -71,7 +71,7 @@
     </div>
 
     <footer class="flex justify-between px-4 py-2 bg-red-100">
-      <jet-button :disabled="processing" type="button">Cancelar</jet-button>
+      <jet-button :disabled="processing" type="button" @click="$emit('close')">Cancelar</jet-button>
       <jet-danger-button :disabled="processing" type="submit">
         <span v-if="type === 'payment'">Anular Pago</span>
       </jet-danger-button>
