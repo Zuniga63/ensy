@@ -3,6 +3,7 @@
 use App\Http\Controllers\BusinessConfigController;
 use App\Http\Controllers\Cashbox\CashboxController;
 use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\UserController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -116,5 +117,19 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     ->name('customer.sotreContact');
   Route::delete('/clientes/{customer}/{customer_contact}', [CustomerController::class, 'destroyCustomerContact'])
     ->name('customer.destroyContact');
-  
+
+  //-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
+  //  ROUTES FOR INVOICE ADMIN
+  //-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
+
+  Route::resource('facturacion', InvoiceController::class)
+    ->names([
+      'index' => 'invoice.index',
+      'store' => 'invoice.store',
+      'show' => 'invoice.show'
+    ])
+    ->parameters(['facturacion' => 'invoice']);
+  Route::put('facturar-pago', [InvoiceController::class, 'storePayments'])->name('invoice.storePayments');
 });
