@@ -121,6 +121,7 @@ export default {
         const res = await axios.put(route("invoice.storePayments"), data);
         if (res.data.ok) {
           this.$emit("updateInvoice", res.data.invoice);
+          this.showNotification();
         } else {
           this.error = true;
           if (res.error) {
