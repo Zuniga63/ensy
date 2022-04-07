@@ -89,7 +89,8 @@ import dayjs from "dayjs";
 import locale_es_do from "dayjs/locale/es-do";
 import { formatCurrency } from "@/utilities";
 import SpinIcon from "@/Components/Svgs/Spin.vue";
-import axios from "axios";
+//import axios from "axios";
+import Swal from "sweetalert2";
 
 export default {
   components: { JetButton, JetDangerButton, CustomLabel, InputError, JetInput, SpinIcon },
@@ -145,21 +146,14 @@ export default {
           const res = await axios.put(data.url, data.data);
           if (res.data.ok) {
             this.$emit("updateInvoice", res.data.invoice);
+            this.showNotification();
           } else {
             console.log(res.data.message);
             console.log(res.data);
           }
         } catch (error) {
           if (error.response) {
-            let errors = error.response.data?.errors;
-            if (errors.invoiceId || errors.paymentId || errors.itemId) {
-              console.log("Error: errores con las claves.");
-            }
-            this.errors.message = errors.message ? errors.message[0] : null;
-            this.errors.password = errors.password ? errors.password[0] : null;
-
-            if (errors.message) this.$refs.message.focus();
-            else if (errors.password) this.$refs.password.focus();
+            this.manageErrors(error.response.data?.errors);
           } else if (error.request) {
             // La petición fue hecha pero no se recibió respuesta
             // `error.request` es una instancia de XMLHttpRequest en el navegador y una instancia de
@@ -173,6 +167,25 @@ export default {
           this.processing = false;
           this.$emit("unlockModal");
         }
+      }
+    },
+    manageErrors(errors) {
+      if (errors.invoiceId || errors.paymentId || errors.itemId) {
+        console.log("Error: errores con las claves.");
+      }
+      this.errors.message = errors.message ? errors.message[0] : null;
+      this.errors.password = errors.password ? errors.password[0] : null;
+
+      if (errors.message) this.$refs.message.focus();
+      else if (errors.password) this.$refs.password.focus();
+    },
+    showNotification() {
+      if (this.type === "payment") {
+        Swal.fire({
+          title: `¡Pago Anulado!`,
+          icon: "success",
+          text: `EL pago a la factura ${this.invoice.invoice_number} fue anulado.`,
+        });
       }
     },
   },

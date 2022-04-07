@@ -47,7 +47,8 @@ import CashPayment from "./CashPayment.vue";
 import PaymentList from "./NewInvoice/PaymentList.vue";
 import { formatCurrency } from "@/utilities";
 import JetButton from "@/Jetstream/Button.vue";
-import axios from "axios";
+//import axios from "axios";
+import Swal from "sweetalert2";
 
 export default {
   components: { CashPayment, PaymentList, JetButton },
@@ -164,6 +165,13 @@ export default {
       });
 
       return { invoiceId, customerId, payments };
+    },
+    showNotification() {
+      Swal.fire({
+        title: `¡Pago Registrado!`,
+        icon: "success",
+        text: `EL pago a la factura ${this.invoice.invoice_number} fue registrado.`,
+      });
     },
   },
 };

@@ -158,12 +158,6 @@ export default {
       this.getInvoice(invoice.id);
       this.closeFormModal();
       this.closeCancelModal();
-
-      Swal.fire({
-        title: `¡Factura Actualizada!`,
-        icon: "success",
-        text: `La factura N° ${invoice.invoice_number} fue actualizada con éxito.`,
-      });
     },
     /**
      * @param {string} form Nombre del formulario a habilitar
