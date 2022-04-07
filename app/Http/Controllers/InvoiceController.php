@@ -293,7 +293,7 @@ class InvoiceController extends Controller
                 'transaction_date' => $date->format('Y-m-d H:i'),
                 'description' => $description,
                 'amount' => $amount,
-                'transaction_code' => $code,
+                'code' => $code,
                 'blocked' => true,
               ]);
 
@@ -325,7 +325,7 @@ class InvoiceController extends Controller
                 'transaction_date' => $date->format('Y-m-d H:i'),
                 'description' => $description,
                 'amount' => $invoice->balance,
-                'transaction_code' => $code,
+                'code' => $code,
                 'blocked' => true,
               ]);
 
