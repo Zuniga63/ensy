@@ -38,6 +38,7 @@
                 href="javascript:;"
                 class="text-red-500 p-1 rounded-full hover:bg-red-100 transition-colors"
                 @click="$emit('cancelPayment', item)"
+                v-if="!item.cancel"
               >
                 <delete-icon class="h-4 w-4" />
               </a>

@@ -399,35 +399,39 @@ class InvoiceController extends Controller
     //Se recupera el pago
     $payment = InvoicePayment::find($request->paymentId);
 
-    //Se actualiza el saldo de la factura y el dinero
-    $invoice->balance = bcadd($invoice->balance, $payment->amount);
-    //Se cancela el pago
-    $payment->cancel = true;
-    $payment->cancel_message = auth()->user()->name . ": " . $request->input('message');
+    if (!$payment->cancel) {
+      //Se actualiza el saldo de la factura y el dinero
+      $invoice->balance = bcadd($invoice->balance, $payment->amount);
+      //Se cancela el pago
+      $payment->cancel = true;
+      $payment->cancel_message = auth()->user()->name . ": " . $request->input('message');
 
-    DB::beginTransaction();
+      DB::beginTransaction();
 
-    try {
-      //Se verifica si el pago tiene asociada una transacción
-      if ($payment->transaction_code) {
-        /** @var CashboxTransaction */
-        $transaction = CashboxTransaction::where('code', $payment->transaction_code)->first();
-        if ($transaction) {
-          $transaction->delete();
+      try {
+        //Se verifica si el pago tiene asociada una transacción
+        if ($payment->transaction_code) {
+          /** @var CashboxTransaction */
+          $transaction = CashboxTransaction::where('code', $payment->transaction_code)->first();
+          if ($transaction) {
+            $transaction->delete();
+          }
+          $payment->transaction_code = null;
         }
-        $payment->transaction_code = null;
+
+        $invoice->save();
+        $payment->save();
+
+        DB::commit();
+        $ok = true;
+      } catch (\Throwable $th) {
+        DB::rollBack();
+        $message = "Error al guardar en la base de datos.";
+        $error = $th->getMessage();
+        //throw $th;
       }
-
-      $invoice->save();
-      $payment->save();
-
-      DB::commit();
-      $ok = true;
-    } catch (\Throwable $th) {
-      DB::rollBack();
-      $message = "Error al guardar en la base de datos.";
-      $error = $th->getMessage();
-      //throw $th;
+    } else {
+      $message = "¡El pago ya fue cancelado.!";
     }
 
     return [
