@@ -4,6 +4,7 @@ use App\Http\Controllers\BusinessConfigController;
 use App\Http\Controllers\Cashbox\CashboxController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\DailyActivityController;
 use App\Http\Controllers\UserController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -133,3 +134,12 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     ->parameters(['facturacion' => 'invoice']);
   Route::put('facturar-pago', [InvoiceController::class, 'storePayments'])->name('invoice.storePayments');
 });
+
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+// RUTAS PARA ADMINSITRAR ACTIVIDADES DIARIAS
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+Route::get('actividades-diarias', [DailyActivityController::class, 'index'])->name('dailyActivity.index');
+Route::post('actividades-diarias', [DailyActivityController::class, 'store'])->name('dailyActivity.store');
+Route::delete('actividades-diarias/{dailyActivity}',  [DailyActivityController::class, 'destroy'])->name('dailyActivity.destroy');
