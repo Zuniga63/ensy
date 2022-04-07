@@ -23,6 +23,7 @@ class CreateInvoicePaymentTable extends Migration
       $table->string('transaction_code')->nullable();
       $table->boolean('cancel')->default(0);
       $table->string('cancel_message')->nullable();
+      $table->boolean('locked')->default(false);
       $table->timestamps();
     });
   }

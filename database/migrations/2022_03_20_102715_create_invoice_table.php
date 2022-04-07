@@ -36,6 +36,7 @@ class CreateInvoiceTable extends Migration
       $table->decimal('balance', 10, 2)->nullable();            //{0.00 - 99'999'999'.99}
       $table->boolean('cancel')->default(0);
       $table->string('cancel_message')->nullable();
+      $table->boolean('locked')->default(false);
       $table->unique(['prefix', 'number'], 'unique_invoice');
       $table->timestamps();
     });
