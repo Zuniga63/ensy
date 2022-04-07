@@ -127,25 +127,6 @@
         <jet-button>Imprimir Factura</jet-button>
       </footer>
     </div>
-
-    <!-- Modal -->
-    <jet-dialog-modal :show="showingCancelPayment" @close="showingCancelPayment = false">
-      <template #title>
-        Titulo del dialogo
-      </template>
-
-      <template #content>
-        <div>
-          Contenido
-        </div>
-      </template>
-
-      <template #footer>
-        <div>
-          Footer
-        </div>
-      </template>
-    </jet-dialog-modal>
   </shell>
 </template>
 
@@ -160,7 +141,6 @@ import ItemList from "./ItemList.vue";
 import PaymentList from "./PaymentList.vue";
 import JetButton from "@/Jetstream/Button.vue";
 import JetDangerButton from "@/Jetstream/DangerButton.vue";
-import JetDialogModal from "@/Jetstream/DialogModal.vue";
 
 export default {
   components: {
@@ -173,10 +153,9 @@ export default {
     PaymentList,
     JetButton,
     JetDangerButton,
-    JetDialogModal,
   },
   props: ["config", "invoice", "show"],
-  emits: ["closeInvoice", "showForm"],
+  emits: ["closeInvoice", "showForm", "showCancelForm"],
   data() {
     return {
       tabs: ["items", "pagos"],
@@ -190,8 +169,12 @@ export default {
       return dayjs(date).format(formatDate);
     },
     cancelPayment(payment) {
-      console.log(payment);
-      this.showingCancelPayment = true;
+      let data = {
+        type:'payment',
+        payment
+      }
+
+      this.$emit('showCancelForm', data);
     },
   }, //.end methods
   computed: {

@@ -23,6 +23,7 @@
             :show="showingInvoice"
             @closeInvoice="showingInvoice = false"
             @showForm="showFormModal"
+            @showCancelForm="showCancelModal"
           />
           <!-- Modal para cargar datos -->
           <waiting-spin :show="loadingResource"></waiting-spin>
@@ -44,8 +45,8 @@
         v-if="formModal.form === 'add-payment'"
         :boxs="boxs"
         :invoice="invoice"
-        @lockModal="lockModal = true"
-        @unlockModal="lockModal = false"
+        @lockModal="formModal.lock = true"
+        @unlockModal="formModal.lock = false"
         @updateInvoice="updateInvoice"
       />
 
@@ -53,6 +54,17 @@
     </modal>
 
     <!-- Modal Para Cancelaciones -->
+    <modal :show="cancelModal.show" @close="closeCancelModal" :closeable="!cancelModal.lock" maxWidth="sm">
+      <cancel-form
+        :invoice="cancelModal.data.invoice"
+        :Item="cancelModal.data.item"
+        :payment="cancelModal.data.payment"
+        :type="cancelModal.data.type"
+        @lockModal="cancelModal.lock = true"
+        @unlockModal="cancelModal.lock = false"
+        @updateInvoice="updateInvoice"
+      />
+    </modal>
   </app-layout>
 </template>
 
@@ -66,6 +78,7 @@ import WaitingSpin from "./Partial/Spin.vue";
 import Swal from "sweetalert2";
 import AddPaymentForm from "./Partial/AddPaymentForm.vue";
 import { formatCurrency } from "@/utilities.js";
+import CancelForm from "./Partial/CancelForm.vue";
 //import axios from "axios";
 
 export default {
@@ -77,6 +90,7 @@ export default {
     WaitingSpin,
     InvoiceShow,
     AddPaymentForm,
+    CancelForm,
   },
   props: ["customers", "boxs", "config", "invoices"],
   data() {
@@ -90,21 +104,19 @@ export default {
         lock: false,
         form: null, //[new-invoice, add-payment]
       },
+      cancelModal: {
+        show: false,
+        lock: false,
+        data: {
+          invoice: null,
+          item: null,
+          payment: null,
+          type: null,
+        },
+      },
     };
   },
   methods: {
-    /**
-     * @param {string} form Nombre del formulario a habilitar
-     */
-    showFormModal(form) {
-      this.formModal.show = true;
-      this.formModal.form = form;
-    },
-    closeFormModal() {
-      this.formModal.show = false;
-      this.formModal.lock = false;
-      this.formModal.form = null;
-    },
     addInvoice(invoice) {
       this.invoices.push(invoice);
       this.closeFormModal();
@@ -145,12 +157,46 @@ export default {
 
       this.getInvoice(invoice.id);
       this.closeFormModal();
+      this.closeCancelModal();
 
       Swal.fire({
         title: `¡Factura Actualizada!`,
         icon: "success",
         text: `La factura N° ${invoice.invoice_number} fue actualizada con éxito.`,
       });
+    },
+    /**
+     * @param {string} form Nombre del formulario a habilitar
+     */
+    showFormModal(form) {
+      this.formModal.show = true;
+      this.formModal.form = form;
+    },
+    closeFormModal() {
+      this.formModal.show = false;
+      this.formModal.lock = false;
+      this.formModal.form = null;
+    },
+    /**
+     * @param {object} data - Object with information of cancel {type, data}
+     */
+    showCancelModal(data) {
+      this.cancelModal.show = true;
+      this.cancelModal.data.type = data.type;
+      this.cancelModal.data.invoice = this.invoice;
+
+      if (data.type === "invoice") this.cancelModal.data.invoice = data.invoice;
+      else if (data.type === "payment") this.cancelModal.data.payment = data.payment;
+      else if (data.type === "item") this.cancelModal.data.item = data.item;
+      else this.closeCancelModal();
+    },
+    closeCancelModal() {
+      this.cancelModal.show = false;
+      this.cancelModal.lock = false;
+      this.cancelModal.data.invoice = null;
+      this.cancelModal.data.item = null;
+      this.cancelModal.data.payment = null;
+      this.cancelModal.data.type = null;
     },
   },
   mounted() {

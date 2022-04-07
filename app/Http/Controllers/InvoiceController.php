@@ -12,6 +12,7 @@ use App\Models\Invoice\InvoicePayment;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
@@ -361,6 +362,80 @@ class InvoiceController extends Controller
         'invoice' => $invoice
       ];
     }
+  }
+
+  public function cancelPayment(Request $request)
+  {
+    $rules = [
+      'invoiceId' => 'required|integer|exists:invoice,id',
+      'paymentId' => 'required|integer|exists:invoice_payment,id',
+      'message' => 'required|string|min:3',
+      'password' => 'required|string|min:3',
+      'password' => ['required', 'string', 'min:3', function ($attr, $value, $fail) {
+        if (!Hash::check($value, auth()->user()->password)) {
+          return $fail('La contraseña es incorrecta.');
+        }
+      }]
+    ];
+
+    $attr = [
+      'password' => 'contraseña',
+      'message' => 'motivo',
+    ];
+
+    $messages = [
+      'password.required' => 'Se requiere su contraseña para continuar.',
+      'message.required' => "Se requiere un motivo para realizar la cancelación"
+    ];
+
+    $request->validate($rules, $messages, $attr);
+
+    $ok = false;
+    $message = null;
+    $error = null;
+
+    //Recupero la factura
+    $invoice = Invoice::find($request->invoiceId);
+    //Se recupera el pago
+    $payment = InvoicePayment::find($request->paymentId);
+
+    //Se actualiza el saldo de la factura y el dinero
+    $invoice->balance = bcadd($invoice->balance, $payment->amount);
+    //Se cancela el pago
+    $payment->cancel = true;
+    $payment->cancel_message = auth()->user()->name . ": " . $request->input('message');
+
+    DB::beginTransaction();
+
+    try {
+      //Se verifica si el pago tiene asociada una transacción
+      if ($payment->transaction_code) {
+        /** @var CashboxTransaction */
+        $transaction = CashboxTransaction::where('code', $payment->transaction_code)->first();
+        if ($transaction) {
+          $transaction->delete();
+        }
+        $payment->transaction_code = null;
+      }
+
+      $invoice->save();
+      $payment->save();
+
+      DB::commit();
+      $ok = true;
+    } catch (\Throwable $th) {
+      DB::rollBack();
+      $message = "Error al guardar en la base de datos.";
+      $error = $th->getMessage();
+      //throw $th;
+    }
+
+    return [
+      'ok' => $ok,
+      'invoice' => $invoice,
+      'message' => $message,
+      'error' => $error
+    ];
   }
 
   /**

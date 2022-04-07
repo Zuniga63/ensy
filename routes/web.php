@@ -133,6 +133,7 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     ])
     ->parameters(['facturacion' => 'invoice']);
   Route::put('facturar-pago', [InvoiceController::class, 'storePayments'])->name('invoice.storePayments');
+  Route::put('cancelar-pago', [InvoiceController::class, 'cancelPayment'])->name('invoice.cancelPayment');
 
   //-----------------------------------------------------------------------------
   //-----------------------------------------------------------------------------
