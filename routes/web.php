@@ -133,13 +133,13 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     ])
     ->parameters(['facturacion' => 'invoice']);
   Route::put('facturar-pago', [InvoiceController::class, 'storePayments'])->name('invoice.storePayments');
-});
 
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-// RUTAS PARA ADMINSITRAR ACTIVIDADES DIARIAS
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-Route::get('actividades-diarias', [DailyActivityController::class, 'index'])->name('dailyActivity.index');
-Route::post('actividades-diarias', [DailyActivityController::class, 'store'])->name('dailyActivity.store');
-Route::delete('actividades-diarias/{dailyActivity}',  [DailyActivityController::class, 'destroy'])->name('dailyActivity.destroy');
+  //-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
+  // RUTAS PARA ADMINSITRAR ACTIVIDADES DIARIAS
+  //-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
+  Route::get('actividades-diarias', [DailyActivityController::class, 'index'])->name('dailyActivity.index');
+  Route::post('actividades-diarias', [DailyActivityController::class, 'store'])->name('dailyActivity.store');
+  Route::delete('actividades-diarias/{dailyActivity}',  [DailyActivityController::class, 'destroy'])->name('dailyActivity.destroy');
+});
