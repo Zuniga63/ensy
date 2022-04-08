@@ -20,6 +20,7 @@ class CreateInvoicePaymentTable extends Migration
       $table->timestamp('payment_date')->useCurrent();
       $table->string('description', 150)->nullable();
       $table->decimal('amount', 10, 2);                   //{0.00 - 99'999'999'.99}
+      $table->boolean('initial_payment')->default(false);
       $table->string('transaction_code')->nullable();
       $table->boolean('cancel')->default(0);
       $table->string('cancel_message')->nullable();

@@ -181,6 +181,7 @@ class InvoiceController extends Controller
             $invoicePayment->payment_date = $date->format('Y-m-d H:i');
             $invoicePayment->description = "Deposito en " . $payment['boxName'];
             $invoicePayment->amount = $paymentAmount;
+            $invoicePayment->initial_payment = true;
 
             /**
              * Acontinuación se crea la transacción y elcodigo para que elpayment pueda rastrearlo.
@@ -402,6 +403,10 @@ class InvoiceController extends Controller
     if (!$payment->cancel) {
       //Se actualiza el saldo de la factura y el dinero
       $invoice->balance = bcadd($invoice->balance, $payment->amount);
+      if ($payment->initial_payment) {
+        $invoice->cash = bcsub($invoice->cash, $payment->amount);
+        $invoice->credit = bcadd($invoice->credit, $payment->amount);
+      }
       //Se cancela el pago
       $payment->cancel = true;
       $payment->cancel_message = auth()->user()->name . ": " . $request->input('message');

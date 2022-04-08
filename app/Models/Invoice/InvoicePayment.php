@@ -24,6 +24,7 @@ class InvoicePayment extends Model
 		'payment_date',
 		'description',
 		'amount',
+		'initial_payment',
 		'cancel',
 		'transaction_code',
 	];
@@ -35,6 +36,7 @@ class InvoicePayment extends Model
 	 */
 	protected $casts = [
 		'cancel' => 'boolean',
+		'initial_payment' => 'boolean',
 	];
 
 	/**
