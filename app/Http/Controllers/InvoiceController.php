@@ -200,9 +200,9 @@ class InvoiceController extends Controller
               $transaction->blocked = true;
 
               if ($credit) {
-                $transaction->description = "Abono a la factura N° $invoice->number";
+                $transaction->description = "Venta: Pago inicial a la factura N° $invoice->number";
               } else {
-                $transaction->description = "Cancelación de la factura N° $invoice->number";
+                $transaction->description = "Venta: Pago de la factura N° $invoice->number";
               }
 
               $transaction->save();
@@ -285,8 +285,8 @@ class InvoiceController extends Controller
             if ($paymentItem['registerTransaction']) {
               $code = uniqid($this->CODE_PREFIX);
               $description = $balanceIsCancelled
-                ? "Cancelación de la factura N° $invoice->number"
-                : "Abono a la factura N° $invoice->number";
+                ? "Abono: Cancelación del saldo de la factura N° $invoice->number"
+                : "Abono: Pago a la factura N° $invoice->number";
 
               /** @var CashboxTransaction */
               $transaction = new CashboxTransaction([
