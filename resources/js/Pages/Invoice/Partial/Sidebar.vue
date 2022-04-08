@@ -37,39 +37,23 @@
       <div class="grid grid-cols-2 gap-2 mb-2">
         <!-- From -->
         <div class="flex flex-col">
-          <label
-            for="fromDate"
-            class="text-xs text-gray-800 mb-1 tracking-wider"
-            >Desde</label
-          >
+          <label for="fromDate" class="text-xs text-gray-800 mb-1 tracking-wider">Desde</label>
           <input
             type="date"
             name="fromDate"
             id="fromDate"
-            class="
-              border border-gray-200
-              rounded
-              focus:ring focus:ring-indigo-400 focus:ring-opacity-50
-              text-xs
-            "
+            class="border border-gray-200 rounded focus:ring focus:ring-indigo-400 focus:ring-opacity-50 text-xs"
           />
         </div>
 
         <!-- To -->
         <div class="flex flex-col">
-          <label for="toDate" class="text-xs text-gray-800 mb-1 tracking-wider"
-            >Hasta</label
-          >
+          <label for="toDate" class="text-xs text-gray-800 mb-1 tracking-wider">Hasta</label>
           <input
             type="date"
             name="toDate"
             id="toDate"
-            class="
-              border border-gray-200
-              rounded
-              focus:ring focus:ring-indigo-400 focus:ring-opacity-50
-              text-xs
-            "
+            class="border border-gray-200 rounded focus:ring focus:ring-indigo-400 focus:ring-opacity-50 text-xs"
           />
         </div>
       </div>
@@ -87,10 +71,7 @@
             text-white text-xs
             font-semibold
             hover:ring hover:ring-emerald-500 hover:ring-opacity-40
-            focus:outline-none
-            focus:ring
-            focus:ring-emerald-500
-            focus:ring-opacity-40
+            focus:outline-none focus:ring focus:ring-emerald-500 focus:ring-opacity-40
             transition-shadow
           "
           @click="$emit('enabledForm', 'new-invoice')"
@@ -105,13 +86,10 @@
       <ul>
         <li
           class="
-            border border-gray-800
+            border
             rounded-md
             overflow-hidden
-            hover:cursor-pointer
-            hover:ring
-            hover:ring-gray-500
-            hover:ring-opacity-40
+            hover:cursor-pointer hover:ring hover:ring-gray-500 hover:ring-opacity-40
             transition-shadow
             shadow
             mb-4
@@ -119,8 +97,16 @@
           v-for="invoice in invoiceList"
           :key="invoice.id"
           @click.stop="$emit('loadInvoice', invoice.id)"
+          :class="{
+            'opacity-40': invoice.cancel,
+            'border-gray-800 hover:ring-gray-500': invoice.balance,
+            'border-emerald-600 hover:ring-emerald-500': !invoice.balance,
+          }"
         >
-          <header class="flex justify-between px-2 py-2 bg-gray-800">
+          <header
+            class="flex justify-between px-2 py-2 bg-gray-800"
+            :class="{ 'bg-gray-800': invoice.balance, 'bg-emerald-600': !invoice.balance }"
+          >
             <p class="text-xs text-gray-50">
               Factura N°: <span class="font-medium">{{ invoice.number }}</span>
             </p>
@@ -155,9 +141,7 @@
               <!-- Amount -->
               <div class="">
                 <h3 class="text-xs text-gray-400 text-center">Valor Factura</h3>
-                <p
-                  class="text-center tex-sm text-gray-800 tracking-wider font-"
-                >
+                <p class="text-center tex-sm text-gray-800 tracking-wider font-">
                   {{ formatCurrency(invoice.amount) }}
                 </p>
               </div>
@@ -165,9 +149,7 @@
               <!-- Balance -->
               <div v-if="invoice.balance">
                 <h3 class="text-xs text-gray-400 text-center">Saldo</h3>
-                <p
-                  class="text-center tex-sm text-gray-800 tracking-wider font-"
-                >
+                <p class="text-center tex-sm text-gray-800 tracking-wider font-">
                   {{ formatCurrency(invoice.balance) }}
                 </p>
               </div>
@@ -195,7 +177,7 @@ export default {
   components: {
     SearchIcon,
   },
-  emits: ["enabledForm", 'loadInvoice'],
+  emits: ["enabledForm", "loadInvoice"],
   props: {
     invoices: {
       type: Array,
