@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
+use stdClass;
 
 class InvoiceController extends Controller
 {
@@ -681,6 +682,80 @@ class InvoiceController extends Controller
       'error' => $error,
       'invoice' => $invoice->refresh()
     ];
+  }
+
+  public function cancelInvoice(Request $request)
+  {
+    $res = new stdClass;
+    $res->ok = false;
+    $res->message = null;
+    $res->error = null;
+    $res->invoice = null;
+
+
+    $rules = [
+      'invoiceId' => 'required|integer|exists:invoice,id',
+      'message' => 'required|string|min:3',
+      'password' => ['required', 'string', 'min:3', function ($attr, $value, $fail) {
+        if (!Hash::check($value, auth()->user()->password)) {
+          return $fail('La contraseña es incorrecta.');
+        }
+      }]
+    ];
+
+    $attr = [
+      'password' => 'contraseña',
+      'message' => 'motivo',
+    ];
+
+    $messages = [
+      'password.required' => 'Se requiere su contraseña para continuar.',
+      'message.required' => "Se requiere un motivo para realizar la cancelación"
+    ];
+
+    $request->validate($rules, $messages, $attr);
+
+    //Recupero la instancia de la factura
+    /** @var Invoice */
+    $invoice = Invoice::with('payments', 'items')->find($request->invoiceId);
+
+    if ($invoice->cancel) {
+      $res->message = "La factura ya fue cancelada.";
+      return $res;
+    }
+
+    $invoice->cancel = true;
+    $invoice->cancel_message = $request->message;
+
+    DB::beginTransaction();
+
+    $invoice->items->each(function ($item) use ($request) {
+      if (!$item->cancel) {
+        $item->cancel = true;
+        $item->cancel_message = $request->message;
+      }
+    });
+
+    $invoice->payments->each(function ($payment) use ($request) {
+      if (!$payment->cancel) {
+        $payment->cancel = true;
+        $payment->cancel_message = $request->message;
+
+        if ($payment->transaction_code) {
+          $transaction = CashboxTransaction::where('code', $payment->transaction_code)->first();
+          $transaction ? $transaction->delete() : null;
+        }
+      }
+    });
+
+    $invoice->push();
+
+    DB::commit();
+
+    $res->ok = true;
+    $res->invoice = $invoice;
+
+    return $res;
   }
 
   /**

@@ -180,7 +180,7 @@ export default {
       this.cancelModal.data.type = data.type;
       this.cancelModal.data.invoice = this.invoice;
 
-      if (data.type === "invoice") this.cancelModal.data.invoice = data.invoice;
+      if (data.type === "invoice") undefined;
       else if (data.type === "payment") this.cancelModal.data.payment = data.payment;
       else if (data.type === "item") this.cancelModal.data.item = data.item;
       else this.closeCancelModal();

@@ -123,7 +123,9 @@
       </div>
 
       <footer class="flex justify-end px-4 py-3 bg-gray-300">
-        <jet-danger-button class="mr-4">Cancelar Factura </jet-danger-button>
+        <jet-danger-button class="mr-4" v-if="!invoice.cancel" @click="$emit('showCancelForm', { type: 'invoice' })"
+          >Cancelar Factura
+        </jet-danger-button>
         <jet-button>Imprimir Factura</jet-button>
       </footer>
     </div>

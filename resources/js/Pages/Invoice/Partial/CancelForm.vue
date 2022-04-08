@@ -19,6 +19,12 @@
         de la factura <span class="text-red-600 font-semibold">N° {{ invoice.invoice_number }} </span> a nombre del
         cliente <span class="font-semibold"> {{ invoice.customer?.full_name || invoice.customer_name }} </span>.
       </p>
+
+      <p class="text-xs text-gray-600" v-if="type === 'invoice'">
+        Se va a anular la factura <span class="text-red-600 font-semibold">N° {{ invoice.invoice_number }} </span> por
+        valor de <span class="font-semibold">{{ formatCurrency(invoice.amount) }}</span> a nombre del cliente
+        <span class="font-semibold"> {{ invoice.customer?.full_name || invoice.customer_name }} </span>.
+      </p>
     </header>
 
     <div class="px-4 py-6">
@@ -63,7 +69,6 @@
             min="0.001"
             :max="item.quantity"
             step="0.001"
-
           />
         </div>
         <input-error :message="errors.quantity" class="col-span-3 text-xs mt-1 ml-2"></input-error>
@@ -88,6 +93,14 @@
             algunas de las cajas de la plataforma.
           </p>
         </div>
+
+        <!-- Nota para la anulación de facturas -->
+        <div v-if="type === 'invoice'" class="p-2 bg-gray-200 rounded shadow mt-4">
+          <p class="text-gray-600 text-xs">
+            <span class="text-red-600">Nota 1:</span> Al anular una factura todos los pagos y artículos son cancelados
+            con el mismo concepto y las transacciones asociadas son eliminadas del sistema.
+          </p>
+        </div>
       </div>
 
       <transition
@@ -102,7 +115,11 @@
           <!-- Spin -->
           <spin-icon class="h-5 w-5 mr-2 text-gray-800" />
 
-          <p class="text-gray-800 text-sm animate-pulse">Anulando pago.</p>
+          <p class="text-gray-800 text-sm animate-pulse">
+            <span v-if="type === 'payment'">Anulando pago.</span>
+            <span v-if="type === 'item'">Anulando Item.</span>
+            <span v-if="type === 'invoice'">Anulando Factura.</span>
+          </p>
         </div>
       </transition>
     </div>
@@ -112,6 +129,7 @@
       <jet-danger-button :disabled="processing" type="submit">
         <span v-if="type === 'payment'">Anular Pago</span>
         <span v-if="type === 'item'">Anular Item</span>
+        <span v-if="type === 'invoice'">Anular Factura</span>
       </jet-danger-button>
     </footer>
   </form>
@@ -175,6 +193,8 @@ export default {
         url = route("invoice.cancelPayment");
       } else if (this.type === "item") {
         url = route("invoice.cancelItem");
+      } else if (this.type === "invoice") {
+        url = route("invoice.cancel");
       }
 
       return { url, data };
@@ -230,10 +250,13 @@ export default {
 
       if (this.type === "payment") {
         title = `¡Pago Anulado!`;
-        message = `El pago a la factura ${this.invoice.invoice_number} fue anulado.`;
+        message = `El pago a la factura N° ${this.invoice.invoice_number} fue anulado.`;
       } else if (this.type === "item") {
         title = `¡Articulo Anulado!`;
-        message = `El articulo ${this.item.description} de la la factura ${this.invoice.invoice_number} fue anulado.`;
+        message = `El articulo ${this.item.description} de la la factura N° ${this.invoice.invoice_number} fue anulado.`;
+      }else if(this.type === "invoice"){
+        title = "¡Factura Anulada!";
+        message = `La factura N° ${this.invoice.invoice_number} fue anulada.`
       }
 
       if (title) {
@@ -247,7 +270,7 @@ export default {
   },
   computed: {
     title() {
-      if (this.type === "invoice") return "Cancelar Factura de Venta";
+      if (this.type === "invoice") return "Anular Factura de Venta";
       if (this.type === "payment") return "Anular Pago";
       if (this.type === "item") return "Anular Articulo";
 
