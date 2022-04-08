@@ -371,7 +371,6 @@ class InvoiceController extends Controller
       'invoiceId' => 'required|integer|exists:invoice,id',
       'paymentId' => 'required|integer|exists:invoice_payment,id',
       'message' => 'required|string|min:3',
-      'password' => 'required|string|min:3',
       'password' => ['required', 'string', 'min:3', function ($attr, $value, $fail) {
         if (!Hash::check($value, auth()->user()->password)) {
           return $fail('La contraseña es incorrecta.');
@@ -444,6 +443,243 @@ class InvoiceController extends Controller
       'invoice' => $invoice,
       'message' => $message,
       'error' => $error
+    ];
+  }
+
+  public function cancelItem(Request $request)
+  {
+    $ok = false;
+    $message = null;
+    $error = null;
+    $log = [];
+
+
+    $rules = [
+      'invoiceId' => 'required|integer|exists:invoice,id',
+      'itemId' => 'required|integer|exists:invoice_item,id',
+      'quantity' => 'required|numeric|min:0.001',
+      'message' => 'required|string|min:3',
+      'password' => ['required', 'string', 'min:3', function ($attr, $value, $fail) {
+        if (!Hash::check($value, auth()->user()->password)) {
+          return $fail('La contraseña es incorrecta.');
+        }
+      }]
+    ];
+
+    $attr = [
+      'password' => 'contraseña',
+      'message' => 'motivo',
+    ];
+
+    $messages = [
+      'password.required' => 'Se requiere su contraseña para continuar.',
+      'message.required' => "Se requiere un motivo para realizar la cancelación"
+    ];
+
+    $request->validate($rules, $messages, $attr);
+
+    $log[] = "Los datoś pasan la validación";
+
+    //Se recupera las instancias
+    /** @var Invoice */
+    $invoice = Invoice::find($request->invoiceId);
+    /** @var InvoiceItem */
+    $item = InvoiceItem::find($request->itemId);
+    $log[] = "Se obtinen los recursos de la factura y el articulo";
+
+    if ($item->cancel) {
+      return [
+        'ok' => false,
+        'message' => 'El articulo ya fue cancelado.'
+      ];
+    }
+
+    //Se calculas las variables del proceso
+    /** 
+     * Valor Neto del articulo 
+     * @var string
+     * */
+    $itemPrice = bcmul($item->unit_value, $request->quantity, 2);
+    /** 
+     * Valor total de los descuentos aplicados al articulo 
+     * @var string 
+     * */
+    $discount = $item->discount ? bcmul($item->discount, $request->quantity, 2) : "0";
+    /**
+     * Valor total a descontar de las facturas
+     * @var string
+     */
+    $amount = bcsub($itemPrice, $discount, 2);
+    /**
+     * Valor total a descontar de los pagos
+     * @var string
+     */
+    $cashDiscount = "0";
+
+    //Se actualiza el estado basico de la factura
+    $invoice->subtotal = bcsub($invoice->subtotal, $itemPrice);
+    $invoice->discount = $item->discount ? bcsub($invoice->discount, $discount) : $invoice->discount;
+    $invoice->amount = bcsub($invoice->amount, $amount);
+
+    if ($invoice->credit && bccomp($invoice->credit, $amount) >= 0) {
+      //Se decuenta el valor del articulo
+      $invoice->credit = bcsub($invoice->credit, $amount);
+    } else {
+      //Se anula el credito
+      $invoice->credit = null;
+    }
+
+    // Se actualiza el estado efectivo de la factura
+    if ($invoice->balance) {
+      if (bccomp($invoice->balance, $amount) >= 0) {
+        $invoice->balance = bcsub($invoice->balance, $amount);
+      } else {
+        $cashDiscount = bcsub($amount, $invoice->balance);
+        $invoice->balance = null;
+      }
+    } else {
+      $cashDiscount = $amount;
+    }
+
+    $log[] = "Se realiza la actualización de la factura.";
+
+    //Se procede a hacer la modificaciones
+    DB::beginTransaction();
+    try {
+      //Se anula el articulo
+      $item->cancel = true;
+      $item->cancel_message = $request->message;
+      $itemQuantity = floatval($item->quantity);
+      $cancelQuantity = floatval($request->quantity);
+      if ($cancelQuantity <= $itemQuantity) {
+        $quantityDiff = floatval($item->quantity) - floatval($request->quantity);
+
+        if (abs($quantityDiff) > 0.0009) {
+          //Se crea un nuevo articulo conservando los datos del original
+          $newItem = new InvoiceItem([
+            'quantity' => $quantityDiff,
+            'description' => $item->description,
+            'unit_value' => $item->unit_value,
+            'discount' => $item->discount,
+            'amount' => bcmul(bcsub($item->unit_value, $item->discount, 2), $quantityDiff, 2),
+          ]);
+
+          $invoice->items()->save($newItem);
+          $log[] = "Se crea un articulo adicional";
+        }
+      } else {
+        return [
+          'ok' => $ok,
+          'message' => "La cantidad a cancelar es mayor que la cantidad del articulo",
+          'log' => $log
+        ];
+      }
+
+      //Se actualizan los pagos
+      if (bccomp($cashDiscount, "0", 2) > 0) {
+
+        //Se recupera el saldo total de los pagos.
+        $cashAmount = $invoice
+          ->payments()
+          ->where('cancel', 0)
+          ->sum('amount');
+
+        $log[] = "Se recupera el valor de los pagos: " . $cashAmount;
+
+        if (bccomp($cashDiscount, $cashAmount, 2) <= 0) {
+          //Se recuperaon los pagos en orden inverso
+          $payments = $invoice->payments()
+            ->where('cancel', 0)
+            ->orderBy('id', 'DESC')
+            ->get();
+
+          //Se recorre cada uno para ir actualizando el valor
+          $payments->each(function ($payment, $key) use (&$cashDiscount, &$invoice) {
+            //Se comprueba que el saldo del pago
+            if (bccomp($cashDiscount, $payment->amount) >= 0) {
+              //Se cancela el pago
+              $payment->cancel = true;
+              $payment->cancel_message = "Cancelación de articulo";
+
+              //Se elimina la transacción asociada
+              if ($payment->transaction_code) {
+                /** @var CashboxTransaction */
+                $transaction = CashboxTransaction::where('code', $payment->transaction_code)->first();
+                $transaction ? $transaction->delete() : null;
+              }
+
+              $payment->initial_payment ? $invoice->cash = bcsub($invoice->cash, $payment->amount) : null;
+
+              //se actualiza el saldo
+              $cashDiscount = bcsub($cashDiscount, $payment->amount);
+            } else {
+              //Se decuenta el valor restante
+              $payment->amount = bcsub($payment->amount, $cashDiscount);
+              $payment->description = $payment->description . " [*]";
+              //Se actualiza la transacción asociada
+              if ($payment->transaction_code) {
+                /** @var CashboxTransaction */
+                $transaction = CashboxTransaction::where('code', $payment->transaction_code)->first();
+                if ($transaction) {
+                  $transaction->transaction_date = Carbon::now()->format('Y-m-d H:i');
+                  $transaction->description = $transaction->description . " [*]";
+                  $transaction->amount = bcsub($transaction->amount, $cashDiscount);
+                  $transaction->save();
+                }
+              }
+
+              //Se actualiza la factura
+              $payment->initial_payment ? $invoice->cash = bcsub($invoice->cash, $cashDiscount) : null;
+
+              //Se actualiza el saldo
+              $cashDiscount = "0";
+            }
+
+            //Se guarda el estado
+            $payment->save();
+
+            if (bccomp($cashDiscount, "0", 2) <= 0) {
+              return false;
+            }
+          });
+        } else {
+          //Existe un error
+          $log[] = "El dinero a descontar es menor que saldo de los pagos [descuento: $cashDiscount, pagos: $cashAmount]";
+          return [
+            'ok' => $ok,
+            'message' => "Error al manipular los pagos.",
+            'log' => $log
+          ];
+        }
+      }
+
+      //Se auditan las variables 
+      $invoice->discount = bccomp($invoice->discount, 0, 2) != 0 ? $invoice->discount : null;
+      $invoice->credit = bccomp($invoice->credit, '0', 2) != 0 ? $invoice->credit : null;
+      $invoice->cash = bccomp($invoice->cash, '0', 2) != 0 ? $invoice->cash : null;
+      $invoice->balance = bccomp($invoice->balance, '0', 2) != 0 ? $invoice->balance : null;
+
+      if (!$invoice->balance) {
+        $invoice->cancel = true;
+        $invoice->cancel_message = "Factura con importe cero.";
+      }
+
+      $invoice->save();
+      $item->save();
+
+      DB::commit();
+      $ok = true;
+    } catch (\Throwable $th) {
+      $message = "Error al guardar en la base de datos";
+      $error = $th->getMessage() . "\n" . $th->getLine();
+      //throw $th;
+    }
+
+    return [
+      'ok' => $ok,
+      'message' => $message,
+      'error' => $error,
+      'invoice' => $invoice->refresh()
     ];
   }
 

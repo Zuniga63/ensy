@@ -22,6 +22,7 @@ class InvoiceItem extends Model
     'quantity',
     'description',
     'unit_value',
+    'discount',
     'amount',
     'cancel',
     'cancel_message',

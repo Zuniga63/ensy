@@ -57,7 +57,7 @@
     <modal :show="cancelModal.show" @close="closeCancelModal" :closeable="!cancelModal.lock" maxWidth="sm">
       <cancel-form
         :invoice="cancelModal.data.invoice"
-        :Item="cancelModal.data.item"
+        :item="cancelModal.data.item"
         :payment="cancelModal.data.payment"
         :type="cancelModal.data.type"
         @lockModal="cancelModal.lock = true"

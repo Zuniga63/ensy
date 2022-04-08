@@ -10,6 +10,15 @@
         <span class="text-red-600 font-semibold">N° {{ invoice.invoice_number }} </span>
         por valor de <span class="font-semibold">{{ formatCurrency(payment.amount) }}</span>
       </p>
+
+      <p class="text-xs text-gray-600" v-if="type === 'item'">
+        Se va a anular el articulo <span class="font-semibold">{{ item.description }}</span> por valor de
+        <span class="font-semibold">
+          {{ formatCurrency(item.hasDiscount ? item.priceWithDiscount : item.price) }}
+        </span>
+        de la factura <span class="text-red-600 font-semibold">N° {{ invoice.invoice_number }} </span> a nombre del
+        cliente <span class="font-semibold"> {{ invoice.customer?.full_name || invoice.customer_name }} </span>.
+      </p>
     </header>
 
     <div class="px-4 py-6">
@@ -18,7 +27,7 @@
         <custom-label required value="Motivo de cancelación" class="text-gray-800 text-sm mb-2" for="cancelMessage" />
         <jet-input
           type="text"
-          class="w-full"
+          class="w-full text-gray-800 text-xs"
           placeholder="Escribelo aquí."
           id="cancelMessage"
           v-model="message"
@@ -32,13 +41,32 @@
         <custom-label required value="Contraseña" class="text-gray-800 text-sm mb-2" for="cancelPassword" />
         <jet-input
           type="password"
-          class="w-full"
+          class="w-full text-gray-800 text-xs"
           placeholder="Escribe tú contraseña."
           id="cancelPassword"
           v-model="password"
           ref="password"
         />
         <input-error :message="errors.password" class="text-xs mt-1 ml-2"></input-error>
+      </div>
+
+      <!-- Quantity -->
+      <div class="grid grid-cols-3 mb-2" v-if="type === 'item'">
+        <div class="col-span-1">
+          <custom-label required value="Cant." class="text-gray-800 text-sm mb-2" for="cancelQuantity" />
+          <jet-input
+            type="number"
+            class="w-full text-gray-800 text-center text-xs"
+            id="cancelQuantity"
+            v-model.number="quantity"
+            ref="message"
+            min="0.001"
+            :max="item.quantity"
+            step="0.001"
+
+          />
+        </div>
+        <input-error :message="errors.quantity" class="col-span-3 text-xs mt-1 ml-2"></input-error>
       </div>
 
       <!-- Notas -->
@@ -49,6 +77,15 @@
             <span class="text-red-600">Nota:</span> Anular un pago implica la eliminación de la transacción asociada,
             solo si el pago no ha sido bloqueado, en cuyo caso se registrará un nuevo movimiento indicando la salida del
             dinero de la caja.
+          </p>
+        </div>
+
+        <!-- Notas para la anulación de articulos -->
+        <div v-if="type === 'item'" class="p-2 bg-gray-200 rounded shadow mt-4">
+          <p class="text-gray-600 text-xs">
+            <span class="text-red-600">Nota 1:</span> Al anular un articulo de una factura, el valor del mismo es
+            descontado y abonado al crédito. Si es mayor que el saldo, el excedente es registrado como un egreso de
+            algunas de las cajas de la plataforma.
           </p>
         </div>
       </div>
@@ -74,6 +111,7 @@
       <jet-button :disabled="processing" type="button" @click="$emit('close')">Cancelar</jet-button>
       <jet-danger-button :disabled="processing" type="submit">
         <span v-if="type === 'payment'">Anular Pago</span>
+        <span v-if="type === 'item'">Anular Item</span>
       </jet-danger-button>
     </footer>
   </form>
@@ -108,9 +146,11 @@ export default {
     return {
       message: null,
       password: null,
+      quantity: this.item?.quantity,
       errors: {
         message: null,
         password: null,
+        quantity: null,
       },
       processing: false,
     };
@@ -126,22 +166,25 @@ export default {
         invoiceId: this.invoice.id,
         paymentId: this.payment?.id,
         itemId: this.item?.id,
+        quantity: this.quantity,
         message: this.message,
         password: this.password,
       };
 
       if (this.type === "payment") {
         url = route("invoice.cancelPayment");
+      } else if (this.type === "item") {
+        url = route("invoice.cancelItem");
       }
 
       return { url, data };
     },
     async submit() {
-      this.processing = true;
-      this.$emit("lockModal");
       let data = this.getData();
 
       if (data.url) {
+        this.processing = true;
+        this.$emit("lockModal");
         try {
           const res = await axios.put(data.url, data.data);
           if (res.data.ok) {
@@ -175,16 +218,29 @@ export default {
       }
       this.errors.message = errors.message ? errors.message[0] : null;
       this.errors.password = errors.password ? errors.password[0] : null;
+      this.errors.quantity = errors.quantity ? errors.quantity[0] : null;
 
       if (errors.message) this.$refs.message.focus();
       else if (errors.password) this.$refs.password.focus();
+      else if (errors.quantity) this.$refs.quantity.focus();
     },
     showNotification() {
+      let title = null;
+      let message = null;
+
       if (this.type === "payment") {
+        title = `¡Pago Anulado!`;
+        message = `El pago a la factura ${this.invoice.invoice_number} fue anulado.`;
+      } else if (this.type === "item") {
+        title = `¡Articulo Anulado!`;
+        message = `El articulo ${this.item.description} de la la factura ${this.invoice.invoice_number} fue anulado.`;
+      }
+
+      if (title) {
         Swal.fire({
-          title: `¡Pago Anulado!`,
+          title,
           icon: "success",
-          text: `EL pago a la factura ${this.invoice.invoice_number} fue anulado.`,
+          text: message,
         });
       }
     },
@@ -193,7 +249,7 @@ export default {
     title() {
       if (this.type === "invoice") return "Cancelar Factura de Venta";
       if (this.type === "payment") return "Anular Pago";
-      if (this.type === "item") return "Cancelar Articulo";
+      if (this.type === "item") return "Anular Articulo";
 
       return "Titulo por defecto";
     },

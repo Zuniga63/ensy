@@ -107,7 +107,7 @@
             </template>
 
             <template #items>
-              <item-list :items="invoice.items" />
+              <item-list :items="invoice.items" @cancelItem="cancelItem" />
             </template>
 
             <template #pagos>
@@ -169,12 +169,16 @@ export default {
       return dayjs(date).format(formatDate);
     },
     cancelPayment(payment) {
-      let data = {
-        type:'payment',
-        payment
-      }
-
-      this.$emit('showCancelForm', data);
+      this.$emit("showCancelForm", {
+        type: "payment",
+        payment,
+      });
+    },
+    cancelItem(item) {
+      this.$emit("showCancelForm", {
+        type: "item",
+        item,
+      });
     },
   }, //.end methods
   computed: {
