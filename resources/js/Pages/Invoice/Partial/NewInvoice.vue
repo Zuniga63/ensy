@@ -297,7 +297,7 @@ export default {
       try {
         const res = await axios.post(url, data);
         if (res.data.ok) {
-          this.$emit("addInvoice", res.data.invoice);
+          this.$emit("addInvoice", res.data);
         } else {
           this.generalErrors = [];
           this.generalErrors.push(res.data.message);

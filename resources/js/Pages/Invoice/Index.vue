@@ -49,8 +49,6 @@
         @unlockModal="formModal.lock = false"
         @updateInvoice="updateInvoice"
       />
-
-      <div v-show="form === 'add-item'">Formulario para agregar items a facturas.</div>
     </modal>
 
     <!-- Modal Para Cancelaciones -->
@@ -118,12 +116,14 @@ export default {
     };
   },
   methods: {
-    addInvoice(invoice) {
-      this.invoices.push(invoice);
+    addInvoice(data) {
+      this.invoices.push(data.invoice);
       this.closeFormModal();
 
-      let description = `Se guardó satisfactoriamente la factura N° ${invoice.number} `;
-      description += `por valor de ${formatCurrency(invoice.amount)} `;
+      let description = `Se guardó satisfactoriamente la factura N° ${data.invoice.number} `;
+      description += `por valor de ${formatCurrency(data.invoice.amount)} `;
+      this.config.invoiceNumber = data.newNumber;
+      this.getInvoice(data.invoice.id);
 
       Swal.fire({
         title: `¡Factura Guardada!`,

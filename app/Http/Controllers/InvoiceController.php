@@ -231,6 +231,7 @@ class InvoiceController extends Controller
     return [
       'ok' => true,
       'invoice' => $invoice,
+      'newNumber' => Invoice::max('number') + 1,
     ];
   }
 
