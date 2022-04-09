@@ -136,6 +136,7 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
   Route::put('cancelar-pago-de-factura', [InvoiceController::class, 'cancelPayment'])->name('invoice.cancelPayment');
   Route::put('cancelar-item-de-factura', [InvoiceController::class, 'cancelItem'])->name('invoice.cancelItem');
   Route::put('cancelar-factura', [InvoiceController::class, 'cancelInvoice'])->name('invoice.cancel');
+  Route::get('reporte-facturacion/semanal', [InvoiceController::class, 'getWeeklyReport'])->name('invoice.weeklyReport');
 
   //-----------------------------------------------------------------------------
   //-----------------------------------------------------------------------------

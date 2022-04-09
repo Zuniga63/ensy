@@ -30,8 +30,11 @@ class InvoiceController extends Controller
     $customers = $this->getCustomers();
     $boxs = Cashbox::orderBy('order')->get(['id', 'name',]);
     $config = $this->getInvoiceInformation();
-    $invoices = Invoice::orderBy('expedition_date', 'ASC')->get();
-    return Inertia::render('Invoice/Index', compact('customers', 'boxs', 'config', 'invoices'));
+    $invoices = Invoice::orderBy('id', 'ASC')->get();
+    $reports = [
+      'weeklyReport' => $this->getWeeklyReport(),
+    ];
+    return Inertia::render('Invoice/Index', compact('customers', 'boxs', 'config', 'invoices', 'reports'));
   }
 
   /**
@@ -806,6 +809,38 @@ class InvoiceController extends Controller
     //
   }
 
+  //------------------------------------------------------------------------
+  //  GRAPH
+  //------------------------------------------------------------------------
+  public function getWeeklyReport()
+  {
+    //Fechas limitantes
+    $now = Carbon::now();
+    $lastWeek = $now->clone()->subWeek()->startOfDay();
+    $format = "Y-m-d H:i";
+
+    //Se recuperan las facturas activas.
+    $invoices = Invoice::orderBy('expedition_date', "ASC")
+      ->where('cancel', 0)
+      ->where('expedition_date', '>=', $lastWeek->format($format))
+      ->where('expedition_date', '<=', $now->format($format))
+      ->without('items')
+      ->select(['id', 'expedition_date as date', 'amount', 'cash', 'credit'])
+      ->get();
+
+    $payments = InvoicePayment::orderBy('payment_date')
+      ->where('cancel', 0)
+      ->where('payment_date', '>=', $lastWeek->format($format))
+      ->where('payment_date', '<=', $now->format($format))
+      ->where('initial_payment', 0)
+      ->select(['id', 'payment_date as date', 'amount'])
+      ->get();
+
+    return [
+      'invoices' => $invoices,
+      'payments' => $payments,
+    ];
+  }
   //------------------------------------------------------------------------
   //  UTILITIES
   //------------------------------------------------------------------------

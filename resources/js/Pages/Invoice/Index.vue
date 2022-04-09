@@ -15,7 +15,8 @@
         <sidebar @enabled-form="showFormModal" :invoices="invoices" @load-invoice="getInvoice" />
 
         <!-- Content -->
-        <div class="relative col-span-3 min-h-full rounded-md overflow-hidden cogs shadow">
+        <div class="relative col-span-3 h-[32rem] rounded-md overflow-y-auto cogs shadow">
+          <week-report :report="weeklyReport" />
           <!-- Dialog for Show Invoice -->
           <invoice-show
             :config="config"
@@ -78,6 +79,7 @@ import Swal from "sweetalert2";
 import AddPaymentForm from "./Partial/AddPaymentForm.vue";
 import { formatCurrency } from "@/utilities.js";
 import CancelForm from "./Partial/CancelForm.vue";
+import WeekReport from "./Partial/Graph/WeekReport.vue";
 //import axios from "axios";
 
 export default {
@@ -90,8 +92,9 @@ export default {
     InvoiceShow,
     AddPaymentForm,
     CancelForm,
+    WeekReport,
   },
-  props: ["customers", "boxs", "config", "invoices"],
+  props: ["customers", "boxs", "config", "invoices", "reports"],
   data() {
     return {
       processing: false, //Se habilita cuando se está haciendo una solicitud
@@ -113,6 +116,7 @@ export default {
           type: null,
         },
       },
+      weeklyReport: this.reports.weeklyReport,
     };
   },
   methods: {
@@ -130,6 +134,8 @@ export default {
         icon: "success",
         text: description,
       });
+
+      this.getWeeklyReport();
     },
     /**
      * Se encarga de realizar una peticion al servidor para
@@ -149,6 +155,15 @@ export default {
         this.loadingResource = false;
       }
     },
+    async getWeeklyReport() {
+      try {
+        const res = await axios.get(route("invoice.weeklyReport"));
+        this.weeklyReport = res.data;
+        console.log(res.data, this.weeklyReport);
+      } catch (error) {
+        console.log(error);
+      }
+    },
     updateInvoice(invoice) {
       //Se actualiza la factura
       let index = this.invoices.findIndex((item) => item.id === invoice.id);
@@ -157,6 +172,7 @@ export default {
       }
 
       this.getInvoice(invoice.id);
+      this.getWeeklyReport();
       this.closeFormModal();
       this.closeCancelModal();
     },
