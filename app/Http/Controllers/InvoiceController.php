@@ -30,7 +30,7 @@ class InvoiceController extends Controller
     $customers = $this->getCustomers();
     $boxs = Cashbox::orderBy('order')->get(['id', 'name',]);
     $config = $this->getInvoiceInformation();
-    $invoices = Invoice::orderBy('expedition_date', 'ASC')->get();
+    $invoices = Invoice::orderBy('id', 'ASC')->get();
     return Inertia::render('Invoice/Index', compact('customers', 'boxs', 'config', 'invoices'));
   }
 
