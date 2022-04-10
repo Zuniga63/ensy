@@ -61,167 +61,169 @@ class InvoiceController extends Controller
       $this->getAttr()
     );
 
-    $date = Carbon::now();
-    $invoiceItems = [];
-    $invoicePayments = [];
+    /**
+     * *Necesario para registrar los pagos iniciales y la factura
+     * @var Carbon
+     */
+    $expeditionDate = Carbon::createFromFormat('Y-m-d', $request->expeditionDate);
+    /** 
+     * *Necesario para registrar las transacciones
+     * @param Carbon
+     */
+    $now = Carbon::now();
+    /**
+     * Formato con el que se guardan las fechas en la base de datos
+     * @var String
+     */
+    $dateFormat = "Y-m-d H:i";
 
-    $subtotal = 0;
-    $discount = 0;
-    $invoiceAmount = 0;
-    $cash = 0;
-    $credit = 0;
-    $change = 0;
+    /**
+     * Instancia de la factura
+     * @var Invoice
+     */
+    $invoice = new Invoice([
+      'customer_id' => $request->input('customerId'),
+      'seller_id' => auth()->user()->id,
+      'prefix' => null,
+      'number' => null,
+      'expedition_date' => $expeditionDate->format($dateFormat),
+      'expiration_date' => Carbon::createFromFormat('Y-m-d', $request->expirationDate)->format($dateFormat),
+      'seller_name' => auth()->user()->name,
+      'customer_name' => $request->input('customerName') ? $request->input('customerName') : 'Mostrador',
+      'customer_document' => $request->input('customerDocument'),
+      'customer_address' => $request->input('customerAddress'),
+      'customer_phone' => $request->input('customerPhone'),
+      'subtotal' => '0',
+      'discount' => null,
+      'amount' => '0',
+      'cash' => null,
+      'credit' => null,
+      'cash_change' => null,
+      'balance' => null,
+      'items' => [],
+      'payments' => [],
+    ]);
 
-    $items = $request->input('invoiceItems');
-    $payments = $request->input('invoicePayments');
+    $items = [];
+    $payments = [];
 
     /**
      * Se crean las instancias de los items que se van a registrar en la 
-     * factura y se actualiza los valores de $subtotal, discount, invoiceAmount
+     * factura y se actualiza los valores de $subtotal, discount, amount
      */
-    foreach ($items as $key => $item) {
-      $invoiceItem = new InvoiceItem();
-      $invoiceItem->quantity = $item['quantity'];
-      $invoiceItem->description = $item['description'];
-      $invoiceItem->unit_value = $item['unitValue'];
-      $invoiceItem->discount = $item['discount'] ? $item['discount'] : null;
-      $invoiceItem->amount = $item['amount'];
+    foreach ($request->input('invoiceItems') as $key => $item) {
+      $subtotal = bcmul($item['unitValue'], $item['quantity'], 2);
+      $discount = bcmul($item['discount'], $item['quantity'], 2);
+      $amount = bcsub($subtotal, $discount);
 
-      $invoiceItems[] = $invoiceItem;
+      //Se agrega al 
+      $items[] = new InvoiceItem([
+        'quantity' => $item['quantity'],
+        'description' => $item['description'],
+        'unit_value' => $item['unitValue'],
+        'discount' => $item['discount'] ? $item['discount'] : null,
+        'amount' => $amount,
+      ]);
 
-      $subtotal += $item['quantity'] * $item['unitValue'];
-      $discount += $item['discount'] * $item['quantity'];
-    }
-
-    $invoiceAmount = $subtotal - $discount;
-
-    /**
-     * Se crean las instancias de los pagos en efectivos
-     * realizado por el clientes y actualización de la variabel $cash
-     */
-    foreach ($payments as $key => $payment) {
-      $cash += $payment['amount'];
-    }
-
-    /**
-     * Se establece si es una venta a credito, en efectivo o credito efectivo.
-     * De la misma forma se define las transformaciónes a los pagos.
-     */
-    if ($invoiceAmount > $cash) {
-      $credit = $invoiceAmount - $cash;
-    } else {
-      $change = $cash - $invoiceAmount;
-    }
-
-    //return $request->input('customerName', 'Mostrador');
-
-    //----------------------------------------------------------------------------
-    //EN ESTE PUNTO SE TERMINAN LAS TAREAS PRELIMINARES 
-    //Y SE PROCEDE A GUARDAR LA INFORMACIÓN DE LA FACTURA EN LA BASE DE DATOS.
-    //----------------------------------------------------------------------------
-
-    /**
-     * Si la factura tiene credito entonces se verifica si el cliente existe
-     */
-    $customerExists = Customer::where('id', $request->input('customerId'))->exists();
-    if ($credit > 0 && !$customerExists) {
-      return [
-        'ok' => false,
-        'message' => 'No se puede registrar creditos a clientes que no estén registrados.'
-      ];
+      $invoice->subtotal = bcadd($invoice->subtotal, $subtotal, 2);
+      $invoice->discount = bcadd($invoice->discount, $discount, 2);
+      $invoice->amount = bcadd($invoice->amount, $amount, 2);
+      $invoice->credit = bcadd($invoice->credit, $amount, 2);
     }
 
     DB::beginTransaction();
 
     try {
-      $invoiceNumber = Invoice::max('number');
+      //Se define el numero de la factura.
+      $invoice->number = Invoice::max('number') + 1;
+      /**
+       * Valor maximo que puede registrarse con los pagos.
+       * @var String
+       */
+      $paymentTop = $invoice->amount;
 
-      /** @var Invoice */
-      $invoice = new Invoice();
-      $invoice->prefix = null;
-      $invoice->number = $invoiceNumber + 1;
+      /**
+       * Se procede a actualizar los valores de la factura para
+       * cash, credit, cash_change y balance. Al igual que a registrar
+       * los pagos que están por debajo del top.
+       */
+      foreach ($request->input('invoicePayments') as $key => $value) {
+        $amount = $value['amount'];
 
-      $invoice->seller_id = auth()->user()->id;
-      $invoice->seller_name = auth()->user()->name;
+        //Se actualizan los parametros de la factura.
+        $invoice->cash = bcadd($invoice->cash, $amount, 2);
+        $comp = bccomp($invoice->cash, $invoice->amount, 2);
 
-      $invoice->customer_id = $request->input('customerId');
-      $invoice->customer_name = $request->input('customerName') ? $request->input('customerName') : 'Mostrador';
-      $invoice->customer_document = $request->input('customerDocument');
-      $invoice->customer_address = $request->input('customerAddress');
-      $invoice->customer_phone = $request->input('customerPhone');
-
-      $invoice->expedition_date = Carbon::createFromFormat('Y-m-d', $request->input('expeditionDate'))->format('Y-m-d H:i');
-      $invoice->expiration_date = Carbon::createFromFormat('Y-m-d', $request->input('expirationDate'))->format('Y-m-d H:i');
-
-      $invoice->subtotal = $subtotal;
-      $invoice->discount = $discount > 0 ? $discount : null;
-      $invoice->amount = $invoiceAmount;
-      $invoice->cash = $cash > 0 ? $cash : null;
-      $invoice->credit = $credit > 0 ? $credit : null;
-      $invoice->cash_change = $change > 0 ? $change : null;
-      $invoice->balance = $credit > 0 ? $credit : null;
-
-      $invoice->save();
-
-      $invoice->items()->saveMany($invoiceItems);
-
-      if ($cash > 0) {
-        $balance = $invoiceAmount;
-
-        foreach ($payments as $key => $payment) {
-          $paymentAmount = $payment['amount'];
-
-          if ($balance > 0) {
-            $balance -= $paymentAmount;
-
-            if ($balance < 0) {
-              //?Es una suma porque el saldo queda negativo.
-              $paymentAmount += $balance;
-            }
-
-            //Se crea la transacción completa
-            $invoicePayment = new InvoicePayment();
-            $invoicePayment->customer_id = $request->input('customerId');
-            $invoicePayment->payment_date = $date->format('Y-m-d H:i');
-            $invoicePayment->description = "Deposito en " . $payment['boxName'];
-            $invoicePayment->amount = $paymentAmount;
-            $invoicePayment->initial_payment = true;
-
-            /**
-             * Acontinuación se crea la transacción y elcodigo para que elpayment pueda rastrearlo.
-             */
-
-            if ($payment['registerTransaction']) {
-
-              //Se crea la transacción
-              $transaction = new CashboxTransaction();
-              $transaction->cashbox_id = $payment['boxId'];
-              $transaction->transaction_date = $date->format('Y-m-d H:i');
-              $transaction->amount = $paymentAmount;
-              $transaction->blocked = true;
-
-              if ($credit) {
-                $transaction->description = "Venta: Pago inicial a la factura N° $invoice->number";
-              } else {
-                $transaction->description = "Venta: Pago de la factura N° $invoice->number";
-              }
-
-              $transaction->save();
-              $invoicePayment->transaction_id = $transaction->id;
-            }
-
-            $invoicePayments[] = $invoicePayment;
-          } else {
-            break;
-          }
+        if ($comp >= 0) {
+          //*En este punto el dinero en efectivo es mayor o igaul al valor de la factura
+          $invoice->credit = null;
+          //*Si es mayor entonces se calcula el cambio que otorga.
+          if ($comp > 0) $invoice->cash_change = bcsub($invoice->cash, $invoice->amount, 2);
+        } else {
+          //* En este punto el dinero en efectivo es menor que el valor de la factura.
+          $invoice->credit = bcsub($invoice->credit, $amount, 2);
         }
 
-        //Finalmente se guardan los pagos en la factura
-        $invoice->payments()->saveMany($invoicePayments);
+        //Se registran los pagos si están dentro del tope
+        if (bccomp($paymentTop, "0", 2) > 0) {
+          //Se actualiza el tope
+          $paymentTop = bcsub($paymentTop, $amount, 2);
+
+          //Si el nuevo tope es negativo se debe corregir el valor del importe
+          if (bccomp($paymentTop, '0', 2) < 0) $amount = bcadd($amount, $paymentTop);
+
+          //Se registra la transacción si el import es mayor que cero
+          if (bccomp($amount, "0", 2) > 0) {
+            $payment = new InvoicePayment([
+              'customer_id' => $request->input('customerId'),
+              'transaction_id' => null,
+              'payment_date' => $expeditionDate->format($dateFormat),
+              'description' => "Deposito en " . $value['boxName'],
+              'amount' => $amount,
+              'initial_payment' => true,
+            ]);
+
+            //Se registra la transacción
+            if ($value['registerTransaction']) {
+              $transanction = new CashboxTransaction([
+                'cashbox_id' => $value['boxId'],
+                'transaction_date' => $now->format($dateFormat),
+                'description' => "Venta: Pago inicial a la factura N° $invoice->number",
+                'amount' => $amount,
+                'blocked' => true,
+              ]);
+
+              if ($transanction->save()) {
+                $payment->transaction()->associate($transanction);
+              }
+            }
+
+            //Se guarda en el listado.
+            $payments[] = $payment;
+          }
+        }
+      }
+      
+      //* Se establece el saldo igual al credito
+      $invoice->balance = $invoice->credit;
+
+      /**
+       * Se verifica que si la factura tiene credito, entonces el cliente 
+       * debe estar registrado en la base de datos.
+       */
+      if ($invoice->credit && !$invoice->customer_id) {
+        DB::rollBack();
+        return [
+          'ok' => false,
+          'message' => 'No se puede registrar creditos a clientes que no estén registrados.'
+        ];
       }
 
 
-      $invoice->refresh();
+      //Se guarda el modelo
+      $invoice->save();
+      $invoice->items()->saveMany($items);
+      $invoice->payments()->saveMany($payments);
 
       DB::commit();
     } catch (\Throwable $th) {
