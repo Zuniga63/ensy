@@ -376,7 +376,7 @@ class InvoiceController extends Controller
     //Se recupera el pago
     $payment = InvoicePayment::find($request->paymentId);
 
-    if (!$payment->cancel && !$invoice->cancel) {
+    if (!$payment->cancel && !$invoice->cancel && $invoice->customer_id) {
       //El saldo de la factura aumenta en el valor del pago
       $invoice->balance = bcadd($invoice->balance, $payment->amount);
 
@@ -410,7 +410,9 @@ class InvoiceController extends Controller
         //throw $th;
       }
     } else {
-      $message = "¡El pago ya fue cancelado.!";
+      $message = !$invoice->customer_id 
+        ? "Cancelar pagos a ventas por mostrador no está soportado." 
+        : "¡El pago ya fue cancelado.!";
     }
 
     return [
