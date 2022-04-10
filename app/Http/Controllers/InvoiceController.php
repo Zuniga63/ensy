@@ -203,7 +203,7 @@ class InvoiceController extends Controller
           }
         }
       }
-      
+
       //* Se establece el saldo igual al credito
       $invoice->balance = $invoice->credit;
 
@@ -372,17 +372,22 @@ class InvoiceController extends Controller
     $error = null;
 
     //Recupero la factura
-    $invoice = Invoice::find($request->invoiceId);
+    $invoice = Invoice::without('item')->find($request->invoiceId);
     //Se recupera el pago
     $payment = InvoicePayment::find($request->paymentId);
 
     if (!$payment->cancel && !$invoice->cancel) {
-      //Se actualiza el saldo de la factura y el dinero
+      //El saldo de la factura aumenta en el valor del pago
       $invoice->balance = bcadd($invoice->balance, $payment->amount);
+
+      //Si es un pago inicial tambien se actualiza cash(-) y credit(+)
       if ($payment->initial_payment) {
         $invoice->cash = bcsub($invoice->cash, $payment->amount);
         $invoice->credit = bcadd($invoice->credit, $payment->amount);
+
+        if (bccomp($invoice->cash, '0', 2) <= 0) $invoice->cash = null;
       }
+
       //Se cancela el pago
       $payment->cancel = true;
       $payment->cancel_message = auth()->user()->name . ": " . $request->input('message');
@@ -390,16 +395,8 @@ class InvoiceController extends Controller
       DB::beginTransaction();
 
       try {
-        //Se verifica si el pago tiene asociada una transacción
-        if ($payment->transaction) {
-          /** @var CashboxTransaction */
-          /* $transaction = CashboxTransaction::where('code', $payment->transaction_code)->first();
-          if ($transaction) {
-            $transaction->delete();
-          }
-          $payment->transaction_code = null; */
-          $payment->transaction->delete();
-        }
+        //Se elimina la transacción asociada.
+        if ($payment->transaction) $payment->transaction->delete();
 
         $invoice->save();
         $payment->save();
