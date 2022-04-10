@@ -438,9 +438,10 @@ class InvoiceController extends Controller
 
     //Se recupera las instancias
     /** @var Invoice */
-    $invoice = Invoice::find($request->invoiceId);
+    $invoice = Invoice::without('items')->find($request->invoiceId);
     /** @var InvoiceItem */
     $item = InvoiceItem::find($request->itemId);
+
     $log[] = "Se obtinen los recursos de la factura y el articulo";
 
     if ($item->cancel) {
@@ -472,12 +473,16 @@ class InvoiceController extends Controller
      */
     $cashDiscount = "0";
 
-    //Se actualiza el estado basico de la factura
+    //Se descuenta el valor neto del articulo
     $invoice->subtotal = bcsub($invoice->subtotal, $itemPrice);
-    $invoice->discount = $item->discount ? bcsub($invoice->discount, $discount) : $invoice->discount;
+    //Se disminuye el descuento si el articulo lo tiene.
+    $invoice->discount = $item->discount
+      ? bcsub($invoice->discount, $discount)
+      : $invoice->discount;
+    //Se diminuye el valor de la factura.
     $invoice->amount = bcsub($invoice->amount, $amount);
 
-    if ($invoice->credit && bccomp($invoice->credit, $amount) >= 0) {
+    if ($invoice->credit && bccomp($invoice->credit, $amount) > 0) {
       //Se decuenta el valor del articulo
       $invoice->credit = bcsub($invoice->credit, $amount);
     } else {
@@ -502,7 +507,7 @@ class InvoiceController extends Controller
     //Se procede a hacer la modificaciones
     DB::beginTransaction();
     try {
-      //Se anula el articulo
+      //* Se anula el articulo actual y se crea uno nuevo con el remanente.
       $item->cancel = true;
       $item->cancel_message = $request->message;
       $itemQuantity = floatval($item->quantity);
@@ -558,10 +563,9 @@ class InvoiceController extends Controller
               $payment->cancel_message = "Cancelación de articulo";
 
               //Se elimina la transacción asociada
-              if ($payment->transaction) {
-                $payment->transaction->delete();
-              }
+              if ($payment->transaction) $payment->transaction->delete();
 
+              //Se actualiza el efectivo de la factura.
               $payment->initial_payment ? $invoice->cash = bcsub($invoice->cash, $payment->amount) : null;
 
               //se actualiza el saldo
