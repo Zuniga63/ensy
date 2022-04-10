@@ -246,7 +246,7 @@ class InvoiceController extends Controller
     /** @var Invoice */
     $invoice = Invoice::find($request->input('invoiceId'));
 
-    if ($invoice->balance && !$invoice->cancel) {
+    if ($invoice->balance && !$invoice->cancel && $invoice->customer_id) {
       $paymentAmount = array_reduce($request->input('payments'), function ($carry, $item) {
         $carry += $item['amount'];
         return $carry;
