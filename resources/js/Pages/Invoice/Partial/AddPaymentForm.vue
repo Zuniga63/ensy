@@ -13,7 +13,7 @@
       <cash-payment :boxs="boxs" @addPayment="addPayment" />
       <payment-list :payments="payments" @updateOrder="sortPayemntList" @removePayment="removePayment" />
       <div class="mt-2" v-if="error">
-        <p class="text-red-500 text-xs">No se puede realizar el pago porque existen inconsitancias en los datos.</p>
+        <p class="text-red-500 text-xs">No se puede realizar el pago porque existen inconsistencias en los datos.</p>
       </div>
     </div>
 
