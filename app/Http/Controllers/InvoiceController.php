@@ -192,15 +192,12 @@ class InvoiceController extends Controller
              */
 
             if ($payment['registerTransaction']) {
-              $code = uniqid($this->CODE_PREFIX);
-              $invoicePayment->transaction_code = $code;
 
               //Se crea la transacción
               $transaction = new CashboxTransaction();
               $transaction->cashbox_id = $payment['boxId'];
               $transaction->transaction_date = $date->format('Y-m-d H:i');
               $transaction->amount = $paymentAmount;
-              $transaction->code = $code;
               $transaction->blocked = true;
 
               if ($credit) {
@@ -210,6 +207,7 @@ class InvoiceController extends Controller
               }
 
               $transaction->save();
+              $invoicePayment->transaction_id = $transaction->id;
             }
 
             $invoicePayments[] = $invoicePayment;
@@ -256,7 +254,7 @@ class InvoiceController extends Controller
     /** @var Invoice */
     $invoice = Invoice::find($request->input('invoiceId'));
 
-    if ($invoice->balance) {
+    if ($invoice->balance && !$invoice->cancel) {
       $paymentAmount = array_reduce($request->input('payments'), function ($carry, $item) {
         $carry += $item['amount'];
         return $carry;
@@ -281,14 +279,15 @@ class InvoiceController extends Controller
             //*Se crean las instancias
             $invoicePayment = new InvoicePayment([
               'customer_id' => $request->input('customerId'),
+              'transaction_id' => null,
               'payment_date' => $date->format('Y-m-d H:i'),
               'description' => "Deposito en " . $paymentItem['boxName'],
               'amount' => $amount,
-              'transaction_code' => null,
+              /* 'transaction_code' => null, */
             ]);
 
             if ($paymentItem['registerTransaction']) {
-              $code = uniqid($this->CODE_PREFIX);
+              /* $code = uniqid($this->CODE_PREFIX); */
               $description = $balanceIsCancelled
                 ? "Abono: Cancelación del saldo de la factura N° $invoice->number"
                 : "Abono: Pago a la factura N° $invoice->number";
@@ -299,12 +298,11 @@ class InvoiceController extends Controller
                 'transaction_date' => $date->format('Y-m-d H:i'),
                 'description' => $description,
                 'amount' => $amount,
-                'code' => $code,
                 'blocked' => true,
               ]);
 
-              $invoicePayment->transaction_code = $code;
               $transaction->save();
+              $invoicePayment->transaction_id = $transaction->id;
             };
 
             $invoice->payments()->save($invoicePayment);
@@ -313,14 +311,14 @@ class InvoiceController extends Controller
           } else {
             $invoicePayment = new InvoicePayment([
               'customer_id' => $request->input('customerId'),
+              'transaction_id' => null,
               'payment_date' => $date->format('Y-m-d H:i'),
               'description' => "Deposito en " . $paymentItem['boxName'],
               'amount' => $invoice->balance,
-              'transaction_code' => null,
             ]);
 
             if ($paymentItem['registerTransaction']) {
-              $code = uniqid($this->CODE_PREFIX);
+              /* $code = uniqid($this->CODE_PREFIX); */
               $description = $balanceIsCancelled
                 ? "Cancelación de la factura N° $invoice->number"
                 : "Abono a la factura N° $invoice->number";
@@ -331,12 +329,11 @@ class InvoiceController extends Controller
                 'transaction_date' => $date->format('Y-m-d H:i'),
                 'description' => $description,
                 'amount' => $invoice->balance,
-                'code' => $code,
                 'blocked' => true,
               ]);
 
-              $invoicePayment->transaction_code = $code;
               $transaction->save();
+              $invoicePayment->transaction_id = $transaction->id;
             };
 
             $invoice->payments()->save($invoicePayment);
@@ -354,7 +351,7 @@ class InvoiceController extends Controller
         DB::rollBack();
         return [
           'ok' => false,
-          'error' => $th
+          'error' => $th->getMessage(),
         ];
       }
 
@@ -404,7 +401,7 @@ class InvoiceController extends Controller
     //Se recupera el pago
     $payment = InvoicePayment::find($request->paymentId);
 
-    if (!$payment->cancel) {
+    if (!$payment->cancel && !$invoice->cancel) {
       //Se actualiza el saldo de la factura y el dinero
       $invoice->balance = bcadd($invoice->balance, $payment->amount);
       if ($payment->initial_payment) {
@@ -419,13 +416,14 @@ class InvoiceController extends Controller
 
       try {
         //Se verifica si el pago tiene asociada una transacción
-        if ($payment->transaction_code) {
+        if ($payment->transaction) {
           /** @var CashboxTransaction */
-          $transaction = CashboxTransaction::where('code', $payment->transaction_code)->first();
+          /* $transaction = CashboxTransaction::where('code', $payment->transaction_code)->first();
           if ($transaction) {
             $transaction->delete();
           }
-          $payment->transaction_code = null;
+          $payment->transaction_code = null; */
+          $payment->transaction->delete();
         }
 
         $invoice->save();
@@ -607,10 +605,8 @@ class InvoiceController extends Controller
               $payment->cancel_message = "Cancelación de articulo";
 
               //Se elimina la transacción asociada
-              if ($payment->transaction_code) {
-                /** @var CashboxTransaction */
-                $transaction = CashboxTransaction::where('code', $payment->transaction_code)->first();
-                $transaction ? $transaction->delete() : null;
+              if ($payment->transaction) {
+                $payment->transaction->delete();
               }
 
               $payment->initial_payment ? $invoice->cash = bcsub($invoice->cash, $payment->amount) : null;
@@ -622,15 +618,11 @@ class InvoiceController extends Controller
               $payment->amount = bcsub($payment->amount, $cashDiscount);
               $payment->description = $payment->description . " [*]";
               //Se actualiza la transacción asociada
-              if ($payment->transaction_code) {
-                /** @var CashboxTransaction */
-                $transaction = CashboxTransaction::where('code', $payment->transaction_code)->first();
-                if ($transaction) {
-                  $transaction->transaction_date = Carbon::now()->format('Y-m-d H:i');
-                  $transaction->description = $transaction->description . " [*]";
-                  $transaction->amount = bcsub($transaction->amount, $cashDiscount);
-                  $transaction->save();
-                }
+              if ($payment->transaction) {
+                $payment->transaction->transaction_date = Carbon::now()->format('Y-m-d H:i');
+                $payment->transaction->description = $payment->transaction->description . " [*]";
+                $payment->transaction->amount = bcsub($payment->transaction->amount, $cashDiscount);
+                $payment->transaction->save();
               }
 
               //Se actualiza la factura
@@ -664,7 +656,7 @@ class InvoiceController extends Controller
       $invoice->cash = bccomp($invoice->cash, '0', 2) != 0 ? $invoice->cash : null;
       $invoice->balance = bccomp($invoice->balance, '0', 2) != 0 ? $invoice->balance : null;
 
-      if (!$invoice->balance) {
+      if (bccomp($invoice->amount, '0') <= 0) {
         $invoice->cancel = true;
         $invoice->cancel_message = "Factura con importe cero.";
       }
@@ -745,9 +737,8 @@ class InvoiceController extends Controller
         $payment->cancel = true;
         $payment->cancel_message = $request->message;
 
-        if ($payment->transaction_code) {
-          $transaction = CashboxTransaction::where('code', $payment->transaction_code)->first();
-          $transaction ? $transaction->delete() : null;
+        if ($payment->transaction) {
+          $payment->transaction()->first()->delete();
         }
       }
     });
@@ -825,7 +816,7 @@ class InvoiceController extends Controller
       ->where('expedition_date', '>=', $lastWeek->format($format))
       ->where('expedition_date', '<=', $now->format($format))
       ->without('items')
-      ->select(['id', 'expedition_date as date', 'amount', 'cash', 'credit'])
+      ->select(['id', 'expedition_date as date', 'amount', 'cash', 'credit', 'cash_change'])
       ->get();
 
     $payments = InvoicePayment::orderBy('payment_date')
