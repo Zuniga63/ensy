@@ -55,11 +55,11 @@ class InvoiceController extends Controller
    */
   public function store(Request $request)
   {
-    //Area de validación
-    $rules = $this->getRules();
-    $attr = $this->getAttr();
-    $messages = $this->getCustomMessage();
-    $request->validate($rules, $messages, $attr);
+    $request->validate(
+      $this->getRules(),
+      $this->getCustomMessage(),
+      $this->getAttr()
+    );
 
     $date = Carbon::now();
     $invoiceItems = [];
@@ -238,17 +238,7 @@ class InvoiceController extends Controller
 
   public function storePayments(Request $request)
   {
-    $rules = [
-      'invoiceId' => 'required|integer|exists:invoice,id',
-      'customerId' => 'required|integer|exists:customer,id',
-      'invoicePayments.*' => 'array:boxId,boxName,registerTransaction,amount',
-      'invoicePayments.*.boxId' => 'required|integer|exists:cashbox,id',
-      'invoicePayments.*.boxName' => 'required|string',
-      'invoicePayments.*.registerTransaction' => 'required|boolean',
-      'invoicePayments.*.amount' => 'required|numeric|min:1|max:99999999.99',
-    ];
-
-    $request->validate($rules);
+    $request->validate($this->getRules('add-payment'));
 
     //get the invoice intance
     /** @var Invoice */
@@ -369,28 +359,11 @@ class InvoiceController extends Controller
 
   public function cancelPayment(Request $request)
   {
-    $rules = [
-      'invoiceId' => 'required|integer|exists:invoice,id',
-      'paymentId' => 'required|integer|exists:invoice_payment,id',
-      'message' => 'required|string|min:3',
-      'password' => ['required', 'string', 'min:3', function ($attr, $value, $fail) {
-        if (!Hash::check($value, auth()->user()->password)) {
-          return $fail('La contraseña es incorrecta.');
-        }
-      }]
-    ];
-
-    $attr = [
-      'password' => 'contraseña',
-      'message' => 'motivo',
-    ];
-
-    $messages = [
-      'password.required' => 'Se requiere su contraseña para continuar.',
-      'message.required' => "Se requiere un motivo para realizar la cancelación"
-    ];
-
-    $request->validate($rules, $messages, $attr);
+    $request->validate(
+      $this->getRules('cancel-payment'),
+      $this->getCustomMessage(),
+      $this->getAttr()
+    );
 
     $ok = false;
     $message = null;
@@ -456,30 +429,11 @@ class InvoiceController extends Controller
     $error = null;
     $log = [];
 
-
-    $rules = [
-      'invoiceId' => 'required|integer|exists:invoice,id',
-      'itemId' => 'required|integer|exists:invoice_item,id',
-      'quantity' => 'required|numeric|min:0.001',
-      'message' => 'required|string|min:3',
-      'password' => ['required', 'string', 'min:3', function ($attr, $value, $fail) {
-        if (!Hash::check($value, auth()->user()->password)) {
-          return $fail('La contraseña es incorrecta.');
-        }
-      }]
-    ];
-
-    $attr = [
-      'password' => 'contraseña',
-      'message' => 'motivo',
-    ];
-
-    $messages = [
-      'password.required' => 'Se requiere su contraseña para continuar.',
-      'message.required' => "Se requiere un motivo para realizar la cancelación"
-    ];
-
-    $request->validate($rules, $messages, $attr);
+    $request->validate(
+      $this->getRules('cancel-item'),
+      $this->getCustomMessage(),
+      $this->getAttr()
+    );
 
     $log[] = "Los datoś pasan la validación";
 
@@ -689,27 +643,11 @@ class InvoiceController extends Controller
     $res->invoice = null;
 
 
-    $rules = [
-      'invoiceId' => 'required|integer|exists:invoice,id',
-      'message' => 'required|string|min:3',
-      'password' => ['required', 'string', 'min:3', function ($attr, $value, $fail) {
-        if (!Hash::check($value, auth()->user()->password)) {
-          return $fail('La contraseña es incorrecta.');
-        }
-      }]
-    ];
-
-    $attr = [
-      'password' => 'contraseña',
-      'message' => 'motivo',
-    ];
-
-    $messages = [
-      'password.required' => 'Se requiere su contraseña para continuar.',
-      'message.required' => "Se requiere un motivo para realizar la cancelación"
-    ];
-
-    $request->validate($rules, $messages, $attr);
+    $request->validate(
+      $this->getRules('cancel-invoice'),
+      $this->getCustomMessage(),
+      $this->getAttr()
+    );
 
     //Recupero la instancia de la factura
     /** @var Invoice */
@@ -911,37 +849,82 @@ class InvoiceController extends Controller
     ];
   }
 
-  protected function getRules()
+  /**
+   * Construye las reglas utilizadas para la validacion de nuevas facturas 
+   * asi como para los procedimientos de cancelación.
+   * @param String $type Tipo de formulario a validar [new-invoice, add-payment, cancel-invoice, cancel-payment, cancel-item]
+   * @return Array
+   */
+  protected function getRules($type = "new-invoice")
   {
-    return [
-      'customerId' => 'nullable|integer|exists:customer,id',
-      'customerName' => 'nullable|string|min:3|max:90',
-      'customerDocument' => 'nullable|string|min:6|max:45',
-      'customerAddress' => 'nullable|string|min:3|max:150',
-      'customerPhone' => 'nullable|string|min:6|max:20',
-      'expeditionDate' => 'required|date',
-      'expirationDate' => 'required|string|date|after_or_equal:expeditionDate',
-      'invoiceItems' => 'required|array|min:1',
-      'invoiceItems.*' => 'array:quantity,description,unitValue,discount,amount',
-      'invoiceItems.*.quantity' => 'required|numeric|min:0.0001|max:9999.9999',
-      'invoiceItems.*.description' => 'required|string|min:3|max:255',
-      'invoiceItems.*.unitValue' => 'required|numeric|min:1|max:99999999.99',
-      'invoiceItems.*.discount' => 'nullable|numeric|min:0|max:99999999.99',
-      'invoiceItems.*.amount' => 'required|numeric|min:1|max:99999999.99',
-      'invoicePayments' => 'nullable|array',
-      'invoicePayments.*' => 'array:boxId,boxName,registerTransaction,useForChange,amount',
-      'invoicePayments.*.boxId' => 'required|integer|exists:cashbox,id',
-      'invoicePayments.*.boxName' => 'required|string',
-      'invoicePayments.*.registerTransaction' => 'required|boolean',
-      'invoicePayments.*.useForChange' => 'required|boolean',
-      'invoicePayments.*.amount' => 'required|numeric|min:1|max:99999999.99',
-    ];
+    /** @var Array */
+    $rules = [];
+
+    if ($type === "new-invoice") {
+      $rules = [
+        'customerId' => 'nullable|integer|exists:customer,id',
+        'customerName' => 'nullable|string|min:3|max:90',
+        'customerDocument' => 'nullable|string|min:6|max:45',
+        'customerAddress' => 'nullable|string|min:3|max:150',
+        'customerPhone' => 'nullable|string|min:6|max:20',
+        'expeditionDate' => 'required|date',
+        'expirationDate' => 'required|string|date|after_or_equal:expeditionDate',
+        'invoiceItems' => 'required|array|min:1',
+        'invoiceItems.*' => 'array:quantity,description,unitValue,discount,amount',
+        'invoiceItems.*.quantity' => 'required|numeric|min:0.001|max:9999.999',
+        'invoiceItems.*.description' => 'required|string|min:3|max:255',
+        'invoiceItems.*.unitValue' => 'required|numeric|min:1|max:99999999.99',
+        'invoiceItems.*.discount' => 'nullable|numeric|min:0|max:99999999.99',
+        'invoiceItems.*.amount' => 'required|numeric|min:1|max:99999999.99',
+        'invoicePayments' => 'nullable|array',
+        'invoicePayments.*' => 'array:boxId,boxName,registerTransaction,useForChange,amount',
+        'invoicePayments.*.boxId' => 'required|integer|exists:cashbox,id',
+        'invoicePayments.*.boxName' => 'required|string',
+        'invoicePayments.*.registerTransaction' => 'required|boolean',
+        'invoicePayments.*.useForChange' => 'required|boolean',
+        'invoicePayments.*.amount' => 'required|numeric|min:1|max:99999999.99',
+      ];
+    } else if ($type === 'add-payment') {
+      $rules = [
+        'invoiceId' => 'required|integer|exists:invoice,id',
+        'customerId' => 'required|integer|exists:customer,id',
+        'invoicePayments.*' => 'array:boxId,boxName,registerTransaction,amount',
+        'invoicePayments.*.boxId' => 'required|integer|exists:cashbox,id',
+        'invoicePayments.*.boxName' => 'required|string',
+        'invoicePayments.*.registerTransaction' => 'required|boolean',
+        'invoicePayments.*.amount' => 'required|numeric|min:1|max:99999999.99',
+      ];
+    } else {
+      $rules = [
+        'invoiceId' => 'required|integer|exists:invoice,id',
+        'message' => 'required|string|min:3',
+        'password' => ['required', 'string', 'min:3', function ($attr, $value, $fail) {
+          if (!Hash::check($value, auth()->user()->password)) {
+            return $fail('La contraseña es incorrecta.');
+          }
+        }]
+      ];
+
+      if ($type === 'cancel-payment') {
+        $rules['paymentId'] = 'required|integer|exists:invoice_payment,id';
+      } else if ($type === 'cancel-item') {
+        $rules['itemId'] = 'required|integer|exists:invoice_item,id';
+        $rules['quantity'] = 'required|numeric|min:0.001';
+      }
+    }
+
+    return $rules;
   }
 
   protected function getAttr()
   {
     return [
-      'customerId' => 'cliente',
+      // Calves
+      'customerId' => 'ID cliente',
+      'invoiceId' => "ID de factura",
+      'paymentId' => 'ID de pago',
+      'itemId' => 'ID de item',
+      //Parametros de la factura
       'customerName' => 'cliente',
       'customerDocument' => 'nit',
       'customerAddress' => 'direccíon',
@@ -949,6 +932,12 @@ class InvoiceController extends Controller
       'expeditionDate' => 'fecha de expedición',
       'expirationDate' => 'fecha de vencimiento',
       'invoiceItems' => 'listado de articulos',
+      'invoicePayments' => 'listado de pagos',
+      //Parametros para cancelaciónes
+      'message' => 'motivo',
+      'password' => 'contraseña',
+      'quantity' => 'cantidad',
+
     ];
   }
 
@@ -956,6 +945,8 @@ class InvoiceController extends Controller
   {
     return [
       'invoiceItems.array' => 'Debe ser un listado de items.',
+      'password.required' => 'Se requiere su contraseña para continuar.',
+      'message.required' => "Se requiere un motivo para realizar la cancelación"
     ];
   }
 }
