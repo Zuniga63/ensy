@@ -353,10 +353,10 @@ export default {
      * @return {array}
      */
     filterByDate(list) {
-      const from = this.fromDate ? dayjs(this.fromDate) : null;
-      const to = this.toDate ? dayjs(this.toDate) : null;
+      const from = this.fromDate ? dayjs(this.fromDate).startOf('day') : null;
+      const to = this.toDate ? dayjs(this.toDate).endOf('day') : null;
 
-      if (from && to && from.isValid() && to.isValid) {
+      if (from && to && from.isValid() && to.isValid()) {
         return list.filter((item) => {
           return item.time.expedition.isSameOrAfter(from) && item.time.expedition.isSameOrBefore(to);
         });
