@@ -750,7 +750,7 @@ class InvoiceController extends Controller
   {
     //Fechas limitantes
     $now = Carbon::now();
-    $lastWeek = $now->clone()->subWeek()->startOfDay();
+    $lastWeek = $now->clone()->subDays(6)->startOfDay();
     $format = "Y-m-d H:i";
 
     //Se recuperan las facturas activas.
@@ -759,7 +759,7 @@ class InvoiceController extends Controller
       ->where('expedition_date', '>=', $lastWeek->format($format))
       ->where('expedition_date', '<=', $now->format($format))
       ->without('items')
-      ->select(['id', 'expedition_date as date', 'amount', 'cash', 'credit', 'cash_change'])
+      ->select(['id', 'expedition_date as date', 'amount', 'cash', 'credit', 'cash_change as change'])
       ->get();
 
     $payments = InvoicePayment::orderBy('payment_date')
