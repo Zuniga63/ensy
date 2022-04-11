@@ -3,14 +3,10 @@
     <template #header>
       <div class="flex justify-between w-full">
         <!-- TITLE OF HEADER -->
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-          Administración de Clientes
-        </h2>
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">Administración de Clientes</h2>
 
         <!-- BUTTON FOR ADD CUSTOMER -->
-        <link-button :href="route('customer.create')">
-          Registrar Cliente
-        </link-button>
+        <link-button :href="route('customer.create')"> Registrar Cliente </link-button>
       </div>
     </template>
 
@@ -19,22 +15,11 @@
         <!-- Controles de busqueda -->
         <div class="grid grid-cols-4 gap-4 w-full mb-4">
           <!-- Busqueda por nombre -->
-          <div
-            class="relative pt-4 px-2 pb-2 border border-gray-400 rounded-md"
-          >
+          <div class="relative pt-4 px-2 pb-2 border border-gray-400 rounded-md">
             <custom-label
               for="customerName"
               value="Nombre del Cliente"
-              class="
-                absolute
-                top-0
-                left-4
-                p-1
-                bg-white
-                text-sm text-gray-400
-                transform
-                -translate-y-1/2
-              "
+              class="absolute top-0 left-4 p-1 bg-white text-sm text-gray-400 transform -translate-y-1/2"
             />
             <jet-input
               type="text"
@@ -46,22 +31,11 @@
           </div>
 
           <!-- Busqueda por documento -->
-          <div
-            class="relative pt-4 px-2 pb-2 border border-gray-400 rounded-md"
-          >
+          <div class="relative pt-4 px-2 pb-2 border border-gray-400 rounded-md">
             <custom-label
               for="document"
               value="Documento"
-              class="
-                absolute
-                top-0
-                left-4
-                p-1
-                bg-white
-                text-sm text-gray-400
-                transform
-                -translate-y-1/2
-              "
+              class="absolute top-0 left-4 p-1 bg-white text-sm text-gray-400 transform -translate-y-1/2"
             />
             <jet-input
               type="text"
@@ -73,22 +47,11 @@
           </div>
 
           <!-- Buscar por email -->
-          <div
-            class="relative pt-4 px-2 pb-2 border border-gray-400 rounded-md"
-          >
+          <div class="relative pt-4 px-2 pb-2 border border-gray-400 rounded-md">
             <custom-label
               for="searchByEmail"
               value="Email"
-              class="
-                absolute
-                top-0
-                left-4
-                p-1
-                bg-white
-                text-sm text-gray-400
-                transform
-                -translate-y-1/2
-              "
+              class="absolute top-0 left-4 p-1 bg-white text-sm text-gray-400 transform -translate-y-1/2"
             />
             <jet-input
               type="text"
@@ -100,22 +63,11 @@
           </div>
 
           <!-- Buscar por Bank Account -->
-          <div
-            class="relative pt-4 px-2 pb-2 border border-gray-400 rounded-md"
-          >
+          <div class="relative pt-4 px-2 pb-2 border border-gray-400 rounded-md">
             <custom-label
               for="searchByBankAccount"
               value="Numero de cuenta"
-              class="
-                absolute
-                top-0
-                left-4
-                p-1
-                bg-white
-                text-sm text-gray-400
-                transform
-                -translate-y-1/2
-              "
+              class="absolute top-0 left-4 p-1 bg-white text-sm text-gray-400 transform -translate-y-1/2"
             />
             <jet-input
               type="text"
@@ -128,71 +80,25 @@
         </div>
 
         <!-- Tabla con los datos de los clientes -->
-        <div
-          class="
-            h-[28rem]
-            shadow
-            border-b border-gray-300
-            overflow-y-auto overflow-x-auto
-          "
-        >
+        <div class="h-[28rem] shadow border-b border-gray-300 overflow-y-auto overflow-x-auto">
           <table class="relative min-w-full table-auto">
             <thead class="sticky top-0 bg-gray-50">
               <tr>
                 <!-- # -->
-                <th
-                  scope="col"
-                  class="
-                    px-6
-                    py-3
-                    text-center text-gray-500
-                    tracking-wider
-                    uppercase
-                  "
-                >
-                  #
-                </th>
+                <th scope="col" class="px-6 py-3 text-center text-gray-500 tracking-wider uppercase">#</th>
                 <!-- Imagen. nombre y documento -->
-                <th
-                  scope="col"
-                  class="
-                    px-6
-                    py-3
-                    text-left text-gray-500
-                    tracking-wider
-                    uppercase
-                  "
-                >
+                <th scope="col" class="px-6 py-3 text-left text-gray-500 tracking-wider uppercase">
                   Nombres y Apellidos
                 </th>
 
                 <!-- Contacto -->
-                <th
-                  scope="col"
-                  class="
-                    px-6
-                    py-3
-                    text-left text-gray-500
-                    tracking-wider
-                    uppercase
-                  "
-                >
-                  Contacto
-                </th>
+                <th scope="col" class="px-6 py-3 text-left text-gray-500 tracking-wider uppercase">Contacto</th>
 
                 <!-- Numero de cuenta -->
-                <th
-                  scope="col"
-                  class="
-                    px-6
-                    py-3
-                    text-center text-gray-500
-                    tracking-wider
-                    uppercase
-                  "
-                >
-                  N° de Cuenta
-                </th>
+                <th scope="col" class="px-6 py-3 text-center text-gray-500 tracking-wider uppercase">N° de Cuenta</th>
+
+                <!-- Saldo -->
+                <th scope="col" class="px-6 py-3 text-center text-gray-500 tracking-wider uppercase">Saldo</th>
 
                 <th scope="col" class="relative px-6 py-3">
                   <span class="sr-only">Actions</span>
@@ -215,25 +121,16 @@
                   <div class="flex">
                     <!-- Customer Image -->
                     <div class="w-16 h-16 p-2 mr-2">
-                      <img
-                        :src="customer.image_url"
-                        :alt="customer.full_name"
-                        class="w-full rounded-full"
-                      />
+                      <img :src="customer.image_url" :alt="customer.full_name" class="w-full rounded-full" />
                     </div>
                     <!-- Nombre y correo -->
                     <div class="flex flex-col justify-center">
                       <span class="capitalize">{{ customer.full_name }}</span>
                       <!-- Documento -->
-                      <span
-                        v-if="customer.document_number"
-                        class="tracking-widest text-sm"
-                      >
-                        <span class="text-gray-400"
-                          >{{ customer.document_type }}:
-                        </span>
+                      <span v-if="customer.document_number" class="tracking-widest text-sm">
+                        <span class="text-gray-400">{{ customer.document_type }}: </span>
                         <span @click="selectText">
-                          {{ customer.document_number }}
+                          {{ formatDocument(customer.document_number) }}
                         </span>
                       </span>
                     </div>
@@ -242,15 +139,9 @@
 
                 <!-- Contacto -->
                 <td class="px-3 py-2 text-gray-800">
-                  <div
-                    class="flex flex-col"
-                    v-if="customer.email || customer.contacts?.length"
-                  >
+                  <div class="flex flex-col" v-if="customer.email || customer.contacts?.length">
                     <!-- Email -->
-                    <div
-                      v-if="customer.email"
-                      class="flex items-center text-indigo-500"
-                    >
+                    <div v-if="customer.email" class="flex items-center text-indigo-500">
                       <!-- Heroicon: Inbox -->
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -267,10 +158,7 @@
                         />
                       </svg>
 
-                      <span
-                        class="text-sm hover:cursor-pointer"
-                        @click="selectText"
-                      >
+                      <span class="text-sm hover:cursor-pointer" @click="selectText">
                         {{ customer.email }}
                       </span>
                     </div>
@@ -279,37 +167,27 @@
                       <!-- Primer Telefono -->
                       <div class="flex">
                         <!-- iconos8: whatsapp -->
-                        <whatsapp-icon
-                          class="h-4 w-4 text-green-600"
-                          v-if="customer.contacts[0].whatsapp"
-                        />
+                        <whatsapp-icon class="h-4 w-4 text-green-600" v-if="customer.contacts[0].whatsapp" />
                         <!-- Heroicon:phone -->
                         <phone-icon class="h-4 w-4" v-else />
 
                         <!-- Numero -->
                         <span class="text-sm text-gray-800">
-                          {{ customer.contacts[0].number }}
+                          {{ formatPhone(customer.contacts[0].number) }}
                         </span>
                       </div>
 
-                      <span
-                        class="text-sm mx-1"
-                        v-if="customer.contacts.length > 1"
-                        >-</span
-                      >
+                      <span class="text-sm mx-1" v-if="customer.contacts.length > 1">-</span>
 
                       <!-- Segundo Numero -->
                       <div class="flex" v-if="customer.contacts.length > 1">
                         <!-- iconos8: whatsapp -->
-                        <whatsapp-icon
-                          class="h-4 w-4 text-green-600"
-                          v-if="customer.contacts[1].whatsapp"
-                        />
+                        <whatsapp-icon class="h-4 w-4 text-green-600" v-if="customer.contacts[1].whatsapp" />
                         <!-- Heroicon:phone -->
                         <phone-icon class="h-4 w-4" v-else />
                         <!-- Numero -->
                         <span class="text-sm text-gray-800">
-                          {{ customer.contacts[1].number }}
+                          {{ formatPhone(customer.contacts[1].number) }}
                         </span>
                       </div>
                     </div>
@@ -319,32 +197,15 @@
 
                 <!-- Numero de cuenta -->
                 <td class="px-3 py-2 text-gray-800">
-                  <div
-                    v-if="
-                      customer.information &&
-                      customer.information.bank_account_number
-                    "
-                  >
+                  <div v-if="customer.information && customer.information.bank_account_number">
                     <div class="flex flex-col items-center">
                       <!-- Banco y tipo de cuenta -->
                       <div class="text-gray-400 text-sm">
                         <span v-if="customer.information.bank_name">
                           {{ customer.information.bank_name }}
                         </span>
-                        <span
-                          v-if="
-                            customer.information.bank_account_type == 'savings'
-                          "
-                        >
-                          - Ahorros
-                        </span>
-                        <span
-                          v-if="
-                            customer.information.bank_account_type == 'current'
-                          "
-                        >
-                          - Corriente
-                        </span>
+                        <span v-if="customer.information.bank_account_type == 'savings'"> - Ahorros </span>
+                        <span v-if="customer.information.bank_account_type == 'current'"> - Corriente </span>
                       </div>
                       <!-- Numero de cuenta -->
                       <span>
@@ -355,26 +216,21 @@
                   <p v-else class="text-gray-400 text-center">No registrado.</p>
                 </td>
 
+                <td class="px-3 py-2 text-gray-800 text-right">
+                  {{ formatCurrency(customer.balance) }}
+                </td>
+
                 <!-- Acciones -->
                 <td class="px-3 py-2">
                   <div class="flex justify-end">
-                    <row-button
-                      type="show"
-                      class="mr-2"
-                      :href="route('customer.index')"
-                      title="Ver Cliente"
-                    />
+                    <row-button type="show" class="mr-2" :href="route('customer.index')" title="Ver Cliente" />
                     <row-button
                       type="edit"
                       class="mr-2"
                       title="Editar Cliente"
                       :href="route('customer.edit', customer.id)"
                     />
-                    <row-button
-                      type="delete"
-                      @click="deleteCustomer(customer)"
-                      title="Eliminar Cliente"
-                    />
+                    <row-button type="delete" @click="deleteCustomer(customer)" title="Eliminar Cliente" />
                   </div>
                 </td>
               </tr>
@@ -397,7 +253,8 @@ import WhatsappIcon from "@/Components/Svgs/Whatsapp.vue";
 import PhoneIcon from "@/Components/Svgs/Phone.vue";
 
 import Swal from "sweetalert2";
-import axios from "axios";
+/* import axios from "axios"; */
+import { formatCurrency, formatDocument, formatPhone, normalizeString, selectText } from "@/utilities";
 
 export default {
   components: {
@@ -530,29 +387,15 @@ export default {
       });
     },
     /**
-     * Este metodo se encarga de llevar a minusculas el texto
-     * pasado como parametro y remover de forma segura los guiños como
-     * las eñes.
-     * @param String text cadena de texto a normalizar.
-     */
-    normalizeString(text) {
-      return text
-        ? text
-            .toLowerCase()
-            .normalize("NFD")
-            .replace(/[\u0300-\u036f]/g, "")
-        : null;
-    },
-    /**
      * Filtra los clientes por su nombre
      * @param String name Es el nombre que se va a filtrar
      * @param String customers Listado de clientes a filtrar.
      * @returns Array
      */
     filterByName(name, customers) {
-      name = this.normalizeString(name);
+      name = normalizeString(name);
       return customers.filter((c) => {
-        let fullName = this.normalizeString(c.full_name);
+        let fullName = normalizeString(c.full_name);
         return fullName.includes(name);
       });
     },
@@ -563,10 +406,10 @@ export default {
      * @returns Array
      */
     filterByDocument(document, customers) {
-      document = this.normalizeString(document);
+      document = normalizeString(document);
       return customers.filter((c) => {
         if (c.document_number) {
-          let documentNumber = this.normalizeString(c.document_number);
+          let documentNumber = normalizeString(c.document_number);
           return documentNumber.includes(document);
         }
 
@@ -580,10 +423,10 @@ export default {
      * @returns {Array}
      */
     filterByEmail(email, customers) {
-      email = this.normalizeString(email);
+      email = normalizeString(email);
       return customers.filter((c) => {
         if (c.email) {
-          let customerEmail = this.normalizeString(c.email);
+          let customerEmail = normalizeString(c.email);
           return customerEmail.includes(email);
         }
         return false;
@@ -596,52 +439,35 @@ export default {
      * @returns {Array}
      */
     filterByBankAccount(bankAccount, customers) {
-      bankAccount = this.normalizeString(bankAccount);
+      bankAccount = normalizeString(bankAccount);
       return customers.filter((customer) => {
         if (customer.information && customer.information.bank_account_number) {
-          let account = this.normalizeString(
-            customer.information.bank_account_number
-          );
+          let account = normalizeString(customer.information.bank_account_number);
           return account.includes(bankAccount);
         }
         return false;
       });
     },
-    /**
-     * Codigo que me permite seleccionar el texto de un elemento
-     * tomado de: https://stackoverflow.com/questions/985272/selecting-text-in-an-element-akin-to-highlighting-with-your-mouse
-     */
-    selectText(event) {
-      let node = event.target;
-      if (document.body.createTextRange) {
-        const range = document.body.createTextRange();
-        range.moveToElementText(node);
-        range.select();
-      } else if (window.getSelection) {
-        const selection = window.getSelection();
-        const range = document.createRange();
-        range.selectNodeContents(node);
-        selection.removeAllRanges();
-        selection.addRange(range);
-      } else {
-        console.warn("Could not select text in node: Unsupported browser.");
-      }
-    },
+    selectText,
+    formatDocument,
+    formatPhone,
+    formatCurrency,
   },
   computed: {
     customerList() {
       //Se da prioridad al nombre por ser un campo obligatorio.
       let result = this.customers;
 
-      if (this.customerName)
-        result = this.filterByName(this.customerName, result);
+      if (this.customerName) result = this.filterByName(this.customerName, result);
       if (this.document) result = this.filterByDocument(this.document, result);
       if (this.email) result = this.filterByEmail(this.email, result);
-      if (this.bankAccount)
-        result = this.filterByBankAccount(this.bankAccount, result);
+      if (this.bankAccount) result = this.filterByBankAccount(this.bankAccount, result);
 
       return result;
     },
   },
+  /*  beforeMount() {
+    console.log(this.customers);
+  }, */
 };
 </script>
