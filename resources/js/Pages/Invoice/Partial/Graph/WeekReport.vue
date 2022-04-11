@@ -42,6 +42,7 @@ class DayReport {
     this.sales += parseFloat(invoice.amount);
     this.credits += invoice.credit ? parseFloat(invoice.credit) : 0;
     this.cash += invoice.cash ? parseFloat(invoice.cash) : 0;
+    this.cash -= invoice.change ? parseFloat(invoice.change) : 0;
   }
 
   /**
@@ -65,11 +66,9 @@ export default {
   },
   data() {
     return {
-      startWeek: dayjs().subtract(1, "week").startOf("days"),
+      startWeek: dayjs().subtract(6, "days").startOf("days"),
       endWeek: dayjs(),
       mainChart: null,
-      /* invoices: this.report.invoices,
-      payments: this.report.payments, */
     };
   },
   methods: {
@@ -90,43 +89,57 @@ export default {
         collect.push(report.collect);
       }); //.end forEach
 
-      //Se contruye el objeto de datos
-      const data = {
-        labels,
-        datasets: [
-          /* Ventas */
-          {
-            label: "Ventas",
-            data: sales,
-            borderColor: "rgb(75, 192, 192)",
-            backgroundColor: "rgba(75, 192, 192, 0.5)",
-          },
-          //Depositos
-          {
-            label: "Creditos",
-            data: credits,
-            borderColor: "rgb(54, 162, 235)",
-            backgroundColor: "rgba(54, 162, 235, 0.5)",
-          },
-          /* Efectivo */
-          {
-            label: "Efectivo",
-            data: cash,
-            borderColor: "rgb(255, 99, 132)",
-            backgroundColor: "rgba(255, 99, 132, 0.5)",
-          },
-          {
-            label: "Depositos",
-            data: collect,
-            borderColor: "rgb(255, 159, 64)",
-            backgroundColor: "rgba(255, 159, 64, 0.5)",
-          },
-        ],
-      };
+      //Se define que etiquetas se muestran
+      let datasets = [];
+      //Se construye el set de ventas
+      if (sales.reduce((carry, current) => carry + current) > 0) {
+        datasets.push({
+          label: "Ventas",
+          data: sales,
+          borderColor: "rgb(75, 192, 192)",
+          backgroundColor: "rgba(75, 192, 192, 0.5)",
+        });
+      }
+
+      //Se construye el set de creditos
+      if (credits.reduce((carry, current) => carry + current) > 0) {
+        datasets.push({
+          label: "Creditos",
+          hidden: true,
+          data: credits,
+          borderColor: "rgb(54, 162, 235)",
+          backgroundColor: "rgba(54, 162, 235, 0.5)",
+        });
+      }
+
+      //Se construye el set de efectivo
+      if (cash.reduce((carry, current) => carry + current) > 0) {
+        datasets.push({
+          label: "Efectivo",
+          data: cash,
+          hidden: true,
+          borderColor: "rgb(255, 99, 132)",
+          backgroundColor: "rgba(255, 99, 132, 0.5)",
+        });
+      }
+
+      //Se constuye el set de abonos
+      if (collect.reduce((carry, current) => carry + current) > 0) {
+        datasets.push({
+          label: "Depositos",
+          data: collect,
+          hidden: true,
+          borderColor: "rgb(255, 159, 64)",
+          backgroundColor: "rgba(255, 159, 64, 0.5)",
+        });
+      }
 
       const config = {
         type: "bar",
-        data: data,
+        data: {
+          labels,
+          datasets,
+        },
         options: {
           responsive: true,
           plugins: {
@@ -243,10 +256,10 @@ export default {
   mounted() {
     this.buildWeeklyChart();
   },
-  watch:{
-    report(){
+  watch: {
+    report() {
       this.buildWeeklyChart();
-    }
-  }
+    },
+  },
 };
 </script>

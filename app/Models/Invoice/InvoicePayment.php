@@ -2,6 +2,7 @@
 
 namespace App\Models\Invoice;
 
+use App\Models\CashboxTransaction;
 use App\Models\Customer\Customer;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -21,12 +22,12 @@ class InvoicePayment extends Model
 	 */
 	protected $fillable = [
 		'customer_id',
+		'transaction_id',
 		'payment_date',
 		'description',
 		'amount',
 		'initial_payment',
 		'cancel',
-		'transaction_code',
 	];
 
 	/**
@@ -38,6 +39,13 @@ class InvoicePayment extends Model
 		'cancel' => 'boolean',
 		'initial_payment' => 'boolean',
 	];
+
+	/**
+	 * The relationships that should always be loaded.
+	 *
+	 * @var array
+	 */
+	protected $with = ['transaction'];
 
 	/**
 	 * Get the invoice to this payment
@@ -53,5 +61,10 @@ class InvoicePayment extends Model
 	public function customer()
 	{
 		return $this->belongsTo(Customer::class, 'customer_id');
+	}
+
+	public function transaction()
+	{
+		return $this->belongsTo(CashboxTransaction::class, 'transaction_id');
 	}
 }

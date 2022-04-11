@@ -55,175 +55,175 @@ class InvoiceController extends Controller
    */
   public function store(Request $request)
   {
-    //Area de validación
-    $rules = $this->getRules();
-    $attr = $this->getAttr();
-    $messages = $this->getCustomMessage();
-    $request->validate($rules, $messages, $attr);
+    $request->validate(
+      $this->getRules(),
+      $this->getCustomMessage(),
+      $this->getAttr()
+    );
 
-    $date = Carbon::now();
-    $invoiceItems = [];
-    $invoicePayments = [];
+    /**
+     * *Necesario para registrar los pagos iniciales y la factura
+     * @var Carbon
+     */
+    $expeditionDate = Carbon::createFromFormat('Y-m-d', $request->expeditionDate);
+    /** 
+     * *Necesario para registrar las transacciones
+     * @param Carbon
+     */
+    $now = Carbon::now();
+    /**
+     * Formato con el que se guardan las fechas en la base de datos
+     * @var String
+     */
+    $dateFormat = "Y-m-d H:i";
 
-    $subtotal = 0;
-    $discount = 0;
-    $invoiceAmount = 0;
-    $cash = 0;
-    $credit = 0;
-    $change = 0;
+    /**
+     * Instancia de la factura
+     * @var Invoice
+     */
+    $invoice = new Invoice([
+      'customer_id' => $request->input('customerId'),
+      'seller_id' => auth()->user()->id,
+      'prefix' => null,
+      'number' => null,
+      'expedition_date' => $expeditionDate->format($dateFormat),
+      'expiration_date' => Carbon::createFromFormat('Y-m-d', $request->expirationDate)->format($dateFormat),
+      'seller_name' => auth()->user()->name,
+      'customer_name' => $request->input('customerName') ? $request->input('customerName') : 'Mostrador',
+      'customer_document' => $request->input('customerDocument'),
+      'customer_address' => $request->input('customerAddress'),
+      'customer_phone' => $request->input('customerPhone'),
+      'subtotal' => '0',
+      'discount' => null,
+      'amount' => '0',
+      'cash' => null,
+      'credit' => null,
+      'cash_change' => null,
+      'balance' => null,
+      'items' => [],
+      'payments' => [],
+    ]);
 
-    $items = $request->input('invoiceItems');
-    $payments = $request->input('invoicePayments');
+    $items = [];
+    $payments = [];
 
     /**
      * Se crean las instancias de los items que se van a registrar en la 
-     * factura y se actualiza los valores de $subtotal, discount, invoiceAmount
+     * factura y se actualiza los valores de $subtotal, discount, amount
      */
-    foreach ($items as $key => $item) {
-      $invoiceItem = new InvoiceItem();
-      $invoiceItem->quantity = $item['quantity'];
-      $invoiceItem->description = $item['description'];
-      $invoiceItem->unit_value = $item['unitValue'];
-      $invoiceItem->discount = $item['discount'] ? $item['discount'] : null;
-      $invoiceItem->amount = $item['amount'];
+    foreach ($request->input('invoiceItems') as $key => $item) {
+      $subtotal = bcmul($item['unitValue'], $item['quantity'], 2);
+      $discount = bcmul($item['discount'], $item['quantity'], 2);
+      $amount = bcsub($subtotal, $discount);
 
-      $invoiceItems[] = $invoiceItem;
+      //Se agrega al 
+      $items[] = new InvoiceItem([
+        'quantity' => $item['quantity'],
+        'description' => $item['description'],
+        'unit_value' => $item['unitValue'],
+        'discount' => $item['discount'] ? $item['discount'] : null,
+        'amount' => $amount,
+      ]);
 
-      $subtotal += $item['quantity'] * $item['unitValue'];
-      $discount += $item['discount'] * $item['quantity'];
-    }
-
-    $invoiceAmount = $subtotal - $discount;
-
-    /**
-     * Se crean las instancias de los pagos en efectivos
-     * realizado por el clientes y actualización de la variabel $cash
-     */
-    foreach ($payments as $key => $payment) {
-      $cash += $payment['amount'];
-    }
-
-    /**
-     * Se establece si es una venta a credito, en efectivo o credito efectivo.
-     * De la misma forma se define las transformaciónes a los pagos.
-     */
-    if ($invoiceAmount > $cash) {
-      $credit = $invoiceAmount - $cash;
-    } else {
-      $change = $cash - $invoiceAmount;
-    }
-
-    //return $request->input('customerName', 'Mostrador');
-
-    //----------------------------------------------------------------------------
-    //EN ESTE PUNTO SE TERMINAN LAS TAREAS PRELIMINARES 
-    //Y SE PROCEDE A GUARDAR LA INFORMACIÓN DE LA FACTURA EN LA BASE DE DATOS.
-    //----------------------------------------------------------------------------
-
-    /**
-     * Si la factura tiene credito entonces se verifica si el cliente existe
-     */
-    $customerExists = Customer::where('id', $request->input('customerId'))->exists();
-    if ($credit > 0 && !$customerExists) {
-      return [
-        'ok' => false,
-        'message' => 'No se puede registrar creditos a clientes que no estén registrados.'
-      ];
+      $invoice->subtotal = bcadd($invoice->subtotal, $subtotal, 2);
+      $invoice->discount = bcadd($invoice->discount, $discount, 2);
+      $invoice->amount = bcadd($invoice->amount, $amount, 2);
+      $invoice->credit = bcadd($invoice->credit, $amount, 2);
     }
 
     DB::beginTransaction();
 
     try {
-      $invoiceNumber = Invoice::max('number');
+      //Se define el numero de la factura.
+      $invoice->number = Invoice::max('number') + 1;
+      /**
+       * Valor maximo que puede registrarse con los pagos.
+       * @var String
+       */
+      $paymentTop = $invoice->amount;
 
-      /** @var Invoice */
-      $invoice = new Invoice();
-      $invoice->prefix = null;
-      $invoice->number = $invoiceNumber + 1;
+      /**
+       * Se procede a actualizar los valores de la factura para
+       * cash, credit, cash_change y balance. Al igual que a registrar
+       * los pagos que están por debajo del top.
+       */
+      foreach ($request->input('invoicePayments') as $key => $value) {
+        $amount = $value['amount'];
 
-      $invoice->seller_id = auth()->user()->id;
-      $invoice->seller_name = auth()->user()->name;
+        //Se actualizan los parametros de la factura.
+        $invoice->cash = bcadd($invoice->cash, $amount, 2);
+        $comp = bccomp($invoice->cash, $invoice->amount, 2);
 
-      $invoice->customer_id = $request->input('customerId');
-      $invoice->customer_name = $request->input('customerName') ? $request->input('customerName') : 'Mostrador';
-      $invoice->customer_document = $request->input('customerDocument');
-      $invoice->customer_address = $request->input('customerAddress');
-      $invoice->customer_phone = $request->input('customerPhone');
-
-      $invoice->expedition_date = Carbon::createFromFormat('Y-m-d', $request->input('expeditionDate'))->format('Y-m-d H:i');
-      $invoice->expiration_date = Carbon::createFromFormat('Y-m-d', $request->input('expirationDate'))->format('Y-m-d H:i');
-
-      $invoice->subtotal = $subtotal;
-      $invoice->discount = $discount > 0 ? $discount : null;
-      $invoice->amount = $invoiceAmount;
-      $invoice->cash = $cash > 0 ? $cash : null;
-      $invoice->credit = $credit > 0 ? $credit : null;
-      $invoice->cash_change = $change > 0 ? $change : null;
-      $invoice->balance = $credit > 0 ? $credit : null;
-
-      $invoice->save();
-
-      $invoice->items()->saveMany($invoiceItems);
-
-      if ($cash > 0) {
-        $balance = $invoiceAmount;
-
-        foreach ($payments as $key => $payment) {
-          $paymentAmount = $payment['amount'];
-
-          if ($balance > 0) {
-            $balance -= $paymentAmount;
-
-            if ($balance < 0) {
-              //?Es una suma porque el saldo queda negativo.
-              $paymentAmount += $balance;
-            }
-
-            //Se crea la transacción completa
-            $invoicePayment = new InvoicePayment();
-            $invoicePayment->customer_id = $request->input('customerId');
-            $invoicePayment->payment_date = $date->format('Y-m-d H:i');
-            $invoicePayment->description = "Deposito en " . $payment['boxName'];
-            $invoicePayment->amount = $paymentAmount;
-            $invoicePayment->initial_payment = true;
-
-            /**
-             * Acontinuación se crea la transacción y elcodigo para que elpayment pueda rastrearlo.
-             */
-
-            if ($payment['registerTransaction']) {
-              $code = uniqid($this->CODE_PREFIX);
-              $invoicePayment->transaction_code = $code;
-
-              //Se crea la transacción
-              $transaction = new CashboxTransaction();
-              $transaction->cashbox_id = $payment['boxId'];
-              $transaction->transaction_date = $date->format('Y-m-d H:i');
-              $transaction->amount = $paymentAmount;
-              $transaction->code = $code;
-              $transaction->blocked = true;
-
-              if ($credit) {
-                $transaction->description = "Venta: Pago inicial a la factura N° $invoice->number";
-              } else {
-                $transaction->description = "Venta: Pago de la factura N° $invoice->number";
-              }
-
-              $transaction->save();
-            }
-
-            $invoicePayments[] = $invoicePayment;
-          } else {
-            break;
-          }
+        if ($comp >= 0) {
+          //*En este punto el dinero en efectivo es mayor o igaul al valor de la factura
+          $invoice->credit = null;
+          //*Si es mayor entonces se calcula el cambio que otorga.
+          if ($comp > 0) $invoice->cash_change = bcsub($invoice->cash, $invoice->amount, 2);
+        } else {
+          //* En este punto el dinero en efectivo es menor que el valor de la factura.
+          $invoice->credit = bcsub($invoice->credit, $amount, 2);
         }
 
-        //Finalmente se guardan los pagos en la factura
-        $invoice->payments()->saveMany($invoicePayments);
+        //Se registran los pagos si están dentro del tope
+        if (bccomp($paymentTop, "0", 2) > 0) {
+          //Se actualiza el tope
+          $paymentTop = bcsub($paymentTop, $amount, 2);
+
+          //Si el nuevo tope es negativo se debe corregir el valor del importe
+          if (bccomp($paymentTop, '0', 2) < 0) $amount = bcadd($amount, $paymentTop);
+
+          //Se registra la transacción si el import es mayor que cero
+          if (bccomp($amount, "0", 2) > 0) {
+            $payment = new InvoicePayment([
+              'customer_id' => $request->input('customerId'),
+              'transaction_id' => null,
+              'payment_date' => $expeditionDate->format($dateFormat),
+              'description' => "Deposito en " . $value['boxName'],
+              'amount' => $amount,
+              'initial_payment' => true,
+            ]);
+
+            //Se registra la transacción
+            if ($value['registerTransaction']) {
+              $transanction = new CashboxTransaction([
+                'cashbox_id' => $value['boxId'],
+                'transaction_date' => $now->format($dateFormat),
+                'description' => "Venta: Pago inicial a la factura N° $invoice->number",
+                'amount' => $amount,
+                'blocked' => true,
+              ]);
+
+              if ($transanction->save()) {
+                $payment->transaction()->associate($transanction);
+              }
+            }
+
+            //Se guarda en el listado.
+            $payments[] = $payment;
+          }
+        }
+      }
+
+      //* Se establece el saldo igual al credito
+      $invoice->balance = $invoice->credit;
+
+      /**
+       * Se verifica que si la factura tiene credito, entonces el cliente 
+       * debe estar registrado en la base de datos.
+       */
+      if ($invoice->credit && !$invoice->customer_id) {
+        DB::rollBack();
+        return [
+          'ok' => false,
+          'message' => 'No se puede registrar creditos a clientes que no estén registrados.'
+        ];
       }
 
 
-      $invoice->refresh();
+      //Se guarda el modelo
+      $invoice->save();
+      $invoice->items()->saveMany($items);
+      $invoice->payments()->saveMany($payments);
 
       DB::commit();
     } catch (\Throwable $th) {
@@ -240,23 +240,13 @@ class InvoiceController extends Controller
 
   public function storePayments(Request $request)
   {
-    $rules = [
-      'invoiceId' => 'required|integer|exists:invoice,id',
-      'customerId' => 'required|integer|exists:customer,id',
-      'invoicePayments.*' => 'array:boxId,boxName,registerTransaction,amount',
-      'invoicePayments.*.boxId' => 'required|integer|exists:cashbox,id',
-      'invoicePayments.*.boxName' => 'required|string',
-      'invoicePayments.*.registerTransaction' => 'required|boolean',
-      'invoicePayments.*.amount' => 'required|numeric|min:1|max:99999999.99',
-    ];
-
-    $request->validate($rules);
+    $request->validate($this->getRules('add-payment'));
 
     //get the invoice intance
     /** @var Invoice */
     $invoice = Invoice::find($request->input('invoiceId'));
 
-    if ($invoice->balance) {
+    if ($invoice->balance && !$invoice->cancel && $invoice->customer_id) {
       $paymentAmount = array_reduce($request->input('payments'), function ($carry, $item) {
         $carry += $item['amount'];
         return $carry;
@@ -281,14 +271,15 @@ class InvoiceController extends Controller
             //*Se crean las instancias
             $invoicePayment = new InvoicePayment([
               'customer_id' => $request->input('customerId'),
+              'transaction_id' => null,
               'payment_date' => $date->format('Y-m-d H:i'),
               'description' => "Deposito en " . $paymentItem['boxName'],
               'amount' => $amount,
-              'transaction_code' => null,
+              /* 'transaction_code' => null, */
             ]);
 
             if ($paymentItem['registerTransaction']) {
-              $code = uniqid($this->CODE_PREFIX);
+              /* $code = uniqid($this->CODE_PREFIX); */
               $description = $balanceIsCancelled
                 ? "Abono: Cancelación del saldo de la factura N° $invoice->number"
                 : "Abono: Pago a la factura N° $invoice->number";
@@ -299,12 +290,11 @@ class InvoiceController extends Controller
                 'transaction_date' => $date->format('Y-m-d H:i'),
                 'description' => $description,
                 'amount' => $amount,
-                'code' => $code,
                 'blocked' => true,
               ]);
 
-              $invoicePayment->transaction_code = $code;
               $transaction->save();
+              $invoicePayment->transaction_id = $transaction->id;
             };
 
             $invoice->payments()->save($invoicePayment);
@@ -313,14 +303,14 @@ class InvoiceController extends Controller
           } else {
             $invoicePayment = new InvoicePayment([
               'customer_id' => $request->input('customerId'),
+              'transaction_id' => null,
               'payment_date' => $date->format('Y-m-d H:i'),
               'description' => "Deposito en " . $paymentItem['boxName'],
               'amount' => $invoice->balance,
-              'transaction_code' => null,
             ]);
 
             if ($paymentItem['registerTransaction']) {
-              $code = uniqid($this->CODE_PREFIX);
+              /* $code = uniqid($this->CODE_PREFIX); */
               $description = $balanceIsCancelled
                 ? "Cancelación de la factura N° $invoice->number"
                 : "Abono a la factura N° $invoice->number";
@@ -331,12 +321,11 @@ class InvoiceController extends Controller
                 'transaction_date' => $date->format('Y-m-d H:i'),
                 'description' => $description,
                 'amount' => $invoice->balance,
-                'code' => $code,
                 'blocked' => true,
               ]);
 
-              $invoicePayment->transaction_code = $code;
               $transaction->save();
+              $invoicePayment->transaction_id = $transaction->id;
             };
 
             $invoice->payments()->save($invoicePayment);
@@ -354,7 +343,7 @@ class InvoiceController extends Controller
         DB::rollBack();
         return [
           'ok' => false,
-          'error' => $th
+          'error' => $th->getMessage(),
         ];
       }
 
@@ -372,45 +361,33 @@ class InvoiceController extends Controller
 
   public function cancelPayment(Request $request)
   {
-    $rules = [
-      'invoiceId' => 'required|integer|exists:invoice,id',
-      'paymentId' => 'required|integer|exists:invoice_payment,id',
-      'message' => 'required|string|min:3',
-      'password' => ['required', 'string', 'min:3', function ($attr, $value, $fail) {
-        if (!Hash::check($value, auth()->user()->password)) {
-          return $fail('La contraseña es incorrecta.');
-        }
-      }]
-    ];
-
-    $attr = [
-      'password' => 'contraseña',
-      'message' => 'motivo',
-    ];
-
-    $messages = [
-      'password.required' => 'Se requiere su contraseña para continuar.',
-      'message.required' => "Se requiere un motivo para realizar la cancelación"
-    ];
-
-    $request->validate($rules, $messages, $attr);
+    $request->validate(
+      $this->getRules('cancel-payment'),
+      $this->getCustomMessage(),
+      $this->getAttr()
+    );
 
     $ok = false;
     $message = null;
     $error = null;
 
     //Recupero la factura
-    $invoice = Invoice::find($request->invoiceId);
+    $invoice = Invoice::without('item')->find($request->invoiceId);
     //Se recupera el pago
     $payment = InvoicePayment::find($request->paymentId);
 
-    if (!$payment->cancel) {
-      //Se actualiza el saldo de la factura y el dinero
+    if (!$payment->cancel && !$invoice->cancel && $invoice->customer_id) {
+      //El saldo de la factura aumenta en el valor del pago
       $invoice->balance = bcadd($invoice->balance, $payment->amount);
+
+      //Si es un pago inicial tambien se actualiza cash(-) y credit(+)
       if ($payment->initial_payment) {
         $invoice->cash = bcsub($invoice->cash, $payment->amount);
         $invoice->credit = bcadd($invoice->credit, $payment->amount);
+
+        if (bccomp($invoice->cash, '0', 2) <= 0) $invoice->cash = null;
       }
+
       //Se cancela el pago
       $payment->cancel = true;
       $payment->cancel_message = auth()->user()->name . ": " . $request->input('message');
@@ -418,15 +395,8 @@ class InvoiceController extends Controller
       DB::beginTransaction();
 
       try {
-        //Se verifica si el pago tiene asociada una transacción
-        if ($payment->transaction_code) {
-          /** @var CashboxTransaction */
-          $transaction = CashboxTransaction::where('code', $payment->transaction_code)->first();
-          if ($transaction) {
-            $transaction->delete();
-          }
-          $payment->transaction_code = null;
-        }
+        //Se elimina la transacción asociada.
+        if ($payment->transaction) $payment->transaction->delete();
 
         $invoice->save();
         $payment->save();
@@ -440,7 +410,9 @@ class InvoiceController extends Controller
         //throw $th;
       }
     } else {
-      $message = "¡El pago ya fue cancelado.!";
+      $message = !$invoice->customer_id 
+        ? "Cancelar pagos a ventas por mostrador no está soportado." 
+        : "¡El pago ya fue cancelado.!";
     }
 
     return [
@@ -458,38 +430,20 @@ class InvoiceController extends Controller
     $error = null;
     $log = [];
 
-
-    $rules = [
-      'invoiceId' => 'required|integer|exists:invoice,id',
-      'itemId' => 'required|integer|exists:invoice_item,id',
-      'quantity' => 'required|numeric|min:0.001',
-      'message' => 'required|string|min:3',
-      'password' => ['required', 'string', 'min:3', function ($attr, $value, $fail) {
-        if (!Hash::check($value, auth()->user()->password)) {
-          return $fail('La contraseña es incorrecta.');
-        }
-      }]
-    ];
-
-    $attr = [
-      'password' => 'contraseña',
-      'message' => 'motivo',
-    ];
-
-    $messages = [
-      'password.required' => 'Se requiere su contraseña para continuar.',
-      'message.required' => "Se requiere un motivo para realizar la cancelación"
-    ];
-
-    $request->validate($rules, $messages, $attr);
+    $request->validate(
+      $this->getRules('cancel-item'),
+      $this->getCustomMessage(),
+      $this->getAttr()
+    );
 
     $log[] = "Los datoś pasan la validación";
 
     //Se recupera las instancias
     /** @var Invoice */
-    $invoice = Invoice::find($request->invoiceId);
+    $invoice = Invoice::without('items')->find($request->invoiceId);
     /** @var InvoiceItem */
     $item = InvoiceItem::find($request->itemId);
+
     $log[] = "Se obtinen los recursos de la factura y el articulo";
 
     if ($item->cancel) {
@@ -521,12 +475,16 @@ class InvoiceController extends Controller
      */
     $cashDiscount = "0";
 
-    //Se actualiza el estado basico de la factura
+    //Se descuenta el valor neto del articulo
     $invoice->subtotal = bcsub($invoice->subtotal, $itemPrice);
-    $invoice->discount = $item->discount ? bcsub($invoice->discount, $discount) : $invoice->discount;
+    //Se disminuye el descuento si el articulo lo tiene.
+    $invoice->discount = $item->discount
+      ? bcsub($invoice->discount, $discount)
+      : $invoice->discount;
+    //Se diminuye el valor de la factura.
     $invoice->amount = bcsub($invoice->amount, $amount);
 
-    if ($invoice->credit && bccomp($invoice->credit, $amount) >= 0) {
+    if ($invoice->credit && bccomp($invoice->credit, $amount) > 0) {
       //Se decuenta el valor del articulo
       $invoice->credit = bcsub($invoice->credit, $amount);
     } else {
@@ -551,7 +509,7 @@ class InvoiceController extends Controller
     //Se procede a hacer la modificaciones
     DB::beginTransaction();
     try {
-      //Se anula el articulo
+      //* Se anula el articulo actual y se crea uno nuevo con el remanente.
       $item->cancel = true;
       $item->cancel_message = $request->message;
       $itemQuantity = floatval($item->quantity);
@@ -607,12 +565,9 @@ class InvoiceController extends Controller
               $payment->cancel_message = "Cancelación de articulo";
 
               //Se elimina la transacción asociada
-              if ($payment->transaction_code) {
-                /** @var CashboxTransaction */
-                $transaction = CashboxTransaction::where('code', $payment->transaction_code)->first();
-                $transaction ? $transaction->delete() : null;
-              }
+              if ($payment->transaction) $payment->transaction->delete();
 
+              //Se actualiza el efectivo de la factura.
               $payment->initial_payment ? $invoice->cash = bcsub($invoice->cash, $payment->amount) : null;
 
               //se actualiza el saldo
@@ -622,15 +577,11 @@ class InvoiceController extends Controller
               $payment->amount = bcsub($payment->amount, $cashDiscount);
               $payment->description = $payment->description . " [*]";
               //Se actualiza la transacción asociada
-              if ($payment->transaction_code) {
-                /** @var CashboxTransaction */
-                $transaction = CashboxTransaction::where('code', $payment->transaction_code)->first();
-                if ($transaction) {
-                  $transaction->transaction_date = Carbon::now()->format('Y-m-d H:i');
-                  $transaction->description = $transaction->description . " [*]";
-                  $transaction->amount = bcsub($transaction->amount, $cashDiscount);
-                  $transaction->save();
-                }
+              if ($payment->transaction) {
+                $payment->transaction->transaction_date = Carbon::now()->format('Y-m-d H:i');
+                $payment->transaction->description = $payment->transaction->description . " [*]";
+                $payment->transaction->amount = bcsub($payment->transaction->amount, $cashDiscount);
+                $payment->transaction->save();
               }
 
               //Se actualiza la factura
@@ -664,7 +615,7 @@ class InvoiceController extends Controller
       $invoice->cash = bccomp($invoice->cash, '0', 2) != 0 ? $invoice->cash : null;
       $invoice->balance = bccomp($invoice->balance, '0', 2) != 0 ? $invoice->balance : null;
 
-      if (!$invoice->balance) {
+      if (bccomp($invoice->amount, '0') <= 0) {
         $invoice->cancel = true;
         $invoice->cancel_message = "Factura con importe cero.";
       }
@@ -697,27 +648,11 @@ class InvoiceController extends Controller
     $res->invoice = null;
 
 
-    $rules = [
-      'invoiceId' => 'required|integer|exists:invoice,id',
-      'message' => 'required|string|min:3',
-      'password' => ['required', 'string', 'min:3', function ($attr, $value, $fail) {
-        if (!Hash::check($value, auth()->user()->password)) {
-          return $fail('La contraseña es incorrecta.');
-        }
-      }]
-    ];
-
-    $attr = [
-      'password' => 'contraseña',
-      'message' => 'motivo',
-    ];
-
-    $messages = [
-      'password.required' => 'Se requiere su contraseña para continuar.',
-      'message.required' => "Se requiere un motivo para realizar la cancelación"
-    ];
-
-    $request->validate($rules, $messages, $attr);
+    $request->validate(
+      $this->getRules('cancel-invoice'),
+      $this->getCustomMessage(),
+      $this->getAttr()
+    );
 
     //Recupero la instancia de la factura
     /** @var Invoice */
@@ -745,9 +680,8 @@ class InvoiceController extends Controller
         $payment->cancel = true;
         $payment->cancel_message = $request->message;
 
-        if ($payment->transaction_code) {
-          $transaction = CashboxTransaction::where('code', $payment->transaction_code)->first();
-          $transaction ? $transaction->delete() : null;
+        if ($payment->transaction) {
+          $payment->transaction()->first()->delete();
         }
       }
     });
@@ -816,7 +750,7 @@ class InvoiceController extends Controller
   {
     //Fechas limitantes
     $now = Carbon::now();
-    $lastWeek = $now->clone()->subWeek()->startOfDay();
+    $lastWeek = $now->clone()->subDays(6)->startOfDay();
     $format = "Y-m-d H:i";
 
     //Se recuperan las facturas activas.
@@ -825,7 +759,7 @@ class InvoiceController extends Controller
       ->where('expedition_date', '>=', $lastWeek->format($format))
       ->where('expedition_date', '<=', $now->format($format))
       ->without('items')
-      ->select(['id', 'expedition_date as date', 'amount', 'cash', 'credit'])
+      ->select(['id', 'expedition_date as date', 'amount', 'cash', 'credit', 'cash_change as change'])
       ->get();
 
     $payments = InvoicePayment::orderBy('payment_date')
@@ -920,37 +854,82 @@ class InvoiceController extends Controller
     ];
   }
 
-  protected function getRules()
+  /**
+   * Construye las reglas utilizadas para la validacion de nuevas facturas 
+   * asi como para los procedimientos de cancelación.
+   * @param String $type Tipo de formulario a validar [new-invoice, add-payment, cancel-invoice, cancel-payment, cancel-item]
+   * @return Array
+   */
+  protected function getRules($type = "new-invoice")
   {
-    return [
-      'customerId' => 'nullable|integer|exists:customer,id',
-      'customerName' => 'nullable|string|min:3|max:90',
-      'customerDocument' => 'nullable|string|min:6|max:45',
-      'customerAddress' => 'nullable|string|min:3|max:150',
-      'customerPhone' => 'nullable|string|min:6|max:20',
-      'expeditionDate' => 'required|date',
-      'expirationDate' => 'required|string|date|after_or_equal:expeditionDate',
-      'invoiceItems' => 'required|array|min:1',
-      'invoiceItems.*' => 'array:quantity,description,unitValue,discount,amount',
-      'invoiceItems.*.quantity' => 'required|numeric|min:0.0001|max:9999.9999',
-      'invoiceItems.*.description' => 'required|string|min:3|max:255',
-      'invoiceItems.*.unitValue' => 'required|numeric|min:1|max:99999999.99',
-      'invoiceItems.*.discount' => 'nullable|numeric|min:0|max:99999999.99',
-      'invoiceItems.*.amount' => 'required|numeric|min:1|max:99999999.99',
-      'invoicePayments' => 'nullable|array',
-      'invoicePayments.*' => 'array:boxId,boxName,registerTransaction,useForChange,amount',
-      'invoicePayments.*.boxId' => 'required|integer|exists:cashbox,id',
-      'invoicePayments.*.boxName' => 'required|string',
-      'invoicePayments.*.registerTransaction' => 'required|boolean',
-      'invoicePayments.*.useForChange' => 'required|boolean',
-      'invoicePayments.*.amount' => 'required|numeric|min:1|max:99999999.99',
-    ];
+    /** @var Array */
+    $rules = [];
+
+    if ($type === "new-invoice") {
+      $rules = [
+        'customerId' => 'nullable|integer|exists:customer,id',
+        'customerName' => 'nullable|string|min:3|max:90',
+        'customerDocument' => 'nullable|string|min:6|max:45',
+        'customerAddress' => 'nullable|string|min:3|max:150',
+        'customerPhone' => 'nullable|string|min:6|max:20',
+        'expeditionDate' => 'required|date',
+        'expirationDate' => 'required|string|date|after_or_equal:expeditionDate',
+        'invoiceItems' => 'required|array|min:1',
+        'invoiceItems.*' => 'array:quantity,description,unitValue,discount,amount',
+        'invoiceItems.*.quantity' => 'required|numeric|min:0.001|max:9999.999',
+        'invoiceItems.*.description' => 'required|string|min:3|max:255',
+        'invoiceItems.*.unitValue' => 'required|numeric|min:1|max:99999999.99',
+        'invoiceItems.*.discount' => 'nullable|numeric|min:0|max:99999999.99',
+        'invoiceItems.*.amount' => 'required|numeric|min:1|max:99999999.99',
+        'invoicePayments' => 'nullable|array',
+        'invoicePayments.*' => 'array:boxId,boxName,registerTransaction,useForChange,amount',
+        'invoicePayments.*.boxId' => 'required|integer|exists:cashbox,id',
+        'invoicePayments.*.boxName' => 'required|string',
+        'invoicePayments.*.registerTransaction' => 'required|boolean',
+        'invoicePayments.*.useForChange' => 'required|boolean',
+        'invoicePayments.*.amount' => 'required|numeric|min:1|max:99999999.99',
+      ];
+    } else if ($type === 'add-payment') {
+      $rules = [
+        'invoiceId' => 'required|integer|exists:invoice,id',
+        'customerId' => 'required|integer|exists:customer,id',
+        'invoicePayments.*' => 'array:boxId,boxName,registerTransaction,amount',
+        'invoicePayments.*.boxId' => 'required|integer|exists:cashbox,id',
+        'invoicePayments.*.boxName' => 'required|string',
+        'invoicePayments.*.registerTransaction' => 'required|boolean',
+        'invoicePayments.*.amount' => 'required|numeric|min:1|max:99999999.99',
+      ];
+    } else {
+      $rules = [
+        'invoiceId' => 'required|integer|exists:invoice,id',
+        'message' => 'required|string|min:3',
+        'password' => ['required', 'string', 'min:3', function ($attr, $value, $fail) {
+          if (!Hash::check($value, auth()->user()->password)) {
+            return $fail('La contraseña es incorrecta.');
+          }
+        }]
+      ];
+
+      if ($type === 'cancel-payment') {
+        $rules['paymentId'] = 'required|integer|exists:invoice_payment,id';
+      } else if ($type === 'cancel-item') {
+        $rules['itemId'] = 'required|integer|exists:invoice_item,id';
+        $rules['quantity'] = 'required|numeric|min:0.001';
+      }
+    }
+
+    return $rules;
   }
 
   protected function getAttr()
   {
     return [
-      'customerId' => 'cliente',
+      // Calves
+      'customerId' => 'ID cliente',
+      'invoiceId' => "ID de factura",
+      'paymentId' => 'ID de pago',
+      'itemId' => 'ID de item',
+      //Parametros de la factura
       'customerName' => 'cliente',
       'customerDocument' => 'nit',
       'customerAddress' => 'direccíon',
@@ -958,6 +937,12 @@ class InvoiceController extends Controller
       'expeditionDate' => 'fecha de expedición',
       'expirationDate' => 'fecha de vencimiento',
       'invoiceItems' => 'listado de articulos',
+      'invoicePayments' => 'listado de pagos',
+      //Parametros para cancelaciónes
+      'message' => 'motivo',
+      'password' => 'contraseña',
+      'quantity' => 'cantidad',
+
     ];
   }
 
@@ -965,6 +950,8 @@ class InvoiceController extends Controller
   {
     return [
       'invoiceItems.array' => 'Debe ser un listado de items.',
+      'password.required' => 'Se requiere su contraseña para continuar.',
+      'message.required' => "Se requiere un motivo para realizar la cancelación"
     ];
   }
 }

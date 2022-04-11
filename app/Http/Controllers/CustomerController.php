@@ -23,6 +23,7 @@ class CustomerController extends Controller
     $customers = Customer::orderBy('first_name')
       ->orderBy('last_name')
       ->with('information', 'contacts')
+      ->withSum('invoices as balance', 'balance')
       ->get();
 
     return Inertia::render('Customer/Index', compact('customers'));

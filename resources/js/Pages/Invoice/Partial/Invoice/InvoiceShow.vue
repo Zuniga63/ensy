@@ -208,7 +208,7 @@ export default {
       return sumary;
     },
     enabledPayment() {
-      return this.invoice.customer_id && this.invoice.balance && this.tab === "pagos";
+      return this.invoice.customer_id && this.invoice.balance && this.tab === "pagos" && !this.invoice.cancel;
     },
   },
 };

@@ -103,6 +103,8 @@
         </div>
       </div>
 
+      <input-error :message="errors.general" class="col-span-3 text-xs mt-1 ml-2"></input-error>
+
       <transition
         enter-active-class="ease-out duration-300"
         enter-from-class="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
@@ -169,6 +171,7 @@ export default {
         message: null,
         password: null,
         quantity: null,
+        general: null,
       },
       processing: false,
     };
@@ -208,14 +211,16 @@ export default {
         try {
           const res = await axios.put(data.url, data.data);
           if (res.data.ok) {
+            console.log(res.data);
             this.$emit("updateInvoice", res.data.invoice);
             this.showNotification();
           } else {
-            console.log(res.data.message);
+            this.errors.general = res.data.message;
             console.log(res.data);
           }
         } catch (error) {
           if (error.response) {
+            console.log(error.response);
             this.manageErrors(error.response.data?.errors);
           } else if (error.request) {
             // La petición fue hecha pero no se recibió respuesta
