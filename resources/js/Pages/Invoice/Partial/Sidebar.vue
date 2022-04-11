@@ -14,9 +14,10 @@
             rounded
             mr-2
             focus:ring focus:ring-indigo-400 focus:ring-opacity-50
-            text-xs
+            text-xs text-gray-800
           "
           placeholder="Documento o numero de factura."
+          v-model="search"
         />
 
         <button
@@ -42,7 +43,14 @@
             type="date"
             name="fromDate"
             id="fromDate"
-            class="border border-gray-200 rounded focus:ring focus:ring-indigo-400 focus:ring-opacity-50 text-xs"
+            class="
+              border border-gray-200
+              rounded
+              focus:ring focus:ring-indigo-400 focus:ring-opacity-50
+              text-xs text-gray-800
+            "
+            v-model="fromDate"
+            :max="maxDate"
           />
         </div>
 
@@ -53,8 +61,66 @@
             type="date"
             name="toDate"
             id="toDate"
-            class="border border-gray-200 rounded focus:ring focus:ring-indigo-400 focus:ring-opacity-50 text-xs"
+            class="
+              border border-gray-200
+              rounded
+              focus:ring focus:ring-indigo-400 focus:ring-opacity-50
+              text-xs text-gray-800
+            "
+            v-model="toDate"
+            :min="fromDate"
+            :max="maxDate"
           />
+        </div>
+      </div>
+
+      <!-- Controles para filtros generales -->
+      <div class="mb-2">
+        <h2 class="mb-1 text-sm text-gray-800">Mostrar Facturas</h2>
+        <div class="grid grid-cols-2 gap-2">
+          <label class="flex items-center text-xs text-gray-800">
+            <input
+              type="radio"
+              name="all"
+              class="mr-2 text-indigo-600 focus:ring-indigo-200"
+              v-model="filterBy"
+              value="all"
+            />
+            <span>Todas</span>
+          </label>
+
+          <label class="flex items-center text-xs text-gray-800">
+            <input
+              type="radio"
+              name="pay"
+              class="mr-2 text-indigo-600 focus:ring-indigo-200"
+              v-model="filterBy"
+              value="paid"
+            />
+            <span>Pagadas</span>
+          </label>
+
+          <label class="flex items-center text-xs text-gray-800">
+            <input
+              type="radio"
+              name="pending"
+              class="mr-2 text-indigo-600 focus:ring-indigo-200"
+              v-model="filterBy"
+              value="pending"
+            />
+            <span>Pendientes</span>
+          </label>
+
+          <label class="flex items-center text-xs text-gray-800">
+            <input
+              type="radio"
+              name="canceled"
+              class="mr-2 text-indigo-600 focus:ring-indigo-200"
+              v-model="filterBy"
+              value="canceled"
+            />
+            <span>Anuladas</span>
+          </label>
         </div>
       </div>
 
@@ -82,7 +148,7 @@
     </header>
 
     <!-- Body -->
-    <div class="h-80 px-4 py-2 overflow-y-auto">
+    <div class="h-96 px-4 py-2 overflow-y-auto">
       <ul>
         <li
           class="
@@ -94,7 +160,7 @@
             shadow
             mb-4
           "
-          v-for="invoice in invoiceList"
+          v-for="invoice in displayList"
           :key="invoice.id"
           @click.stop="$emit('loadInvoice', invoice.id)"
           :class="{
@@ -108,7 +174,7 @@
             :class="{ 'bg-gray-800': invoice.balance, 'bg-emerald-600': !invoice.balance }"
           >
             <p class="text-xs text-gray-50">
-              Factura N°: <span class="font-medium">{{ invoice.number }}</span>
+              Factura N°: <span class="font-medium">{{ invoice.invoice_number }}</span>
             </p>
             <p class="text-xs text-gray-50 font-medium">
               {{ invoice.time.expeditionDate }}
@@ -157,11 +223,35 @@
           </div>
         </li>
       </ul>
+
+      <button
+        class="
+          w-full
+          px-4
+          py-2
+          border border-indigo-600
+          rounded
+          mt-2
+          text-xs
+          tracking-wider
+          uppercase
+          text-indigo-800
+          font-semibold
+          hover:bg-indigo-500 hover:text-white
+          active:bg-indigo-600
+          transition-colors
+        "
+        @click="invoiceDisplayed += step"
+        v-if="displayList.length < filterList.length"
+      >
+        Cargar mas Facturas
+      </button>
     </div>
 
     <footer class="px-4 py-2 bg-gray-200">
       <p class="text-gray-800 text-center text-sm">
-        Facturas: <span class="font-medium"> {{ invoiceList.length }} </span>
+        Mostrando <span class="font-semibold">{{ displayList.length }}</span> facturas de
+        <span class="font-semibold">{{ filterList.length }}</span>
       </p>
     </footer>
   </div>
@@ -169,9 +259,11 @@
 
 <script>
 import SearchIcon from "@/Components/Svgs/Search.vue";
-import { formatCurrency } from "@/utilities.js";
+import { formatCurrency, normalizeString } from "@/utilities.js";
 import dayjs from "dayjs";
 import isToday from "dayjs/plugin/isToday";
+import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
+import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 
 export default {
   components: {
@@ -186,6 +278,24 @@ export default {
   },
   setup(props) {
     dayjs.extend(isToday);
+    dayjs.extend(isSameOrAfter);
+    dayjs.extend(isSameOrBefore);
+  },
+  data() {
+    return {
+      invoiceList: [],
+      search: null,
+      /**
+       * Define que facturas se muestran
+       * [all, paid, pending, canceled]
+       */
+      filterBy: "all",
+      fromDate: dayjs().startOf("month").format("YYYY-MM-DD"),
+      toDate: dayjs().format("YYYY-MM-DD"),
+      maxDate: dayjs().format("YYYY-MM-DD"),
+      invoiceDisplayed: 10,
+      step: 10,
+    };
   },
   methods: {
     formatCurrency,
@@ -205,19 +315,94 @@ export default {
         ? invoice.time.expedition.format("hh:mm a")
         : invoice.time.expedition.format("DD-MM-YY");
     },
-  }, //.end methods
-  computed: {
-    invoiceList() {
-      let list = this.invoices.slice();
-      list.map((item) => this.createTimeProperty(item));
-      list.sort((inv1, inv2) => {
-        if (inv1.time.createAt.isBefore(inv2.time.createdAt)) return -1;
-        if (inv1.time.createAt.isAfter(inv2.time.createdAt)) return 1;
-
-        return 0;
+    transformInvoice() {
+      this.invoiceList = this.invoices.slice();
+      this.invoiceList.map((item) => this.createTimeProperty(item));
+    },
+    /**
+     * Se encarga de filtrar las facturas segun el texto
+     * de busqueda.
+     * @param {array} list - listado de facturas
+     * @return {array}
+     */
+    filterBySearch(list) {
+      let search = normalizeString(this.search.trim());
+      return list.filter((item) => {
+        let text = `${item.invoice_number} ${item.customer_name} ${item.customer_document}`;
+        text = normalizeString(text);
+        return text.includes(search);
       });
+    },
+    /**
+     * Se encarga de filtrar las facturas segun si están pagadas,
+     * pendientes o anuladas.
+     * @param {array} list listado de facturas.
+     * @return {array}
+     */
+    filterByGeneral(list) {
+      if (this.filterBy === "all") return list;
+      if (this.filterBy === "paid") return list.filter((item) => !item.balance);
+      if (this.filterBy === "pending") list.filter((item) => item.balance);
+      if (this.filterBy === "canceled") return list.filter((item) => item.cancel);
+
+      return [];
+    },
+    /**
+     * Se encarga de filtrar las facturas segun las fechas seleccionadas.
+     * @param {array} list listado de facturas.
+     * @return {array}
+     */
+    filterByDate(list) {
+      const from = this.fromDate ? dayjs(this.fromDate) : null;
+      const to = this.toDate ? dayjs(this.toDate) : null;
+
+      if (from && to && from.isValid() && to.isValid) {
+        return list.filter((item) => {
+          return item.time.expedition.isSameOrAfter(from) && item.time.expedition.isSameOrBefore(to);
+        });
+      } else if (from && from.isValid()) {
+        return list.filter((item) => {
+          return item.time.expedition.isSameOrAfter(from);
+        });
+      } else if (to && to.isValid()) {
+        return list.filter((item) => {
+          return item.time.expedition.isSameOrBefore(to);
+        });
+      }
+
       return list;
     },
+  }, //.end methods
+  computed: {
+    filterList() {
+      let list = this.filterByGeneral(this.invoiceList.slice().reverse());
+      list = this.filterByDate(list);
+      if (this.search) list = this.filterBySearch(list);
+      return list;
+    },
+    displayList() {
+      return this.filterList.slice(0, this.invoiceDisplayed);
+    },
+  },
+  watch: {
+    "invoices.length"(newLength) {
+      this.transformInvoice();
+    },
+    fromDate(newDate, oldDate) {
+      if (newDate !== oldDate) {
+        if (this.toDate) {
+          let from = dayjs(newDate);
+          let to = dayjs(this.toDate);
+
+          if (from.isAfter(to)) {
+            this.toDate = from.format("YYYY-MM-DD");
+          }
+        }
+      }
+    },
+  },
+  beforeMount() {
+    this.transformInvoice();
   },
 };
 </script>
