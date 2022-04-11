@@ -105,6 +105,7 @@ export default {
       if (credits.reduce((carry, current) => carry + current) > 0) {
         datasets.push({
           label: "Creditos",
+          hidden: true,
           data: credits,
           borderColor: "rgb(54, 162, 235)",
           backgroundColor: "rgba(54, 162, 235, 0.5)",
@@ -116,6 +117,7 @@ export default {
         datasets.push({
           label: "Efectivo",
           data: cash,
+          hidden: true,
           borderColor: "rgb(255, 99, 132)",
           backgroundColor: "rgba(255, 99, 132, 0.5)",
         });
@@ -126,6 +128,7 @@ export default {
         datasets.push({
           label: "Depositos",
           data: collect,
+          hidden: true,
           borderColor: "rgb(255, 159, 64)",
           backgroundColor: "rgba(255, 159, 64, 0.5)",
         });
