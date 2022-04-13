@@ -290,8 +290,8 @@ export default {
        * [all, paid, pending, canceled]
        */
       filterBy: "all",
-      fromDate: dayjs().startOf("month").format("YYYY-MM-DD"),
-      toDate: dayjs().format("YYYY-MM-DD"),
+      fromDate: null,
+      toDate: null,
       maxDate: dayjs().format("YYYY-MM-DD"),
       invoiceDisplayed: 10,
       step: 10,
@@ -341,8 +341,8 @@ export default {
      */
     filterByGeneral(list) {
       if (this.filterBy === "all") return list;
-      if (this.filterBy === "paid") return list.filter((item) => !item.balance);
-      if (this.filterBy === "pending") list.filter((item) => item.balance);
+      if (this.filterBy === "paid") return list.filter((item) => !item.balance && !item.cancel);
+      if (this.filterBy === "pending") return list.filter((item) => item.balance && !item.cancel);
       if (this.filterBy === "canceled") return list.filter((item) => item.cancel);
 
       return [];
