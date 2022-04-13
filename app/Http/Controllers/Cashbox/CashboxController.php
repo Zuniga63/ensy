@@ -25,42 +25,7 @@ class CashboxController extends Controller
    */
   public function index()
   {
-    /**
-     * Se recuperan las cajas con el ultimo cierre si lo tuviere.
-     * De los cierres solo se recuperan la base y la fecha.
-     */
-    $boxs = Cashbox::orderBy('order')
-      ->with(['closures' => function ($query) {
-        $query->orderBy('closing_date', 'DESC')
-          ->select(['id', 'cashbox_id', 'closing_date as closingDate', 'new_base as base'])
-          ->limit(1);
-      }])
-      ->get(['id', 'name', 'code', 'slug']);
-
-    $accumulated = 0;
-
-    /**
-     * Se transforman cada uno de los elementos para agregar
-     * los datos requeridos por la vista
-     */
-    $boxs->map(function ($box, $key) use(&$accumulated) {
-      $box->base = 0;
-      $box->lastClosure = null;
-      $box->balanceIsWrong = false;
-
-      $this->getCashAmount($box);
-      $this->formatCashProperties($box);
-      $this->validateBoxBalance($box);
-
-      $accumulated += $box->balance;
-      $box->accumulated = $accumulated;
-
-
-      //Se elimina el arreglo de los closures
-      unset($box->closures);
-      return $box;
-    });
-
+    $boxs = $this->getBoxs();
     return Inertia::render('Cashbox/Index', compact('boxs'));
   }
 
@@ -488,6 +453,52 @@ class CashboxController extends Controller
   //-------------------------------------------------------------
   //    UTILIDADES
   //-------------------------------------------------------------
+
+  /**
+   * Se recuperan las cajas con el ultimo cierre si lo tuviere.
+   * De los cierres solo se recuperan la base y la fecha.
+   * @return Collections
+   */
+  protected function getBoxs()
+  {
+    /**
+     * Se recuperan las cajas con el ultimo cierre si lo tuviere.
+     * De los cierres solo se recuperan la base y la fecha.
+     */
+    $boxs = Cashbox::orderBy('order')
+      ->with(['closures' => function ($query) {
+        $query->orderBy('closing_date', 'DESC')
+          ->select(['id', 'cashbox_id', 'closing_date as closingDate', 'new_base as base'])
+          ->limit(1);
+      }])
+      ->get(['id', 'name', 'code', 'slug']);
+
+    $accumulated = 0;
+
+    /**
+     * Se transforman cada uno de los elementos para agregar
+     * los datos requeridos por la vista
+     */
+    $boxs->map(function ($box, $key) use (&$accumulated) {
+      $box->base = 0;
+      $box->lastClosure = null;
+      $box->balanceIsWrong = false;
+
+      $this->getCashAmount($box);
+      $this->formatCashProperties($box);
+      $this->validateBoxBalance($box);
+
+      $accumulated += $box->balance;
+      $box->accumulated = $accumulated;
+
+
+      //Se elimina el arreglo de los closures
+      unset($box->closures);
+      return $box;
+    });
+
+    return $boxs;
+  }
 
   /**
    * Este metodo realiza las consultas requeridas para calular
