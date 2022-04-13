@@ -6,6 +6,7 @@ use App\Models\CountryDepartment;
 use App\Models\Customer\Customer;
 use App\Models\Customer\CustomerContact;
 use App\Models\Customer\CustomerInformation;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redirect;
@@ -23,7 +24,9 @@ class CustomerController extends Controller
     $customers = Customer::orderBy('first_name')
       ->orderBy('last_name')
       ->with('information', 'contacts')
-      ->withSum('invoices as balance', 'balance')
+      ->withSum(['invoices as balance' => function (Builder $query) {
+        $query->where('cancel', 0);
+      }], 'balance')
       ->get();
 
     return Inertia::render('Customer/Index', compact('customers'));
