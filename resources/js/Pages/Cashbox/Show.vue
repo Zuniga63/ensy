@@ -296,6 +296,7 @@ import localizedFormat from "dayjs/plugin/localizedFormat";
 import TransferForm from "./Components/TransferForm.vue";
 
 import Swal from "sweetalert2";
+import {formatCurrency} from "@/utilities";
 
 export default {
   components: {
@@ -309,19 +310,6 @@ export default {
   },
   props: ["cashbox", "boxs"],
   setup(props) {
-    //---------------------------------------------------------
-    // SE CONSTRUYE EL FORMATEADOR DE MONEDA
-    //---------------------------------------------------------
-    let fractionDigits = 0;
-    let style = "currency";
-    let currency = "COP";
-
-    let formater = new Intl.NumberFormat("es-CO", {
-      style,
-      currency,
-      minimumFractionDigits: fractionDigits,
-    });
-
     //----------------------------------------------------
     // SE ESTABLECEN LOS PARAMETROS DE dayjs
     //----------------------------------------------------
@@ -331,7 +319,6 @@ export default {
 
     props.cashbox.balance = parseFloat(props.cashbox.balance);
 
-    return { formater };
   },
   data() {
     return {
@@ -418,7 +405,7 @@ export default {
     removeTransaction(transaction) {
       //Se busca el index de la transaccion
       let index = this.cashbox.transactions.findIndex(t => t.id === transaction.id);
-      if(index > 0){
+      if(index >= 0){
         this.cashbox.transactions.splice(index, 1);
         this.calculateBalance();
       }
@@ -488,9 +475,7 @@ export default {
      * @param {number} number Numero a formatear
      * @return {string} Numero formateado
      */
-    formatCurrency(number) {
-      return this.formater.format(number);
-    },
+    formatCurrency,
     /**
      * Se encarga de agregar los propiedades necesarias
      * a las transacciones y transformar las fechas a
