@@ -35,43 +35,59 @@
       </div>
 
       <!-- Controles para filtrar por fecha -->
-      <div class="grid grid-cols-2 gap-2 mb-2">
-        <!-- From -->
-        <div class="flex flex-col">
-          <label for="fromDate" class="text-xs text-gray-800 mb-1 tracking-wider">Desde</label>
-          <input
-            type="date"
-            name="fromDate"
-            id="fromDate"
-            class="
-              border border-gray-200
-              rounded
-              focus:ring focus:ring-indigo-400 focus:ring-opacity-50
-              text-xs text-gray-800
-            "
-            v-model="fromDate"
-            :max="maxDate"
-          />
-        </div>
+      <div class="mb-2">
+        <label class="flex items-center mb-2 text-xs text-gray-800">
+          <jet-checkbox v-model:checked="showDateInputs" class="mr-2" />
+          <span>Filtrar por fechas</span>
+        </label>
 
-        <!-- To -->
-        <div class="flex flex-col">
-          <label for="toDate" class="text-xs text-gray-800 mb-1 tracking-wider">Hasta</label>
-          <input
-            type="date"
-            name="toDate"
-            id="toDate"
-            class="
-              border border-gray-200
-              rounded
-              focus:ring focus:ring-indigo-400 focus:ring-opacity-50
-              text-xs text-gray-800
-            "
-            v-model="toDate"
-            :min="fromDate"
-            :max="maxDate"
-          />
-        </div>
+        <transition
+          enter-active-class="transition ease-out duration-200"
+          enter-from-class="opacity-0 scale-90"
+          enter-to-class="opacity-100 scale-100"
+          leave-active-class="transition ease-in duration-200"
+          leave-from-class="opacity-100 scale-100"
+          leave-to-class="opacity-0 scale-90"
+        >
+          <div class="grid grid-cols-2 gap-2" v-show="showDateInputs">
+            <!-- From -->
+            <div class="flex flex-col">
+              <label for="fromDate" class="text-xs text-gray-800 mb-1 tracking-wider">Desde</label>
+              <input
+                type="date"
+                name="fromDate"
+                id="fromDate"
+                class="
+                  border border-gray-200
+                  rounded
+                  focus:ring focus:ring-indigo-400 focus:ring-opacity-50
+                  text-xs text-gray-800
+                "
+                v-model="fromDate"
+                :max="maxDate"
+              />
+            </div>
+
+            <!-- To -->
+            <div class="flex flex-col">
+              <label for="toDate" class="text-xs text-gray-800 mb-1 tracking-wider">Hasta</label>
+              <input
+                type="date"
+                name="toDate"
+                id="toDate"
+                class="
+                  border border-gray-200
+                  rounded
+                  focus:ring focus:ring-indigo-400 focus:ring-opacity-50
+                  text-xs text-gray-800
+                "
+                v-model="toDate"
+                :min="fromDate"
+                :max="maxDate"
+              />
+            </div>
+          </div>
+        </transition>
       </div>
 
       <!-- Controles para filtros generales -->
@@ -220,6 +236,10 @@
                 </p>
               </div>
             </div>
+
+            <p class="text-xs text-red-800 line-clamp-1 text-center" v-if="invoice.cancel">
+              *{{ invoice.cancel_message }}
+            </p>
           </div>
         </li>
       </ul>
@@ -259,6 +279,7 @@
 
 <script>
 import SearchIcon from "@/Components/Svgs/Search.vue";
+import JetCheckbox from "@/Jetstream/Checkbox.vue";
 import { formatCurrency, normalizeString } from "@/utilities.js";
 import dayjs from "dayjs";
 import isToday from "dayjs/plugin/isToday";
@@ -268,6 +289,7 @@ import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 export default {
   components: {
     SearchIcon,
+    JetCheckbox,
   },
   emits: ["enabledForm", "loadInvoice"],
   props: {
@@ -283,13 +305,13 @@ export default {
   },
   data() {
     return {
-      invoiceList: [],
       search: null,
       /**
        * Define que facturas se muestran
        * [all, paid, pending, canceled]
        */
       filterBy: "all",
+      showDateInputs: false,
       fromDate: null,
       toDate: null,
       maxDate: dayjs().format("YYYY-MM-DD"),
@@ -314,10 +336,6 @@ export default {
       invoice.time.expeditionDate = invoice.time.expedition.isToday()
         ? invoice.time.expedition.format("hh:mm a")
         : invoice.time.expedition.format("DD-MM-YY");
-    },
-    transformInvoice() {
-      this.invoiceList = this.invoices.slice();
-      this.invoiceList.map((item) => this.createTimeProperty(item));
     },
     /**
      * Se encarga de filtrar las facturas segun el texto
@@ -353,8 +371,8 @@ export default {
      * @return {array}
      */
     filterByDate(list) {
-      const from = this.fromDate ? dayjs(this.fromDate).startOf('day') : null;
-      const to = this.toDate ? dayjs(this.toDate).endOf('day') : null;
+      const from = this.fromDate ? dayjs(this.fromDate).startOf("day") : null;
+      const to = this.toDate ? dayjs(this.toDate).endOf("day") : null;
 
       if (from && to && from.isValid() && to.isValid()) {
         return list.filter((item) => {
@@ -375,19 +393,24 @@ export default {
   }, //.end methods
   computed: {
     filterList() {
-      let list = this.filterByGeneral(this.invoiceList.slice().reverse());
-      list = this.filterByDate(list);
+      let list = this.filterByGeneral(this.invoiceList.reverse());
+      if (this.showDateInputs) list = this.filterByDate(list);
       if (this.search) list = this.filterBySearch(list);
       return list;
     },
     displayList() {
       return this.filterList.slice(0, this.invoiceDisplayed);
     },
+    /**
+     * @return {Array[object]}
+     */
+    invoiceList() {
+      let list = this.invoices.slice();
+      list.map((item) => this.createTimeProperty(item));
+      return list;
+    },
   },
   watch: {
-    "invoices.length"(newLength) {
-      this.transformInvoice();
-    },
     fromDate(newDate, oldDate) {
       if (newDate !== oldDate) {
         if (this.toDate) {
@@ -401,8 +424,8 @@ export default {
       }
     },
   },
-  beforeMount() {
-    this.transformInvoice();
-  },
+  /* beforeMount() {
+    //
+  }, */
 };
 </script>
