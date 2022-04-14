@@ -12,7 +12,7 @@
       </p>
     </template>
 
-    <div class="relative grid grid-cols-5 items-start pt-5" >
+    <div class="relative grid grid-cols-5 items-start pt-5">
       <div class="sticky top-4 w-full px-4">
         <h2 class="mb-4 text-gray-800 font-semibold text-center text-sm uppercase">Moverse a otra Caja</h2>
         <div
@@ -25,18 +25,18 @@
           <p class="text-xs text-gray-50 text-center font-bold">{{ formatCurrency(box.balance) }}</p>
         </div>
       </div>
-      <div class="relative col-span-5 lg:col-span-4 w-full px-2 pb-20" :class="{ 'blur-sm': modal }">
+      <div class="relative col-span-5 lg:col-span-4 w-full px-2 pb-20">
         <!-- Tab Component -->
         <tab-component :tabs="tabs" :tabSelected="tab" @selectTab="tab = $event">
           <template #controls>
             <div class="">
-
               <!-- Boton para recargar -->
               <Link
                 :href="route('cashbox.show', cashbox.slug)"
                 preserve-state
                 preserve-scroll
-                class=" block
+                class="
+                  block
                   p-2
                   border border-gray-400
                   rounded-full
@@ -82,55 +82,34 @@
         </tab-component>
       </div>
 
-      <transition
-        leave-active-class="transition ease-in duration-100"
-        leave-from-class="opacity-100"
-        leave-to-class="opacity-0"
-      >
-        <div
-          class="fixed inset-0 flex items-center justify-center bg-indigo-300 bg-opacity-30 z-50"
-          v-show="modal"
-          @click.self="hiddenModal"
-        >
-          <transition
-            name="show-form-modal"
-            enter-active-class="transition ease-out duration-200"
-            enter-from-class="opacity-0 scale-90"
-            enter-to-class="opacity-100 scale-100"
-            leave-active-class="transition ease-in duration-100"
-            leave-from-class="opacity-100 scale-100"
-            leave-to-class="opacity-0 scale-90"
-          >
-            <new-transaction-form
-              @hidden-form="hiddenModal"
-              :cashbox-id="cashbox.id"
-              :max-date="maxDate"
-              :transaction="transactionToUpdate"
-              v-show="transactionFormActive"
-            />
-          </transition>
+      <modal-component :show="modal" :closeable="closeableModal" @close="hiddenModal" maxWidth="sm">
+        <new-transaction-form
+          :cashbox-id="cashbox.id"
+          :max-date="maxDate"
+          :transaction="transactionToUpdate"
+          :lastDate="lastDate"
+          :lastTime="lastTime"
+          @lockModal="closeableModal = false"
+          @unlockModal="closeableModal = true"
+          @updateTime="updateTime"
+          @hidden-form="hiddenModal"
+          v-show="transactionFormActive"
+        />
 
-          <transition
-            name="show-form-modal"
-            enter-active-class="transition ease-out duration-200"
-            enter-from-class="opacity-0 scale-90"
-            enter-to-class="opacity-100 scale-100"
-            leave-active-class="transition ease-in duration-100"
-            leave-from-class="opacity-100 scale-100"
-            leave-to-class="opacity-0 scale-90"
-          >
-            <transfer-form
-              @hidden-form="hiddenModal"
-              :cashbox-id="cashbox.id"
-              :max-date="maxDate"
-              :balance="cashbox.balance"
-              :boxs="boxs"
-              v-show="transferFormActive"
-            />
-          </transition>
-        </div>
-      </transition>
-
+        <transfer-form
+          :cashbox-id="cashbox.id"
+          :max-date="maxDate"
+          :balance="cashbox.balance"
+          :boxs="boxs"
+          :lastDate="lastDate"
+          :lastTime="lastTime"
+          @lockModal="closeableModal = false"
+          @unlockModal="closeableModal = true"
+          @updateTime="updateTime"
+          @hidden-form="hiddenModal"
+          v-show="transferFormActive"
+        />
+      </modal-component>
       <!-- Button for show modal  -->
       <div class="fixed bottom-4 right-4" v-show="!modal">
         <div class="flex flex-col">
@@ -210,41 +189,42 @@
 <script>
 import { Link } from "@inertiajs/inertia-vue3";
 import { Inertia } from "@inertiajs/inertia";
-// import Swal from "sweetalert2";
 
 import AppLayout from "@/Layouts/AppLayout.vue";
 import ShowTransactions from "@/Pages/Cashbox/Components/ShowTransactions.vue";
 import ShowBoxInfo from "@/Pages/Cashbox/Components/ShowBoxInfo.vue";
 import ShowBoxClosures from "@/Pages/Cashbox/Components/ShowBoxClosures.vue";
 import NewTransactionForm from "@/Pages/Cashbox/Components/TransactionForm.vue";
-import TabComponent from "@/Components/Tab.vue";
-
-import dayjs from "dayjs";
-import relativeTime from "dayjs/plugin/relativeTime";
-import locale_es_do from "dayjs/locale/es";
-import localizedFormat from "dayjs/plugin/localizedFormat";
 import TransferForm from "./Components/TransferForm.vue";
+import TabComponent from "@/Components/Tab.vue";
+import ModalComponent from "@/Components/Modal.vue";
 
 import Swal from "sweetalert2";
+import dayjs from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime";
+import "dayjs/locale/es-do";
+import localizedFormat from "dayjs/plugin/localizedFormat";
+
 import { formatCurrency } from "@/utilities";
 
 export default {
   components: {
+    Link,
     AppLayout,
     ShowTransactions,
     ShowBoxInfo,
     ShowBoxClosures,
     NewTransactionForm,
-    Link,
     TransferForm,
     TabComponent,
+    ModalComponent,
   },
   props: ["cashbox", "boxs"],
   setup(props) {
     //----------------------------------------------------
     // SE ESTABLECEN LOS PARAMETROS DE dayjs
     //----------------------------------------------------
-    dayjs.locale(locale_es_do);
+    dayjs.locale('es-do');
     dayjs.extend(relativeTime);
     dayjs.extend(localizedFormat);
 
@@ -255,6 +235,9 @@ export default {
       tabs: ["transacciones", "info", "cierres"],
       tab: "transacciones", //info, transactions, closures
       modal: false,
+      closeableModal: true,
+      lastDate: null,
+      lastTime: null,
       transactionToUpdate: null,
       transactionFormActive: false,
       transferFormActive: false,
@@ -341,6 +324,7 @@ export default {
     },
     /**
      * Habilita el cambio de la caja que se está mostrando
+     * @param {string} boxSlug - identificacion de la caja a visitar.
      */
     chageBox(boxSlug) {
       if (boxSlug) {
@@ -386,6 +370,10 @@ export default {
     updateTransaction(data) {
       this.transactionToUpdate = data;
       this.showTransactionForm();
+    },
+    updateTime(time){
+      this.lastDate = time.date;
+      this.lastTime = time.time;
     },
     /**
      * Activa el formulario para registrar una transferencia.
@@ -485,7 +473,7 @@ export default {
       }
     },
     maxDate() {
-      return dayjs().subtract(1, "day").format("YYYY-MM-DD");
+      return dayjs().format("YYYY-MM-DD");
     },
     canTransferMoney() {
       return this.cashbox.balance > 0 && this.boxs.length > 0;
