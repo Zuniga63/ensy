@@ -7,26 +7,17 @@
       <div class="text-center">
         <p>{{ date }}</p>
         <p class="text-sm text-gray-800 text-opacity-80">
-          {{ time }} - {{ dateFromNow }}
+          {{ dateFromNow }}
         </p>
       </div>
     </td>
     <!-- Description -->
-    <td class="px-3 py-2 text-gray-800">
+    <td class="px-3 py-2 text-gray-800 text-sm">
       <p :class="{ 'text-green-500': transaction.transfer }">
         {{ transaction.description }}
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          class="
-            inline-block
-            h-6
-            w-6
-            ml-2
-            p-1
-            border border-green-400
-            bg-green-50
-            rounded-full
-          "
+          class="inline-block h-4 w-4 ml-2 p-1 border border-green-400 bg-green-50 rounded-full"
           viewBox="0 0 20 20"
           fill="currentColor"
           v-if="transaction.transfer"
@@ -39,17 +30,12 @@
       <div class="text-gray-800 text-opacity-75 text-sm">
         <p>
           Creado: {{ createdAtFromNow }}
-          <span v-if="!createIsSameUpdate">
-            - Actualizado: {{ updatedAtFromNow }}
-          </span>
+          <span v-if="!createIsSameUpdate"> - Actualizado: {{ updatedAtFromNow }} </span>
         </p>
       </div>
     </td>
     <!-- Amount -->
-    <td
-      class="px-3 py-2 text-right"
-      :class="{ 'text-red-500': !isAIncome, 'text-green-500': isAIncome }"
-    >
+    <td class="px-3 py-2 text-right" :class="{ 'text-red-500': !isAIncome, 'text-green-500': isAIncome }">
       {{ formatCurrency(transaction.amount) }}
     </td>
     <!-- Balance -->
@@ -67,23 +53,12 @@
           v-if="!transaction.transfer"
         />
         <!-- Delete -->
-        <row-button
-          type="delete"
-          title="Eliminar Transacción"
-          @click="$emit('deleteTransaction', transaction)"
-        />
+        <row-button type="delete" title="Eliminar Transacción" @click="$emit('deleteTransaction', transaction)" />
       </div>
       <!-- Blocked Icon -->
       <div class="flex justify-end" v-else>
-        <div
-          class="border border-gray-400 rounded p-2 bg-gray-50 text-gray-500"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-6 w-6"
-            viewBox="0 0 20 20"
-            fill="currentColor"
-          >
+        <div class="border border-gray-400 rounded p-2 bg-gray-50 text-gray-500">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 20 20" fill="currentColor">
             <path
               fill-rule="evenodd"
               d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
@@ -104,7 +79,7 @@ export default {
     RowButton,
   },
   props: ["transaction"],
-  emits: ['deleteTransaction'],
+  emits: ["deleteTransaction"],
   setup(props) {
     //---------------------------------------------------------
     // SE CONSTRUYE EL FORMATEADOR DE MONEDA
@@ -128,7 +103,7 @@ export default {
   },
   computed: {
     date() {
-      return this.transaction.date.format("dddd, DD-MM-YYYY");
+      return this.transaction.date.format("ddd DD-MM-YYYY");
     },
     time() {
       return this.transaction.date.format("hh:mm a");

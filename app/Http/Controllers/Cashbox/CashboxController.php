@@ -106,7 +106,10 @@ class CashboxController extends Controller
     $cashbox->balance = $balance;
 
     //Recupero la otras cajas
-    $boxs = Cashbox::orderBy('order')->where('id', '!=', $cashbox->id)->get(['id', 'name', 'slug']);
+    $boxs = Cashbox::orderBy('order')
+      ->where('id', '!=', $cashbox->id)
+      ->withSum('transactions as balance', 'amount')
+      ->get(['id', 'name', 'slug']);
 
     return Inertia::render('Cashbox/Show', compact('cashbox', 'boxs'));
   }

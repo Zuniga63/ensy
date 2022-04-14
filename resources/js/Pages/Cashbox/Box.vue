@@ -1,17 +1,7 @@
 <template>
-  <div class="mb-5 border border-gray-400 rounded shadow-md overflow-hidden">
+  <div class="mb-5 border border-gray-400 rounded shadow overflow-hidden">
     <!-- Header -->
-    <header
-      class="
-        flex
-        justify-between
-        items-center
-        bg-gray-300
-        p-2
-        border-b border-gray-400
-        shadow
-      "
-    >
+    <header class="flex justify-between items-center bg-gray-300 p-2 border-b border-gray-400 shadow">
       <div class="flex flex-col">
         <h2 class="text-base text-gray-800 font-bold">
           {{ box.name }}
@@ -27,11 +17,7 @@
         </p>
       </div>
 
-      <Link
-        :href="route('cashbox.edit', box.slug)"
-        class="p-1 text-xl text-gray-800"
-        title="Editar Caja"
-      >
+      <Link :href="route('cashbox.edit', box.slug)" class="p-1 text-xl text-gray-800" title="Editar Caja">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           class="h-6 w-6 font-bold"
@@ -69,15 +55,7 @@
       </div>
 
       <!-- Balance -->
-      <div
-        class="
-          flex flex-col
-          col-span-2
-          px-2
-          border-t border-gray-200
-          text-gray-800
-        "
-      >
+      <div class="flex flex-col col-span-2 px-2 border-t border-gray-200 text-gray-800">
         <p class="text-sm">Saldo</p>
         <p
           class="font-bold text-lg tracking-widest text-center"
@@ -87,18 +65,14 @@
         >
           {{ formatCurrency(box.balance) }}
         </p>
-        <p v-if="box.balanceIsWrong" class="text-red-800 text-sm text-center">
-          Existen inconsistencias en los datos.
-        </p>
+        <p v-if="box.balanceIsWrong" class="text-red-800 text-sm text-center">Existen inconsistencias en los datos.</p>
       </div>
     </div>
     <!-- /.end body -->
 
     <!-- Footer -->
     <footer class="flex justify-between p-2 bg-gray-300">
-      <jet-button type="button" class="text-sm" @click="goToBox"
-        >Transacciones</jet-button
-      >
+      <jet-button type="button" class="text-sm" @click="goToBox">Transacciones</jet-button>
       <jet-danger-button
         type="button"
         class="text-sm"
@@ -116,6 +90,7 @@ import { Link } from "@inertiajs/inertia-vue3";
 import JetButton from "@/Jetstream/Button.vue";
 import JetDangerButton from "@/Jetstream/DangerButton.vue";
 import { Inertia } from "@inertiajs/inertia";
+import { formatCurrency } from "@/utilities";
 
 export default {
   components: {
@@ -125,23 +100,8 @@ export default {
   },
   props: ["box"],
   emits: ["deleteBox"],
-  setup(props) {
-    let fractionDigits = 0;
-    let style = "currency";
-    let currency = "COP";
-
-    let formater = new Intl.NumberFormat("es-CO", {
-      style,
-      currency,
-      minimumFractionDigits: fractionDigits,
-    });
-
-    return { formater };
-  },
   methods: {
-    formatCurrency(number) {
-      return this.formater.format(number);
-    },
+    formatCurrency,
     goToBox() {
       Inertia.get(route("cashbox.show", this.box.slug));
     },

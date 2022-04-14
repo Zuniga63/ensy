@@ -9,14 +9,7 @@
           <!-- Control Container -->
           <div class="flex justify-between">
             <div class="flex items-center text-sm">
-              <input
-                type="radio"
-                name="oldFirst"
-                id="oldFirst"
-                value="oldFirst"
-                class="mr-2"
-                v-model="sortBy"
-              />
+              <input type="radio" name="oldFirst" id="oldFirst" value="oldFirst" class="mr-2" v-model="sortBy" />
               <label for="oldFirst">Mas Antiguas </label>
             </div>
 
@@ -63,16 +56,7 @@
         <div class="relative pt-4 px-2 pb-2 border border-gray-400 rounded-md">
           <label
             for="desktopOrderBy"
-            class="
-              absolute
-              top-0
-              left-4
-              p-1
-              bg-white
-              text-sm text-gray-400
-              transform
-              -translate-y-1/2
-            "
+            class="absolute top-0 left-4 p-1 bg-white text-sm text-gray-400 transform -translate-y-1/2"
             >Ordenar por:</label
           >
           <select
@@ -97,21 +81,10 @@
 
         <!-- Desde -->
         <div>
-          <div
-            class="relative pt-4 px-2 pb-2 border border-gray-400 rounded-md"
-          >
+          <div class="relative pt-4 px-2 pb-2 border border-gray-400 rounded-md">
             <label
               for="fromDate"
-              class="
-                absolute
-                top-0
-                left-4
-                p-1
-                bg-white
-                text-sm text-gray-400
-                transform
-                -translate-y-1/2
-              "
+              class="absolute top-0 left-4 p-1 bg-white text-sm text-gray-400 transform -translate-y-1/2"
               >Filtrar desde</label
             >
             <input
@@ -136,21 +109,10 @@
 
         <!-- Hasta -->
         <div>
-          <div
-            class="relative pt-4 px-2 pb-2 border border-gray-400 rounded-md"
-          >
+          <div class="relative pt-4 px-2 pb-2 border border-gray-400 rounded-md">
             <label
               for="toDate"
-              class="
-                absolute
-                top-0
-                left-4
-                p-1
-                bg-white
-                text-sm text-gray-400
-                transform
-                -translate-y-1/2
-              "
+              class="absolute top-0 left-4 p-1 bg-white text-sm text-gray-400 transform -translate-y-1/2"
               >Filtrar hasta</label
             >
             <input
@@ -175,21 +137,10 @@
 
         <!-- Control de busqueda -->
         <div>
-          <div
-            class="relative pt-4 px-2 pb-2 border border-gray-400 rounded-md"
-          >
+          <div class="relative pt-4 px-2 pb-2 border border-gray-400 rounded-md">
             <label
               for="desktopSearch"
-              class="
-                absolute
-                top-0
-                left-4
-                p-1
-                bg-white
-                text-sm text-gray-400
-                transform
-                -translate-y-1/2
-              "
+              class="absolute top-0 left-4 p-1 bg-white text-sm text-gray-400 transform -translate-y-1/2"
               >Filtrar por descripción</label
             >
             <input
@@ -215,76 +166,15 @@
       </div>
 
       <!-- Tabla -->
-      <div
-        class="h-[28rem] shadow border-b border-gray-300 overflow-y-scroll mb-4"
-      >
+      <div class="h-[28rem] shadow border-b border-gray-300 overflow-y-scroll mb-4">
         <table class="relative min-w-full table-auto mb-2">
           <thead class="sticky top-0 bg-gray-50">
             <tr>
-              <th
-                scope="col"
-                class="
-                  px-6
-                  py-3
-                  text-center text-gray-500
-                  tracking-wider
-                  uppercase
-                "
-              >
-                ID
-              </th>
-              <th
-                scope="col"
-                class="
-                  px-6
-                  py-3
-                  tetx-left
-                  text-gray-500
-                  tracking-wider
-                  uppercase
-                "
-              >
-                Fecha
-              </th>
-              <th
-                scope="col"
-                class="
-                  px-6
-                  py-3
-                  tetx-left
-                  text-gray-500
-                  tracking-wider
-                  uppercase
-                "
-              >
-                Descripción
-              </th>
-              <th
-                scope="col"
-                class="
-                  px-6
-                  py-3
-                  tetx-left
-                  text-gray-500
-                  tracking-wider
-                  uppercase
-                "
-              >
-                Importe
-              </th>
-              <th
-                scope="col"
-                class="
-                  px-6
-                  py-3
-                  tetx-left
-                  text-gray-500
-                  tracking-wider
-                  uppercase
-                "
-              >
-                Saldo
-              </th>
+              <th scope="col" class="px-4 py-3 text-center text-gray-500 tracking-wider uppercase">ID</th>
+              <th scope="col" class="px-4 py-3 tetx-left text-gray-500 tracking-wider uppercase">Fecha</th>
+              <th scope="col" class="px-4 py-3 tetx-left text-gray-500 tracking-wider uppercase">Descripción</th>
+              <th scope="col" class="px-4 py-3 tetx-left text-gray-500 tracking-wider uppercase">Importe</th>
+              <th scope="col" class="px-4 py-3 tetx-left text-gray-500 tracking-wider uppercase">Saldo</th>
               <th scope="col" class="relative px-6 py-3">
                 <span class="sr-only">Actions</span>
               </th>
@@ -307,12 +197,7 @@
         <div class="flex items-center mr-4">
           <p class="text-sm text-gray-800 mr-2">Pag.:</p>
 
-          <select
-            name="page"
-            id="page"
-            v-model="page"
-            class="border border-gray-200 rounded mr-2 text-sm"
-          >
+          <select name="page" id="page" v-model="page" class="border border-gray-200 rounded mr-2 text-sm">
             <option v-for="(item, index) in pages" :key="index" :value="index">
               {{ item.page }}
             </option>
@@ -322,12 +207,7 @@
 
           <p class="text-sm text-gray-800 mr-2">Filas:</p>
 
-          <select
-            name="items"
-            id="items"
-            v-model="itemsPerPage"
-            class="border border-gray-200 rounded mr-2 text-sm"
-          >
+          <select name="items" id="items" v-model="itemsPerPage" class="border border-gray-200 rounded mr-2 text-sm">
             <option value="25">25</option>
             <option value="50">50</option>
             <option value="75">75</option>
@@ -340,8 +220,7 @@
         <p class="text-gray-400">
           Mostrando pag.
           <span class="font-bold">{{ page + 1 }}</span>
-          de {{ pages.length }} | Transacciones:
-          {{ sortedTransactions.length }} | Sumatoria:
+          de {{ pages.length }} | Transacciones: {{ sortedTransactions.length }} | Sumatoria:
           {{ formatCurrency(balance) }}
         </p>
       </div>
@@ -353,10 +232,11 @@ import JetButton from "@/Jetstream/Button.vue";
 import JetDangerButton from "@/Jetstream/DangerButton.vue";
 import TransactionCard from "@/Pages/Cashbox/Components/TransactionCard.vue";
 import TransactionRow from "@/Pages/Cashbox/Components/TransactionRow.vue";
-import dayjs from 'dayjs';
-import isBetween from 'dayjs/plugin/isBetween';
-import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
-import isSameOrBefore from 'dayjs/plugin/isSameOrBefore';
+import dayjs from "dayjs";
+import isBetween from "dayjs/plugin/isBetween";
+import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
+import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
+import { formatCurrency, normalizeString } from "@/utilities";
 
 export default {
   components: {
@@ -373,24 +253,9 @@ export default {
   },
   emits: ["updateTransaction", "deleteTransaction"],
   setup(props) {
-    //---------------------------------------------------------
-    // SE CONSTRUYE EL FORMATEADOR DE MONEDA
-    //---------------------------------------------------------
-    let fractionDigits = 0;
-    let style = "currency";
-    let currency = "COP";
-
-    let formater = new Intl.NumberFormat("es-CO", {
-      style,
-      currency,
-      minimumFractionDigits: fractionDigits,
-    });
-
     dayjs.extend(isBetween);
     dayjs.extend(isSameOrAfter);
     dayjs.extend(isSameOrBefore);
-
-    return { formater };
   },
   data() {
     return {
@@ -410,13 +275,13 @@ export default {
        * Establece la fecha en la que se van empezar a filtar las
        * transacciones.
        */
-      fromDate: dayjs().subtract(1, 'month').format('YYYY-MM-DD'),
+      fromDate: dayjs().startOf('month').format("YYYY-MM-DD"),
       /**
        * Establece la fecha hasta la cual se van a filtrar las
        * transacciones.
        */
-      toDate: dayjs().format('YYYY-MM-DD'),
-      maxDate: dayjs().format('YYYY-MM-DD'),
+      toDate: dayjs().format("YYYY-MM-DD"),
+      maxDate: dayjs().format("YYYY-MM-DD"),
       /**
        * Indica la pagina de transacciones que se estpa visualizando
        * @type {number}
@@ -464,15 +329,8 @@ export default {
      * @param {string} text texto a normlaizar
      * @return {string}
      */
-    nomalizeText(text) {
-      return text
-        .toLowerCase()
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "");
-    },
-    formatCurrency(number) {
-      return this.formater.format(number);
-    },
+    nomalizeText: normalizeString,
+    formatCurrency,
     /**
      * Se encarga de recuperar las transacciones que
      * presentan coincidencia con el texto pasado como
@@ -545,36 +403,34 @@ export default {
      * @param {dayjs} toDate fecha hasta la cual se filtra.
      * @param {array} list listado de transacciones a filtrar.
      */
-    filterBetweenDates(fromDate, toDate, list){
-      
-      return list.filter(item => {
+    filterBetweenDates(fromDate, toDate, list) {
+      return list.filter((item) => {
         let date = dayjs(item.date);
 
-        if(fromDate && toDate){
+        if (fromDate && toDate) {
           return date.isBetween(fromDate, toDate);
         }
 
-        if(fromDate){
+        if (fromDate) {
           return date.isSameOrAfter(fromDate);
         }
 
-        if(toDate){
+        if (toDate) {
           return date.isSameOrBefore(toDate);
         }
 
         return true;
       });
-
-    }
+    },
   },
   computed: {
     sortedTransactions() {
       let list = this.transactions.slice();
       if (this.search) list = this.filterByDescription(this.search, list);
 
-      if(this.fromDate || this.toDate){
+      if (this.fromDate || this.toDate) {
         let from = this.fromDate ? dayjs(this.fromDate) : null;
-        let to = this.toDate ? dayjs(this.toDate).endOf('day') : null;
+        let to = this.toDate ? dayjs(this.toDate).endOf("day") : null;
         list = this.filterBetweenDates(from, to, list);
       }
 
@@ -608,9 +464,7 @@ export default {
     },
     balance() {
       let allAmounts = this.sortedTransactions.map((item) => item.amount);
-      return allAmounts.length
-        ? allAmounts.reduce((prev, next) => prev + next)
-        : 0;
+      return allAmounts.length ? allAmounts.reduce((prev, next) => prev + next) : 0;
     },
   },
   watch: {
