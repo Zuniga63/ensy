@@ -1,23 +1,31 @@
 <template>
   <tr class="hover:bg-indigo-50">
     <!-- ID -->
-    <td class="px-3 py-2 text-center text-gray-400">{{ transaction.id }}</td>
+    <td class="px-3 py-2 text-center" :class="secondaryClass">
+      {{ transaction.id }}
+    </td>
     <!-- Date and Time -->
-    <td class="px-3 py-2 text-left text-gray-800 whitespace-nowrap">
+    <td class="px-3 py-2 whitespace-nowrap">
       <div class="text-center">
-        <p>{{ date }}</p>
-        <p class="text-sm text-gray-800 text-opacity-80">
+        <p class="text-sm" :class="mainClass">
+          {{ date }}
+        </p>
+        <p class="text-xs" :class="secondaryClass">
           {{ dateFromNow }}
         </p>
       </div>
     </td>
     <!-- Description -->
-    <td class="px-3 py-2 text-gray-800 text-sm">
-      <p :class="{ 'text-green-500': transaction.transfer }">
+    <td class="px-3 py-2">
+      <p class="text-sm" :class="mainClass">
         {{ transaction.description }}
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          class="inline-block h-4 w-4 ml-2 p-1 border border-green-400 bg-green-50 rounded-full"
+          class="inline-block h-5 w-5 ml-2 p-1 border bg-white rounded-full"
+          :class="{
+            'border-green-600': transaction.amount > 0,
+            'border-orange-500': transaction.amount < 0,
+          }"
           viewBox="0 0 20 20"
           fill="currentColor"
           v-if="transaction.transfer"
@@ -27,19 +35,22 @@
           />
         </svg>
       </p>
-      <div class="text-gray-800 text-opacity-75 text-sm">
-        <p>
-          Creado: {{ createdAtFromNow }}
-          <span v-if="!createIsSameUpdate"> - Actualizado: {{ updatedAtFromNow }} </span>
-        </p>
-      </div>
+      <p class="text-xs" :class="secondaryClass">
+        Creado: {{ createdAtFromNow }}
+        <span v-if="!createIsSameUpdate"> - Actualizado: {{ updatedAtFromNow }} </span>
+      </p>
     </td>
     <!-- Amount -->
-    <td class="px-3 py-2 text-right" :class="{ 'text-red-500': !isAIncome, 'text-green-500': isAIncome }">
-      {{ formatCurrency(transaction.amount) }}
+    <td class="px-3 py-2 text-right">
+      <span v-if="!transaction.transfer" :class="{ 'text-red-500': !isAIncome, 'text-green-500': isAIncome }">
+        {{ formatCurrency(transaction.amount) }}
+      </span>
+      <span v-else :class="mainClass">
+        {{ formatCurrency(transaction.amount) }}
+      </span>
     </td>
     <!-- Balance -->
-    <td class="px-3 py-2 text-gray-800 text-right">
+    <td class="px-3 py-2 text-right" :class="mainClass">
       {{ formatCurrency(transaction.balance) }}
     </td>
     <td class="px-3 py-2">
@@ -57,8 +68,8 @@
       </div>
       <!-- Blocked Icon -->
       <div class="flex justify-end" v-else>
-        <div class="border border-gray-400 rounded p-2 bg-gray-50 text-gray-500">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 20 20" fill="currentColor">
+        <div class="border border-gray-400 rounded p-1 bg-gray-50 text-gray-500">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
             <path
               fill-rule="evenodd"
               d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
@@ -73,6 +84,7 @@
 
 <script>
 import RowButton from "@/Components/Table/RowButton.vue";
+import { formatCurrency } from "@/utilities";
 
 export default {
   components: {
@@ -80,26 +92,8 @@ export default {
   },
   props: ["transaction"],
   emits: ["deleteTransaction"],
-  setup(props) {
-    //---------------------------------------------------------
-    // SE CONSTRUYE EL FORMATEADOR DE MONEDA
-    //---------------------------------------------------------
-    let fractionDigits = 0;
-    let style = "currency";
-    let currency = "COP";
-
-    let formater = new Intl.NumberFormat("es-CO", {
-      style,
-      currency,
-      minimumFractionDigits: fractionDigits,
-    });
-
-    return { formater };
-  },
   methods: {
-    formatCurrency(number) {
-      return this.formater.format(number);
-    },
+    formatCurrency,
   },
   computed: {
     date() {
@@ -122,6 +116,20 @@ export default {
     },
     updatedAtFromNow() {
       return this.transaction.updatedAt.fromNow();
+    },
+    secondaryClass() {
+      return {
+        "text-gray-400": !this.transaction.transfer,
+        "text-green-400": this.transaction.transfer && this.transaction.amount > 0,
+        "text-orange-300": this.transaction.transfer && this.transaction.amount < 0,
+      };
+    },
+    mainClass() {
+      return {
+        "text-gray-800": !this.transaction.transfer,
+        "text-green-500": this.transaction.transfer && this.transaction.amount > 0,
+        "text-orange-500": this.transaction.transfer && this.transaction.amount < 0,
+      };
     },
   },
 };

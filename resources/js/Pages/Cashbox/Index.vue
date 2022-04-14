@@ -22,7 +22,7 @@
           </div>
 
           <!-- Vista Escritorio -->
-          <div class="hidden lg:block py-10 mx-auto shadow">
+          <div class="hidden lg:block py-5 mx-auto shadow">
             <BoxTable :boxs="boxs" @delete-box="confirmDeleteBox" />
           </div>
         </template>

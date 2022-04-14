@@ -18,7 +18,7 @@
         <div
           v-for="(box, index) in boxs"
           :key="index"
-          class="p-2 rounded-sm bg-gray-800 hover:cursor-pointer hover:opacity-80 transition-opacity"
+          class="p-2 mb-4 rounded bg-gray-800 hover:cursor-pointer hover:opacity-80 transition-opacity"
           @click="chageBox(box.slug)"
         >
           <h2 class="mb-2 text-gray-50 text-sm text-center font-bold">{{ box.name }}</h2>
