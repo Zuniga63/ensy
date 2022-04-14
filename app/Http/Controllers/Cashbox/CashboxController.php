@@ -241,25 +241,21 @@ class CashboxController extends Controller
     $attributes = $this->getTransactionAttributes();                                //Atributos de validación
     $request->validate($rules, [], $attributes);                                    //validación del formulario
 
-
-    $request->validate($rules, [], $attributes);
-
     $transaction = new CashboxTransaction();
     //Se establece la fecha de la transacción
+    $transactionDate = Carbon::now();
+
     if ($inputs['setDate']) {
-      $date = $inputs['date'];
       if ($inputs['setTime']) {
-        $time = $inputs['time'];
-        $transaction->transaction_date = Carbon::createFromFormat('Y-m-d H:i', "$date $time");
+        $transactionDate = $this->setTransactionDate($inputs['date'], $inputs['time']);
       } else {
-        $transaction->transaction_date = Carbon::createFromFormat('Y-m-d', $date)->endOfDay();
+        $transactionDate = $this->setTransactionDate($inputs['date']);
       }
-    } else {
-      $transaction->transaction_date = Carbon::now();
     }
 
     $transaction->description = $inputs['description'];
     $transaction->amount = floatval($inputs['amount']);
+    $transaction->transaction_date = $transactionDate->format('Y-m-d H:i');
 
     if ($inputs['type'] === 'expense') {
       $transaction->amount = $transaction->amount * -1;
@@ -305,17 +301,17 @@ class CashboxController extends Controller
       }
 
       //Se establece la fecha de la transacción
+      $transactionDate = Carbon::now();
+
       if ($inputs['setDate']) {
-        $date = $inputs['date'];
         if ($inputs['setTime']) {
-          $time = $inputs['time'];
-          $cashbox_transaction->transaction_date = Carbon::createFromFormat('Y-m-d H:i', "$date $time");
+          $transactionDate = $this->setTransactionDate($inputs['date'], $inputs['time']);
         } else {
-          $cashbox_transaction->transaction_date = Carbon::createFromFormat('Y-m-d', $date)->endOfDay();
+          $transactionDate = $this->setTransactionDate($inputs['date']);
         }
-      } else {
-        $cashbox_transaction->transaction_date = Carbon::now();
       }
+
+      $cashbox_transaction->transaction_date =  $transactionDate->format('Y-m-d H:i');
 
       $cashbox_transaction->save();
       $message = "Transacción Actualizada";
@@ -394,18 +390,13 @@ class CashboxController extends Controller
 
     //Se establece la fecha
     $transferDate = Carbon::now();
-    $now = Carbon::now();
 
     if ($inputs['setDate']) {
-      $date = $inputs['date'];
       if ($inputs['setTime']) {
-        $time = $inputs['time'];
-        $transferDate = Carbon::createFromFormat('Y-m-d H:i', "$date $time");
+        $transferDate = $this->setTransactionDate($inputs['date'], $inputs['time']);
       } else {
-        $transferDate = Carbon::createFromFormat('Y-m-d', $date)->endOfDay();
+        $transferDate = $this->setTransactionDate($inputs['date']);
       }
-
-      $transferDate = $transferDate->isAfter($now) ? $now : $transferDate;
     }
 
     //Se construye el mensaje 
@@ -425,14 +416,14 @@ class CashboxController extends Controller
 
 
     //Se construye la transacción de la caja remitente
-    $senderTrans->transaction_date = $transferDate;
+    $senderTrans->transaction_date = $transferDate->format('Y-m-d H:i');
     $senderTrans->description = "Transferencia a la cuenta \"$boxDestination->name\" $description";
     $senderTrans->amount = floatval($inputs['amount']) * -1;
     $senderTrans->code = $uId;
     $senderTrans->transfer = true;
 
     //Se construye la transacción de la caja destino
-    $addresseeTrans->transaction_date = $transferDate;
+    $addresseeTrans->transaction_date = $transferDate->format('Y-m-d H:i');
     $addresseeTrans->description = "Deposito de la cuenta \"$cashbox->name\" $description";
     $addresseeTrans->amount = floatval($inputs['amount']);
     $addresseeTrans->code = $uId;
@@ -456,6 +447,31 @@ class CashboxController extends Controller
   //-------------------------------------------------------------
   //    UTILIDADES
   //-------------------------------------------------------------
+
+  /**
+   * Se encarga de establece la fecha de la transacción
+   * @param String|Null $date - Fecha en formato Y-m-d
+   * @param String|Null $time - Hora en formato H:i
+   * @return Carbon\Carbon
+   */
+  protected function setTransactionDate($date = null, $time = null)
+  {
+    $transactionDate = Carbon::now();
+    $temporalDate = null;
+    if ($date) {
+      if ($time) {
+        $temporalDate = Carbon::createFromFormat('Y-m-d H:i', "$date $time");
+      } else {
+        $temporalDate = Carbon::createFromFormat('Y-m-d', $date)->endOfDay();
+      }
+
+      if ($temporalDate->lessThanOrEqualTo($transactionDate)) {
+        $transactionDate = $temporalDate;
+      }
+    }
+
+    return $transactionDate;
+  }
 
   /**
    * Se recuperan las cajas con el ultimo cierre si lo tuviere.
@@ -621,7 +637,7 @@ class CashboxController extends Controller
     if ($setDate) {
       $rules['date'] = 'required|date_format:Y-m-d';
       if ($setTime) {
-        $rules['time'] = 'required|date_format:H:s';
+        $rules['time'] = 'required|date_format:H:i';
       }
     }
 
