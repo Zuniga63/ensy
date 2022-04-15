@@ -13,7 +13,7 @@
     </template>
 
     <div class="relative grid grid-cols-5 items-start pt-5">
-      <div class="sticky top-4 w-full px-4">
+      <div class="hidden lg:block sticky top-4 w-full px-4">
         <h2 class="mb-4 text-gray-800 font-semibold text-center text-sm uppercase">Moverse a otra Caja</h2>
         <div
           v-for="(box, index) in boxs"
@@ -224,7 +224,7 @@ export default {
     //----------------------------------------------------
     // SE ESTABLECEN LOS PARAMETROS DE dayjs
     //----------------------------------------------------
-    dayjs.locale('es-do');
+    dayjs.locale("es-do");
     dayjs.extend(relativeTime);
     dayjs.extend(localizedFormat);
 
@@ -371,7 +371,7 @@ export default {
       this.transactionToUpdate = data;
       this.showTransactionForm();
     },
-    updateTime(time){
+    updateTime(time) {
       this.lastDate = time.date;
       this.lastTime = time.time;
     },
