@@ -27,9 +27,9 @@ class CreateProductTable extends Migration
       $table->boolean('inventoriable')->default(0);
       $table->mediumInteger('stock')->default(0);               //{-8.388.608 - 8.388.607}
       $table->unsignedSmallInteger('min_stock')->default(0);    //{0 - 65.535}
-      $table->boolean('highlight');
-      $table->boolean('is_new');
-      $table->boolean('publish');
+      $table->boolean('highlight')->default(0);
+      $table->boolean('is_new')->default(0);
+      $table->boolean('publish')->default(0);
       $table->unsignedSmallInteger('order')->default(0);
       $table->timestamps();
     });
