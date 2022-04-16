@@ -126,7 +126,30 @@
         <jet-danger-button class="mr-4" v-if="!invoice.cancel" @click="$emit('showCancelForm', { type: 'invoice' })"
           >Cancelar Factura
         </jet-danger-button>
-        <jet-button>Imprimir Factura</jet-button>
+        <a
+          :href="route('invoice.print', invoice.id)"
+          target="_blank"
+          class="
+            inline-flex
+            items-center
+            px-4
+            py-2
+            bg-gray-800
+            border border-transparent
+            rounded-md
+            font-semibold
+            text-xs text-white
+            uppercase
+            tracking-widest
+            hover:bg-gray-700
+            active:bg-gray-900
+            focus:outline-none focus:border-gray-900 focus:ring focus:ring-gray-300
+            disabled:opacity-25
+            transition
+          "
+        >
+          Imprimir Factura
+        </a>
       </footer>
     </div>
   </shell>

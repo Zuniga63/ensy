@@ -757,6 +757,12 @@ class InvoiceController extends Controller
     //
   }
 
+  public function printInvoice(Invoice $invoice)
+  {
+    $config = $this->getInvoiceInformation();
+    return Inertia::render('Invoice/PrintInvoice', compact('invoice', 'config'));
+  }
+
   //------------------------------------------------------------------------
   //  GRAPH
   //------------------------------------------------------------------------
