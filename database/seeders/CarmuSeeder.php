@@ -166,6 +166,7 @@ class CarmuSeeder extends Seeder
           'expiration_date' => $data->credit_date,
           'amount' => $amount,
           'cash' => $cash,
+          'credit' => $balance,
           'balance' => $balance
         ]);
 
