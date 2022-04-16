@@ -1,7 +1,5 @@
 <template>
-  <div
-    class="relative pt-4 px-4 pb-2 border border-gray-200 rounded-md bg-gray-50"
-  >
+  <div class="relative pt-4 px-4 pb-2 border border-gray-200 rounded-md bg-gray-50">
     <!-- Pill -->
     <span
       class="
@@ -21,14 +19,17 @@
       <div class="flex-grow grid grid-cols-12 gap-2 mr-2">
         <!-- Description -->
         <div class="col-span-4">
-          <jet-input
-            type="text"
+          <product-list
+            :products="products"
             class="w-full text-xs text-gray-800"
             :class="{
               'ring-2 ring-red-400': description.error,
             }"
+            :product="product"
             placeholder="Descripción"
-            v-model.trim="description.value"
+            v-model="description.value"
+            @selectProduct="product = $event.product"
+            @deselectProduct="product = null"
             @blur="description.error ? validateDescription() : null"
             ref="description"
             @keydown.enter="addItem"
@@ -123,11 +124,7 @@
           stroke="currentColor"
           stroke-width="2"
         >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            d="M12 4v16m8-8H4"
-          />
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
         </svg>
       </button>
     </div>
@@ -138,6 +135,7 @@
 import CustomLabel from "@/Components/Form/Label.vue";
 import JetInput from "@/Jetstream/Input.vue";
 import CurrencyInput from "@/Components/CurrencyInput.vue";
+import ProductList from "@/Components/Form/ProductList.vue";
 
 /**
  * Clase personalizada para gestionar los inputs
@@ -165,6 +163,7 @@ class input {
 
 class Item {
   constructor(description, quantity, unitValue) {
+    this.product = null;
     this.description = description;
     this.quantity = quantity;
     this.unitValue = unitValue;
@@ -210,7 +209,9 @@ export default {
     CustomLabel,
     JetInput,
     CurrencyInput,
+    ProductList,
   },
+  props: ["products"],
   emits: ["addItem"],
   data() {
     return {
@@ -221,13 +222,13 @@ export default {
       discount: new input(null),
       amount: new input(0),
       onlyAmountChange: false,
+      product: null,
     };
   },
   methods: {
     unitValueBlur() {
       this.unitValue.focus = false;
-      this.onlyUnitValueChange =
-        this.unitValue.value && this.unitValue.value > 0;
+      this.onlyUnitValueChange = this.unitValue.value && this.unitValue.value > 0;
       this.unitValue.error ? this.validateUnitValue() : null;
     },
     amountBlur() {
@@ -266,12 +267,7 @@ export default {
     },
     validateDiscount() {
       let ok = true;
-      if (
-        this.unitValue.value &&
-        this.unitValue.value > 0 &&
-        this.discount.value &&
-        this.discount.value > 0
-      ) {
+      if (this.unitValue.value && this.unitValue.value > 0 && this.discount.value && this.discount.value > 0) {
         ok = this.unitValue.value > this.discount.value;
       }
 
@@ -298,11 +294,8 @@ export default {
       return ok;
     },
     getData() {
-      let item = new Item(
-        this.description.value,
-        this.quantity.value,
-        this.unitValue.value
-      );
+      let item = new Item(this.description.value, this.quantity.value, this.unitValue.value);
+      item.product = this.product;
 
       if (this.discount.value && this.discount.value > 0) {
         item.addDiscount(this.discount.value);
@@ -311,9 +304,10 @@ export default {
       return item;
     },
     reset() {
-      this.$refs.description.focus();
+      //this.$refs.description.focus();
       this.onlyUnitValueChange = false;
       this.onlyAmountChange = false;
+      this.product = null;
 
       this.description.reset();
       this.quantity.reset();
@@ -333,19 +327,13 @@ export default {
      * Defines if the unit value has disabled considering the amount field.
      */
     unitValueDisabled() {
-      return (
-        this.onlyAmountChange && this.amount.value && this.amount.value > 0
-      );
+      return this.onlyAmountChange && this.amount.value && this.amount.value > 0;
     },
     /**
      * Defines if the amount field has disabled considering the unit value field.
      */
     amountDisabled() {
-      return (
-        this.onlyUnitValueChange &&
-        this.unitValue.value &&
-        this.unitValue.value > 0
-      );
+      return this.onlyUnitValueChange && this.unitValue.value && this.unitValue.value > 0;
     },
   },
   watch: {
@@ -356,8 +344,7 @@ export default {
       if (this.onlyUnitValueChange || this.unitValue.focus) {
         this.amount.value = this.unitValue.value * newQuantity;
       } else if (this.onlyAmountChange || this.amount.focus) {
-        this.unitValue.value =
-          newQuantity > 0 ? _.round(this.amount.value / newQuantity, 2) : 0;
+        this.unitValue.value = newQuantity > 0 ? _.round(this.amount.value / newQuantity, 2) : 0;
       }
     },
     /**
@@ -374,10 +361,7 @@ export default {
      */
     "amount.value"(newAmount) {
       if (this.onlyAmountChange || this.amount.focus) {
-        this.unitValue.value =
-          this.quantity.value > 0
-            ? _.round(newAmount / this.quantity.value)
-            : 0;
+        this.unitValue.value = this.quantity.value > 0 ? _.round(newAmount / this.quantity.value) : 0;
         //this.validateUnitValue();
       }
     },

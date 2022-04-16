@@ -58,6 +58,7 @@
         :customers="customers"
         :boxs="boxs"
         :config="config"
+        :products="products"
         @add-invoice="addInvoice"
       />
 
@@ -113,7 +114,7 @@ export default {
     CancelForm,
     WeekReport,
   },
-  props: ["customers", "boxs", "config", "invoices", "reports"],
+  props: ["customers", "boxs", "config", "invoices", "reports", "products"],
   data() {
     return {
       processing: false, //Se habilita cuando se está haciendo una solicitud

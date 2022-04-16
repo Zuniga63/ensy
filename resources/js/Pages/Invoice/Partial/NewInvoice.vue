@@ -1,12 +1,5 @@
 <template>
-  <div
-    class="
-      w-full
-      border-0 border-gray-800 border-opacity-80
-      bg-white
-      overflow-hidden
-    "
-  >
+  <div class="w-full border-0 border-gray-800 border-opacity-80 bg-white overflow-hidden">
     <invoice-header :config="config" />
 
     <div class="overflow-hidden">
@@ -20,11 +13,7 @@
           <div class="grid grid-cols-4 gap-x-4 mb-6">
             <!-- Customer Information-->
             <div class="col-span-3">
-              <customer-information
-                :customers="customers"
-                :customer="customer"
-                :errors="errors"
-              />
+              <customer-information :customers="customers" :customer="customer" :errors="errors" />
             </div>
 
             <!-- Invoice Date -->
@@ -38,21 +27,14 @@
           </div>
 
           <!-- Interfaz for new Item -->
-          <new-item class="mb-4" @add-item="addItem" />
+          <new-item class="mb-4" :products="products" @add-item="addItem" />
 
           <!-- Listado de items y sumary -->
           <div class="grid grid-cols-4 gap-2 mb-3">
             <!-- Listado de Items -->
             <div class="col-span-3">
-              <item-list
-                :item-list="itemList"
-                @remove-item="removeItem"
-                :errors="errors"
-              />
-              <input-error
-                :message="errors.invoiceItems"
-                class="mt-1 text-xs"
-              />
+              <item-list :item-list="itemList" @remove-item="removeItem" :errors="errors" />
+              <input-error :message="errors.invoiceItems" class="mt-1 text-xs" />
             </div>
 
             <div class="">
@@ -69,11 +51,7 @@
               <cash-payment :boxs="boxs" @add-payment="addPayment" />
 
               <!-- Payment boxs -->
-              <payment-list
-                :payments="payments"
-                @remove-payment="removePayment"
-                @update-order="sortPayemntList"
-              />
+              <payment-list :payments="payments" @remove-payment="removePayment" @update-order="sortPayemntList" />
             </div>
 
             <!-- Sumary of Payments -->
@@ -83,27 +61,20 @@
               <!-- Notes -->
               <div v-show="generalErrors.length == 0">
                 <p class="mb-2 text-xs text-gray-500">
-                  <span class="font-bold">Nota 1:</span> Cuando hay que dar
-                  vueltos al cliente se utilizan las cajas marcadas para tal
-                  fin, en la cuales la transacción será modificada. En el caso
-                  de no marcar ninguna, las cajas empleadas son las últimas del
-                  listado.
+                  <span class="font-bold">Nota 1:</span> Cuando hay que dar vueltos al cliente se utilizan las cajas
+                  marcadas para tal fin, en la cuales la transacción será modificada. En el caso de no marcar ninguna,
+                  las cajas empleadas son las últimas del listado.
                 </p>
 
                 <p class="text-xs text-gray-500">
-                  <span class="font-bold">Nota 2:</span> Las facturas con
-                  créditos solo se harán efectivas con clientes registrados en
-                  la plataforma.
+                  <span class="font-bold">Nota 2:</span> Las facturas con créditos solo se harán efectivas con clientes
+                  registrados en la plataforma.
                 </p>
               </div>
 
               <!-- General Errors -->
               <ul v-show="generalErrors.length > 0" class="list-disc">
-                <li
-                  v-for="(generalError, index) in generalErrors"
-                  :key="index"
-                  class="text-sm text-red-600"
-                >
+                <li v-for="(generalError, index) in generalErrors" :key="index" class="text-sm text-red-600">
                   {{ generalError }}
                 </li>
               </ul>
@@ -119,12 +90,7 @@
         <span v-else>Regresar</span>
       </jet-button>
 
-      <JetButton
-        v-show="showingPaymentForm"
-        class="ml-2"
-        @click="storeInvoice"
-        :disabled="!enabledInvoice"
-      >
+      <JetButton v-show="showingPaymentForm" class="ml-2" @click="storeInvoice" :disabled="!enabledInvoice">
         <!-- Spin -->
         <svg
           class="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
@@ -133,14 +99,7 @@
           viewBox="0 0 24 24"
           v-show="processing"
         >
-          <circle
-            class="opacity-25"
-            cx="12"
-            cy="12"
-            r="10"
-            stroke="currentColor"
-            stroke-width="4"
-          ></circle>
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
           <path
             class="opacity-75"
             fill="currentColor"
@@ -194,6 +153,10 @@ export default {
       type: Object,
       default: null,
     },
+    products: {
+      type: Array,
+      default: [],
+    },
   },
   data() {
     return {
@@ -208,8 +171,8 @@ export default {
         phone: null,
         customer: null,
       },
-      expeditionDate: dayjs().format('YYYY-MM-DD'),
-      expirationDate: dayjs().add(1, 'month').format('YYYY-MM-DD'),
+      expeditionDate: dayjs().format("YYYY-MM-DD"),
+      expirationDate: dayjs().add(1, "month").format("YYYY-MM-DD"),
       itemList: [],
       payments: [],
       errors: new Object(),
@@ -241,9 +204,7 @@ export default {
     addPayment(payment) {
       //Se busca si la caja ya está agregada
       if (this.payments.some((item) => item.box.id === payment.box.id)) {
-        let index = this.payments.findIndex(
-          (item) => item.box.id === payment.box.id
-        );
+        let index = this.payments.findIndex((item) => item.box.id === payment.box.id);
         this.payments[index].amount += payment.amount;
       } else {
         this.payments.push(payment);
@@ -330,9 +291,7 @@ export default {
       let data = {};
 
       //Se establece la infomarción del cliente
-      data.customerId = this.customer.customer
-        ? this.customer.customer.id
-        : null;
+      data.customerId = this.customer.customer ? this.customer.customer.id : null;
       data.customerName = this.customer.fullName;
       data.customerDocument = this.customer.nit;
       data.customerAddress = this.customer.address;
@@ -365,6 +324,7 @@ export default {
 
       this.itemList.forEach((item) => {
         result.push({
+          productId: item.product ? item.product.id : null,
           quantity: item.quantity,
           description: item.description,
           unitValue: item.unitValue,
@@ -455,18 +415,13 @@ export default {
       return sumary;
     },
     enabledPaymentForm() {
-      return (
-        this.expeditionDate && this.expirationDate && this.sumary.total > 0
-      );
+      return this.expeditionDate && this.expirationDate && this.sumary.total > 0;
     },
     enabledInvoice() {
       //Se verifica si la primera parte está correcta
       if (this.enabledPaymentForm) {
         //Se verifica si se una factura a credito y so lo es
-        if (
-          this.sumary.credit <= 0 ||
-          (this.sumary.credit > 0 && this.customer.customer)
-        ) {
+        if (this.sumary.credit <= 0 || (this.sumary.credit > 0 && this.customer.customer)) {
           return true;
         }
       }

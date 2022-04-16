@@ -19,6 +19,7 @@ class InvoiceItem extends Model
    * Los campos que pueden ser asignados de forma masiva.
    */
   protected $fillable = [
+    'product_id',
     'quantity',
     'description',
     'unit_value',

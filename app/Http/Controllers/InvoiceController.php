@@ -9,6 +9,7 @@ use App\Models\Customer\Customer;
 use App\Models\Invoice\Invoice;
 use App\Models\Invoice\InvoiceItem;
 use App\Models\Invoice\InvoicePayment;
+use App\Models\Product\Product;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -30,6 +31,7 @@ class InvoiceController extends Controller
     $customers = $this->getCustomers();
     $boxs = Cashbox::orderBy('order')->get(['id', 'name',]);
     $config = $this->getInvoiceInformation();
+    $products = Product::orderBy('name')->get(['id', 'name']);
     $invoices = Invoice::orderBy('id', 'ASC')->without('items')->get([
       'id',
       'customer_name',
@@ -48,7 +50,7 @@ class InvoiceController extends Controller
     $reports = [
       'weeklyReport' => $this->getWeeklyReport(),
     ];
-    return Inertia::render('Invoice/Index', compact('customers', 'boxs', 'config', 'invoices', 'reports'));
+    return Inertia::render('Invoice/Index', compact('customers', 'boxs', 'config', 'invoices', 'products', 'reports'));
   }
 
   /**
@@ -132,6 +134,7 @@ class InvoiceController extends Controller
 
       //Se agrega al 
       $items[] = new InvoiceItem([
+        'product_id' => $item['productId'],
         'quantity' => $item['quantity'],
         'description' => $item['description'],
         'unit_value' => $item['unitValue'],
@@ -895,7 +898,8 @@ class InvoiceController extends Controller
         'expeditionDate' => 'required|date',
         'expirationDate' => 'required|string|date|after_or_equal:expeditionDate',
         'invoiceItems' => 'required|array|min:1',
-        'invoiceItems.*' => 'array:quantity,description,unitValue,discount,amount',
+        'invoiceItems.*' => 'array:productId,quantity,description,unitValue,discount,amount',
+        'invoiceItems.*.productId' => 'nullable|integer|exists:product,id',
         'invoiceItems.*.quantity' => 'required|numeric|min:0.001|max:9999.999',
         'invoiceItems.*.description' => 'required|string|min:3|max:255',
         'invoiceItems.*.unitValue' => 'required|numeric|min:1|max:99999999.99',
