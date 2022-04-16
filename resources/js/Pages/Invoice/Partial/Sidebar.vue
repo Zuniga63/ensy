@@ -238,7 +238,7 @@
             </div>
 
             <p class="text-xs text-red-800 line-clamp-1 text-center" v-if="invoice.cancel">
-              *{{ invoice.cancel_message }}
+              *{{ invoice.cancel_message }}*
             </p>
           </div>
         </li>
@@ -328,9 +328,9 @@ export default {
     createTimeProperty(invoice) {
       invoice.time = {
         expedition: dayjs(invoice.expedition_date),
-        expiration: dayjs(invoice.expiration_date),
+        /* expiration: dayjs(invoice.expiration_date),
         createAt: dayjs(invoice.created_at),
-        updateAt: dayjs(invoice.updated_at),
+        updateAt: dayjs(invoice.updated_at), */
       };
 
       invoice.time.expeditionDate = invoice.time.expedition.isToday()

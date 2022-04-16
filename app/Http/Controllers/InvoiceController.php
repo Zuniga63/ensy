@@ -30,7 +30,18 @@ class InvoiceController extends Controller
     $customers = $this->getCustomers();
     $boxs = Cashbox::orderBy('order')->get(['id', 'name',]);
     $config = $this->getInvoiceInformation();
-    $invoices = Invoice::orderBy('id', 'ASC')->get();
+    $invoices = Invoice::orderBy('id', 'ASC')->without('items')->get([
+      'id',
+      'customer_name',
+      'seller_name',
+      'prefix',
+      'number',
+      'expedition_date',
+      'amount',
+      'balance',
+      'cancel',
+      'cancel_message',
+    ]);
     $reports = [
       'weeklyReport' => $this->getWeeklyReport(),
     ];
@@ -410,8 +421,8 @@ class InvoiceController extends Controller
         //throw $th;
       }
     } else {
-      $message = !$invoice->customer_id 
-        ? "Cancelar pagos a ventas por mostrador no está soportado." 
+      $message = !$invoice->customer_id
+        ? "Cancelar pagos a ventas por mostrador no está soportado."
         : "¡El pago ya fue cancelado.!";
     }
 
