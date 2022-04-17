@@ -164,7 +164,7 @@
     </header>
 
     <!-- Body -->
-    <div class="h-96 px-4 py-2 overflow-y-auto">
+    <div class="h-80 px-4 py-2 overflow-y-auto">
       <ul>
         <li
           class="

@@ -15,7 +15,7 @@
         <!-- Controles de busqueda -->
         <div class="grid grid-cols-4 gap-4 w-full mb-4">
           <!-- Busqueda por nombre -->
-          <div class="relative pt-4 px-2 pb-2 border border-gray-400 rounded-md">
+          <div class="relative col-span-4 lg:col-span-1 pt-4 px-2 pb-2 border border-gray-400 rounded-md">
             <custom-label
               for="customerName"
               value="Nombre del Cliente"
@@ -31,7 +31,7 @@
           </div>
 
           <!-- Busqueda por documento -->
-          <div class="relative pt-4 px-2 pb-2 border border-gray-400 rounded-md">
+          <div class="hidden lg:block relative pt-4 px-2 pb-2 border border-gray-400 rounded-md">
             <custom-label
               for="document"
               value="Documento"
@@ -47,7 +47,7 @@
           </div>
 
           <!-- Buscar por email -->
-          <div class="relative pt-4 px-2 pb-2 border border-gray-400 rounded-md">
+          <div class="hidden lg:block relative pt-4 px-2 pb-2 border border-gray-400 rounded-md">
             <custom-label
               for="searchByEmail"
               value="Email"
@@ -63,7 +63,7 @@
           </div>
 
           <!-- Buscar por Bank Account -->
-          <div class="relative pt-4 px-2 pb-2 border border-gray-400 rounded-md">
+          <div class="hidden lg:block relative pt-4 px-2 pb-2 border border-gray-400 rounded-md">
             <custom-label
               for="searchByBankAccount"
               value="Numero de cuenta"
@@ -85,22 +85,22 @@
             <thead class="sticky top-0 bg-gray-50">
               <tr>
                 <!-- # -->
-                <th scope="col" class="px-6 py-3 text-center text-gray-500 tracking-wider uppercase">#</th>
+                <th scope="col" class="hidden lg:table-cell px-6 py-3 text-center text-gray-500 tracking-wider uppercase">#</th>
                 <!-- Imagen. nombre y documento -->
                 <th scope="col" class="px-6 py-3 text-left text-gray-500 tracking-wider uppercase">
                   Nombres y Apellidos
                 </th>
 
                 <!-- Contacto -->
-                <th scope="col" class="px-6 py-3 text-left text-gray-500 tracking-wider uppercase">Contacto</th>
+                <th scope="col" class="hidden lg:table-cell px-6 py-3 text-left text-gray-500 tracking-wider uppercase">Contacto</th>
 
                 <!-- Numero de cuenta -->
-                <th scope="col" class="px-6 py-3 text-center text-gray-500 tracking-wider uppercase">N° de Cuenta</th>
+                <th scope="col" class="hidden lg:table-cell px-6 py-3 text-center text-gray-500 tracking-wider uppercase">N° de Cuenta</th>
 
                 <!-- Saldo -->
                 <th scope="col" class="px-6 py-3 text-center text-gray-500 tracking-wider uppercase">Saldo</th>
 
-                <th scope="col" class="relative px-6 py-3">
+                <th scope="col" class="hidden lg:table-cell relative px-6 py-3">
                   <span class="sr-only">Actions</span>
                 </th>
               </tr>
@@ -112,22 +112,22 @@
                 class="transition-colors hover:bg-indigo-50"
               >
                 <!-- Index -->
-                <td class="px-3 py-2 text-gray-800 text-center text-gray-800">
+                <td class="hidden lg:table-cell px-3 py-2 text-gray-800 text-center">
                   {{ index + 1 }}
                 </td>
 
                 <!-- Nombres y correo-->
-                <td class="px-3 py-2 text-gray-800">
+                <td class="px-3 py-2 text-gray-800 text-xs lg:text-base">
                   <div class="flex">
                     <!-- Customer Image -->
-                    <div class="w-16 h-16 p-2 mr-2">
-                      <img :src="customer.image_url" :alt="customer.full_name" class="w-full rounded-full" />
+                    <div class="hidden lg:block w-16 h-16 p-2 mr-2">
+                      <img :src="customer.image_url" :alt="customer.full_name" class="w-full rounded-full" loading="lazy"/>
                     </div>
                     <!-- Nombre y correo -->
                     <div class="flex flex-col justify-center">
                       <span class="capitalize">{{ customer.full_name }}</span>
                       <!-- Documento -->
-                      <span v-if="customer.document_number" class="tracking-widest text-sm">
+                      <span v-if="customer.document_number" class="hidden lg:block tracking-widest text-sm">
                         <span class="text-gray-400">{{ customer.document_type }}: </span>
                         <span @click="selectText">
                           {{ formatDocument(customer.document_number) }}
@@ -138,7 +138,7 @@
                 </td>
 
                 <!-- Contacto -->
-                <td class="px-3 py-2 text-gray-800">
+                <td class="hidden lg:table-cell px-3 py-2 text-gray-800">
                   <div class="flex flex-col" v-if="customer.email || customer.contacts?.length">
                     <!-- Email -->
                     <div v-if="customer.email" class="flex items-center text-indigo-500">
@@ -196,7 +196,7 @@
                 </td>
 
                 <!-- Numero de cuenta -->
-                <td class="px-3 py-2 text-gray-800">
+                <td class="hidden lg:table-cell px-3 py-2 text-gray-800">
                   <div v-if="customer.information && customer.information.bank_account_number">
                     <div class="flex flex-col items-center">
                       <!-- Banco y tipo de cuenta -->
@@ -216,12 +216,12 @@
                   <p v-else class="text-gray-400 text-center">No registrado.</p>
                 </td>
 
-                <td class="px-3 py-2 text-gray-800 text-right">
+                <td class="px-3 py-2 text-gray-800 text-right text-xs sm:text-sm lg:text-base">
                   {{ formatCurrency(customer.balance) }}
                 </td>
 
                 <!-- Acciones -->
-                <td class="px-3 py-2">
+                <td class="hidden lg:table-cell px-3 py-2">
                   <div class="flex justify-end">
                     <row-button type="show" class="mr-2" :href="route('customer.index')" title="Ver Cliente" />
                     <row-button
