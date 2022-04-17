@@ -85,17 +85,29 @@
             <thead class="sticky top-0 bg-gray-50">
               <tr>
                 <!-- # -->
-                <th scope="col" class="hidden lg:table-cell px-6 py-3 text-center text-gray-500 tracking-wider uppercase">#</th>
+                <th
+                  scope="col"
+                  class="hidden lg:table-cell px-6 py-3 text-center text-gray-500 tracking-wider uppercase"
+                >
+                  #
+                </th>
                 <!-- Imagen. nombre y documento -->
                 <th scope="col" class="px-6 py-3 text-left text-gray-500 tracking-wider uppercase">
                   Nombres y Apellidos
                 </th>
 
                 <!-- Contacto -->
-                <th scope="col" class="hidden lg:table-cell px-6 py-3 text-left text-gray-500 tracking-wider uppercase">Contacto</th>
+                <th scope="col" class="hidden lg:table-cell px-6 py-3 text-left text-gray-500 tracking-wider uppercase">
+                  Contacto
+                </th>
 
                 <!-- Numero de cuenta -->
-                <th scope="col" class="hidden lg:table-cell px-6 py-3 text-center text-gray-500 tracking-wider uppercase">N° de Cuenta</th>
+                <th
+                  scope="col"
+                  class="hidden lg:table-cell px-6 py-3 text-center text-gray-500 tracking-wider uppercase"
+                >
+                  N° de Cuenta
+                </th>
 
                 <!-- Saldo -->
                 <th scope="col" class="px-6 py-3 text-center text-gray-500 tracking-wider uppercase">Saldo</th>
@@ -121,7 +133,12 @@
                   <div class="flex">
                     <!-- Customer Image -->
                     <div class="hidden lg:block w-16 h-16 p-2 mr-2">
-                      <img :src="customer.image_url" :alt="customer.full_name" class="w-full rounded-full" loading="lazy"/>
+                      <img
+                        :src="customer.image_url"
+                        :alt="customer.full_name"
+                        class="w-full rounded-full"
+                        loading="lazy"
+                      />
                     </div>
                     <!-- Nombre y correo -->
                     <div class="flex flex-col justify-center">
@@ -375,9 +392,14 @@ export default {
         message = "El cliente ";
         message += `<b>${customer.full_name}</b> no fue encontrado.`;
       } else {
-        message = `EL cliente <b>${customer.full_name}</b> `;
-        message += "no existe o no puede ser eliminado. ";
-        message += "Por favor Contacte con el administrador.";
+        if (error.message) {
+          message = error.message + " por valor de ";
+          message += formatCurrency(error.customer.balance);
+        } else {
+          message = `EL cliente <b>${customer.full_name}</b> `;
+          message += "no existe o no puede ser eliminado. ";
+          message += "Por favor Contacte con el administrador.";
+        }
       }
 
       Swal.fire({

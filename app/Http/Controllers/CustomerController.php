@@ -212,10 +212,22 @@ class CustomerController extends Controller
    */
   public function destroy(Customer $customer)
   {
-    $customer->delete();
+    $ok = false;
+    $message = null;
+
+    $customer->loadSum(['invoices as balance' => function (Builder $query) {
+      $query->where('cancel', 0);
+    }], 'balance');
+    if (!$customer->balance) {
+      $customer->delete();
+      $ok = true;
+    } else {
+      $message = "El cliente no se puede eliminar porque tiene facturas pendientes";
+    }
     $res = [
-      'ok' => true,
-      'customer' => $customer->toArray()
+      'ok' => $ok,
+      'customer' => $customer->toArray(),
+      'message' => $message
     ];
 
     return $res;
