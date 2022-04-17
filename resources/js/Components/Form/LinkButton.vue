@@ -10,7 +10,9 @@
       rounded-md
       bg-gray-700
       font-bold
-      text-white text-sm text-center
+      text-white text-center text-xs
+      sm:text-sm
+      lg:text-base
       tracking-wider
       uppercase
       transition-colors

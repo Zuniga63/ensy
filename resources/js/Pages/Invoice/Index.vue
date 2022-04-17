@@ -9,13 +9,32 @@
       </p>
     </template>
 
-    <div class="max-w-screen-xl mx-auto mt-4 pb-20">
+    <div class="max-w-screen-xl mx-auto mt-4">
       <div class="relative grid grid-cols-4 gap-4 items-start">
         <!-- Sidebar -->
-        <sidebar @enabled-form="showFormModal" :invoices="invoices" @load-invoice="getInvoice" class="sticky top-4"/>
+        <sidebar
+          @enabled-form="showFormModal"
+          :invoices="invoices"
+          @load-invoice="getInvoice"
+          class="sticky top-4 col-span-4 w-11/12 mx-auto lg:w-full lg:col-span-1"
+        />
 
         <!-- Content -->
-        <div class="relative col-span-3 max-h-screen min-h-[45rem]  rounded-md overflow-y-auto cogs shadow">
+        <div
+          class="
+            hidden
+            lg:block
+            relative
+            col-span-3
+            mb-20
+            max-h-screen
+            min-h-[45rem]
+            rounded-md
+            overflow-y-auto
+            cogs
+            shadow
+          "
+        >
           <week-report :report="weeklyReport" />
           <!-- Dialog for Show Invoice -->
           <invoice-show

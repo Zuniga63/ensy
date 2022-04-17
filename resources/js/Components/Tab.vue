@@ -9,7 +9,7 @@
             href="javascript:;"
             class="
               block
-              px-3
+              px-1 sm:px-2 lg:px-3
               py-3
               border-x-0 border-t-0 border-b-2
               rounded-t
