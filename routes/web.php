@@ -104,6 +104,7 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
       'index' => 'customer.index',
       'create' => 'customer.create',
       'store' => 'customer.store',
+      'show' => 'customer.show',
       'edit' => 'customer.edit',
       'update' => 'customer.update',
       'destroy' => 'customer.destroy',

@@ -240,7 +240,7 @@
                 <!-- Acciones -->
                 <td class="hidden lg:table-cell px-3 py-2">
                   <div class="flex justify-end">
-                    <row-button type="show" class="mr-2" :href="route('customer.index')" title="Ver Cliente" />
+                    <row-button type="show" class="mr-2" :href="route('customer.show', customer.id)" title="Ver Cliente" />
                     <row-button
                       type="edit"
                       class="mr-2"

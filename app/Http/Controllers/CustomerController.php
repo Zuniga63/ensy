@@ -110,7 +110,19 @@ class CustomerController extends Controller
    */
   public function show(Customer $customer)
   {
-    //
+    $customer->load([
+      'invoices' => function ($query) {
+        $query->orderBy('expedition_date')
+          ->without('items');
+      },
+      'invoicePayments' => function ($query) {
+        $query->orderBy('payment_date')->without('transaction');
+      }
+    ])
+      ->loadSum(['invoices as balance' => function (Builder $query) {
+        $query->where('cancel', 0);
+      }], 'balance');
+    return Inertia::render('Customer/Show', compact('customer'));
   }
 
   /**
