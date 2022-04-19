@@ -106,8 +106,6 @@ class CarmuSeeder extends Seeder
       ->table('customer')
       ->orderBy('first_name')
       ->orderBy('last_name')
-      ->where('customer_id', 49)
-      #->limit(20)
       ->get();
 
     /** @var int */
@@ -153,6 +151,7 @@ class CarmuSeeder extends Seeder
         ->get();
 
       $invoices = $this->registerCustomerInvoices($customer, $creditList);
+      $this->registerCustomerPayments($invoices, $paymentList);
     }
   }
 
@@ -202,6 +201,7 @@ class CarmuSeeder extends Seeder
 
       if ($customer->invoices()->save($invoice)) {
         $invoice->items()->saveMany($items);
+        $invoice->refresh();
         $invoices->push($invoice);
         $invoiceNumber++;
       }
@@ -211,9 +211,80 @@ class CarmuSeeder extends Seeder
     return $invoices;
   }
 
+  /**
+   * Registra los pagos conservando la fecha de pago.
+   * @param Collection $invoices
+   * @param Collection $paymentList
+   */
   protected function registerCustomerPayments($invoices, $paymentList)
   {
-    //TODO
+    foreach ($paymentList as $payment) {
+      $amount = $payment->amount;
+      /**
+       * Si el importe es mayor que cero y existen facturas por pagar
+       * se continúa en el bucle.
+       */
+      while (bccomp($amount, "0") > 0 && $invoices->count() > 0) {
+        //Se recupera la primera factura
+        /** @var Invoice */
+        $invoice = $invoices->shift();
+
+        /**
+         * Si el saldo de la factura es menor o igual que el importe
+         * se paga toda la factura y se continúa con la siguiente factura.
+         * en caso contrario se abona y se guarda nuevamente.
+         */
+        if (bccomp($invoice->balance, $amount) <= 0) {
+          //Se decuenta el valor pendiente
+          $amount = bcsub($amount, $invoice->balance);
+          //Se crea la transacción y el pago
+          $this->registerInvoicePayment($payment->payment_date, $invoice, $invoice->balance);
+          //Se actualiza la factura
+          $invoice->balance = null;
+          $invoice->save();
+        } else {
+          //Se crea la transacción y el pago
+          $this->registerInvoicePayment($payment->payment_date, $invoice, $amount);
+          //Se actualiza la factura
+          $invoice->balance = bcsub($invoice->balance, $amount);
+          $invoice->save();
+          //Se regresa la factura al listado
+          $invoices->prepend($invoice);
+          //Se rompe el while
+          break;
+        } //.end if-else
+      } //.end while
+    } //.end forEach
+  }
+
+  /**
+   * Se encarga de registrar un pago a una factura correctamente
+   * @param string $date - Fecha del pago
+   * @param Invoice $invoice - Modelo de la factura
+   * @param string $amount - Valor del pago a registrar.
+   */
+  protected function registerInvoicePayment($date, $invoice, $amount)
+  {
+    //Se crea la transacción
+    $transaction = new CashboxTransaction([
+      'cashbox_id' => 1,
+      'transaction_date' => $date,
+      'description' => "Pago de la factura N° $invoice->invoice_number del cliente $invoice->customer_name",
+      'amount' => $amount,
+      'blocked' => true,
+    ]);
+
+    if ($transaction->save()) {
+      //Se crea el abono de la factura
+      $payment = new InvoicePayment([
+        'payment_date' => $date,
+        'description' => "Deposito en caja principal",
+        'amount' => $amount
+      ]);
+
+      $payment->transaction()->associate($transaction);
+      $invoice->payments()->save($payment);
+    }
   }
 
   /**
