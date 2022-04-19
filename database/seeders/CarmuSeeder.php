@@ -265,26 +265,33 @@ class CarmuSeeder extends Seeder
    */
   protected function registerInvoicePayment($date, $invoice, $amount)
   {
-    //Se crea la transacción
-    $transaction = new CashboxTransaction([
-      'cashbox_id' => 1,
-      'transaction_date' => $date,
-      'description' => "Pago de la factura N° $invoice->invoice_number del cliente $invoice->customer_name",
-      'amount' => $amount,
-      'blocked' => true,
+    $format = "Y-m-d H:i:s";
+    $dateRestriction = Carbon::createFromFormat($format, "2021-03-01 05:59:59");
+    $date = Carbon::createFromFormat($format, $date);
+
+    //Se crea el abono de la factura
+    $payment = new InvoicePayment([
+      'payment_date' => $date,
+      'description' => "Deposito en caja principal",
+      'amount' => $amount
     ]);
 
-    if ($transaction->save()) {
-      //Se crea el abono de la factura
-      $payment = new InvoicePayment([
-        'payment_date' => $date,
-        'description' => "Deposito en caja principal",
-        'amount' => $amount
+    if ($date->lessThan($dateRestriction)) {
+      //Se crea la transacción
+      $transaction = new CashboxTransaction([
+        'cashbox_id' => 1,
+        'transaction_date' => $date,
+        'description' => "Pago de la factura N° $invoice->invoice_number del cliente $invoice->customer_name",
+        'amount' => $amount,
+        'blocked' => true,
       ]);
 
-      $payment->transaction()->associate($transaction);
-      $invoice->payments()->save($payment);
-    }
+      if ($transaction->save()) {
+        $payment->transaction()->associate($transaction);
+      } //.end if
+    } //.end if
+
+    $invoice->payments()->save($payment);
   }
 
   /**
