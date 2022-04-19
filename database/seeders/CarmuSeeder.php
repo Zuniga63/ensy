@@ -27,10 +27,11 @@ class CarmuSeeder extends Seeder
     $this->truncateTables();
 
     $this->command->info("Se inicia la inserción de los clientes.");
-    #$this->createCustomers();
+    $this->createCustomers();
+    $this->deleteCustomerWithBalanceZero();
 
     $this->command->info("Se registran las ventas de cliente eliminados.");
-    $this->registerCreditOfCustomerDeleted();
+    #$this->registerCreditOfCustomerDeleted();
 
     $this->command->info("Se inicia la inserción de las ventas por mostrador.");
     #$this->addCounterSales();
@@ -108,6 +109,7 @@ class CarmuSeeder extends Seeder
       ->table('customer')
       ->orderBy('first_name')
       ->orderBy('last_name')
+      ->limit(10)
       ->get();
 
     /** @var int */
@@ -533,5 +535,19 @@ class CarmuSeeder extends Seeder
     });
 
     CashboxTransaction::insert($transactions);
+  }
+
+  protected function deleteCustomerWithBalanceZero()
+  {
+    $customers = Customer::orderBy('id')->withSum('invoices as balance', 'balance')->get(['id']);
+    $count = 0;
+    $customers->each(function ($customer) use (&$count) {
+      if (!$customer->balance) {
+        $customer->delete();
+        $count++;
+      }
+    });
+
+    $this->command->info("Clientes eliminados: $count");
   }
 }
