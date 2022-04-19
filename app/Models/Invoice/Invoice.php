@@ -46,7 +46,7 @@ class Invoice extends Model
   protected $appends = ['invoice_number'];
 
   /**
-   * Retorna el nombre completo del cliente
+   * Retorna el numero de la factura con el prefijo
    */
   public function getInvoiceNumberAttribute()
   {
@@ -54,15 +54,15 @@ class Invoice extends Model
     $number = $this->number;
 
 
-    if($number < 10){
+    if ($number < 10) {
       $number = "000" . $number;
-    }else if($number < 100){
+    } else if ($number < 100) {
       $number = "00" . $number;
-    }else if($number < 1000){
+    } else if ($number < 1000) {
       $number  = "0" . $number;
     }
 
-    return $this->attributes['invoiceNumber'] = $prefix . $number;
+    return $prefix . $number;
   }
 
   /**
