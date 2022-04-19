@@ -12,6 +12,7 @@ use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use stdClass;
 
 class CarmuSeeder extends Seeder
 {
@@ -27,14 +28,14 @@ class CarmuSeeder extends Seeder
 
     $this->command->info("Se inicia la inserción de los clientes.");
     $this->createCustomers();
-    $this->command->newLine(2);
+    #$this->command->newLine(2);
 
-    $this->command->info("Se inicia la inserción de las ventas por mostrador.");
-    $this->addInvoices();
-    $this->command->newLine(2);
-    
-    $this->command->info("Se agregan las otras transacciones");
-    $this->addOtherTransactions();
+    #$this->command->info("Se inicia la inserción de las ventas por mostrador.");
+    #$this->addInvoices();
+    #$this->command->newLine(2);
+
+    #$this->command->info("Se agregan las otras transacciones");
+    #$this->addOtherTransactions();
   }
 
 
@@ -100,165 +101,171 @@ class CarmuSeeder extends Seeder
 
   protected function createCustomers()
   {
-    //Recupero los datos de los clientes
-    $customerData = DB::connection('carmu_old')
+    //Se recuepera el listado de clientes
+    $customerList = DB::connection('carmu_old')
       ->table('customer')
       ->orderBy('first_name')
       ->orderBy('last_name')
+      ->where('customer_id', 49)
+      #->limit(20)
       ->get();
 
-    $invoiceNumber = Invoice::max('number') + 1;
+    /** @var int */
+    $this->command->getOutput()->progressStart($customerList->count());
+    $customerList->each(function ($customerData) {
+      $this->command->getOutput()->progressAdvance();
+      $this->registerCustomer($customerData);
+    });
+    $this->command->getOutput()->progressFinish();
+  }
 
-    $customerData->each(function ($data) use (&$invoiceNumber) {
-      /** @var Customer */
-      $customer = new Customer([
-        'first_name' => $data->first_name,
-        'last_name' => $data->last_name,
-        'document_number' => $data->nit,
-        'document_type' => 'CC',
-      ]);
-      $customer->save();
-      $this->command->info("Guardando cliente: $customer->full_name");
+  /**
+   * Se encarga de registrar un cliente de la vieja base de datos en 
+   * la nueva base de datos.
+   * @param mixed $customerData
+   */
+  protected function registerCustomer($customerData)
+  {
 
-      //Recupero los datos de los creditos
-      $creditData = DB::connection('carmu_old')
+    /** @var Customer */
+    $customer = new Customer([
+      'first_name' => $customerData->first_name,
+      'last_name' => $customerData->last_name,
+      'document_number' => $customerData->nit,
+      'document_type' => 'CC',
+    ]);
+
+    if ($customer->save()) {
+      //Se recuperan los creditos del cliente
+      $creditList = DB::connection('carmu_old')
         ->table('customer_credit')
-        ->where('customer_id', $data->customer_id)
+        ->where('customer_id', $customerData->customer_id)
         ->orderBy('credit_date')
         ->get();
 
+      $creditList = $this->groupCreditPerDay($creditList);
 
-      //Recupero el saldo de los abonos en efectivo
-      $paymentAmount = DB::connection('carmu_old')
+      //Se recuperan los abonos del cliente
+      $paymentList = DB::connection('carmu_old')
         ->table('customer_payment')
-        ->where('customer_id', $data->customer_id)
-        ->sum('amount');
+        ->where('customer_id', $customerData->customer_id)
+        ->orderBy('payment_date')
+        ->get();
 
-      //Se crean las facturas para cada credito
-      $creditData->each(function ($data) use ($customer, &$paymentAmount, &$invoiceNumber) {
-        $amount = $data->amount;
-        $cash = null;
-        $balance = null;
+      $invoices = $this->registerCustomerInvoices($customer, $creditList);
+    }
+  }
 
-        if (bccomp($paymentAmount, "0", 2) > 0) {
-          //En este punto hay para pagar la factura
-          if (bccomp($paymentAmount, $amount, 2) >= 0) {
-            //EL dinero abonado es igual o mayor que la factura
-            $cash = $amount;
-            $paymentAmount = bcsub($paymentAmount, $amount, 2);
-          } else {
-            //El dinero abonado es menor que el saldo de la factura
-            $cash = $paymentAmount;
-            $balance = bcsub($amount, $paymentAmount);
-            $paymentAmount = "0";
-          }
-        } else {
-          $balance = $amount;
-        }
+  /**
+   * Utiliza el listado de creditos del cliente y va creando las facturas sin
+   * saldar.
+   * @param Customer $customer modelo del cliente
+   * @param Illuminate\Support\Collection $creditsPerDay
+   */
+  protected function registerCustomerInvoices($customer, $creditsPerDay)
+  {
+    $invoices = new Collection();
+    $invoiceNumber = Invoice::max('id') + 1;
 
-        $invoice = new Invoice([
-          'seller_id' => 1,
-          'customer_id' => $customer->id,
-          'number' => $invoiceNumber,
-          'customer_name' => $customer->full_name,
-          'seller_name' => "Administrador",
-          'expedition_date' => $data->credit_date,
-          'expiration_date' => $data->credit_date,
-          'amount' => $amount,
-          'cash' => $cash,
-          'credit' => $balance,
-          'balance' => $balance
-        ]);
+    foreach ($creditsPerDay as $dailyCredits) {
+      $date = $dailyCredits->date;
+      $credits = $dailyCredits->credits;
+      $amount = "0";
+      $items = [];
 
-        if ($invoice->save()) {
-          if ($cash) {
-            //Se crea el pago del cliente
-            $payment = new InvoicePayment([
-              'customer_id' => $customer->id,
-              'payment_date' => $invoice->expedition_date,
-              'description' => "Deposito en caja principal",
-              'amount' => $cash,
-              'initial_payment' => true
-            ]);
 
-            $transaction = new CashboxTransaction([
-              'cashbox_id' => 1,
-              'transaction_date' => $invoice->expedition_date,
-              'description' => "Abono: cliente $customer->full_name",
-              'amount' => $amount,
-              'blocked' => true,
-            ]);
-
-            $transaction->save();
-            $payment->transaction()->associate($transaction);
-            $invoice->payments()->save($payment);
-            $invoiceNumber++;
-          }
-
-          $invoiceItem = new InvoiceItem([
-            'quantity' => 1,
-            'description' => $data->description,
-            'unit_value' => $data->amount,
-            'amount' => $data->amount
-          ]);
-
-          $invoice->items()->save($invoiceItem);
-        }
-      }); //.end each
-    }); // .end each
-
-    //Ahora se crean las factura de clientes eliminados
-    $this->command->info("Se crean las factura de los cliente eliminados.");
-
-    $creditData = DB::connection('carmu_old')
-      ->table('customer_credit')
-      ->whereNull('customer_id')
-      ->orderBy('credit_date')
-      ->get();
-
-    $creditData->each(function ($credit) use ($invoiceNumber) {
-      $invoice = new Invoice([
-        'seller_id' => 1,
-        'customer_id' => null,
-        'number' => $invoiceNumber,
-        'seller_name' => "Administrador",
-        'expedition_date' => $credit->credit_date,
-        'expiration_date' => $credit->credit_date,
-        'amount' => $credit->amount,
-        'cash' => $credit->amount,
-      ]);
-
-      if ($invoice->save()) {
-        //Se crea el pago del cliente
-        $payment = new InvoicePayment([
-          'payment_date' => $invoice->expedition_date,
-          'description' => "Deposito en caja principal",
-          'amount' => $credit->amount,
-          'initial_payment' => true
-        ]);
-
-        $transaction = new CashboxTransaction([
-          'cashbox_id' => 1,
-          'transaction_date' => $invoice->expedition_date,
-          'description' => "Pago de la factura N° $invoiceNumber",
-          'amount' => $credit->amount,
-          'blocked' => true,
-        ]);
-
-        $invoiceItem = new InvoiceItem([
+      //En primer lugar se crean los items
+      foreach ($credits as $credit) {
+        $items[] = new InvoiceItem([
           'quantity' => 1,
           'description' => $credit->description,
           'unit_value' => $credit->amount,
           'amount' => $credit->amount
         ]);
 
-        $transaction->save();
-        $payment->transaction()->associate($transaction);
-        $invoice->payments()->save($payment);
-        $invoice->items()->save($invoiceItem);
+        $amount = bcadd($amount, $credit->amount);
+      }
+
+      //Se crea la factura y se guarda
+      $invoice = new Invoice([
+        'seller_id' => 1,
+        'number' => $invoiceNumber,
+        'customer_name' => $customer->full_name,
+        'customer_document' => $customer->document_number,
+        'seller_name' => 'Administrador',
+        'expedition_date' => $date->format('Y-m-d H:i'),
+        'expiration_date' => $date->format('Y-m-d H:i'),
+        'amount' => $amount,
+        'credit' => $amount,
+        'balance' => $amount,
+      ]);
+
+      if ($customer->invoices()->save($invoice)) {
+        $invoice->items()->saveMany($items);
+        $invoices->push($invoice);
         $invoiceNumber++;
       }
-    }); //.end each
+    }
+
+
+    return $invoices;
+  }
+
+  protected function registerCustomerPayments($invoices, $paymentList)
+  {
+    //TODO
+  }
+
+  /**
+   * Se encarga de agrupar los creditos por días
+   * ? Este metodo es util porque me permite
+   * ? poder agrupara varios creditos en una sola factura.
+   * @param Illuminate\Support\Collection $list listado a agrupar.
+   */
+  protected function groupCreditPerDay($creditList)
+  {
+    $creditsPerDay = new Collection();    //Creditos agrupados por día de creación
+    $format = "Y-m-d H:i:s";              //Formato para crear las instancias Carbon a partir de los creditos
+
+    if ($creditList->count() > 0) {
+      $firstCredit = $creditList[0];
+      $lastCredit = $creditList[$creditList->count() - 1];
+
+      $date = Carbon::createFromFormat($format, $firstCredit->credit_date)->midDay();
+      $endDate = Carbon::createFromFormat($format, $lastCredit->credit_date)->endOfDay();
+      $lastIndex = 0;   //Para recordar donde debe iniciar el for
+
+      while ($date->lessThanOrEqualTo($endDate)) {
+        $startDay = $date->copy()->startOfDay();
+        $endDay = $date->copy()->endOfDay();
+
+        $credits = new Collection();
+
+        for ($index = $lastIndex; $index < $creditList->count(); $index++) {
+          $credit = $creditList[$index];
+          $creditDate = Carbon::createFromFormat($format, $credit->credit_date);
+
+          if ($creditDate->greaterThanOrEqualTo($startDay) && $creditDate->lessThanOrEqualTo($endDay)) {
+            $credits->push($credit);
+            $lastIndex++;
+          } else {
+            break;
+          } //.end if-else
+        } // .end for
+
+        if ($credits->count() > 0) {
+          $dailyCredits = new stdClass;
+          $dailyCredits->date = $date->copy();
+          $dailyCredits->credits = $credits;
+
+          $creditsPerDay->push($dailyCredits);
+        }
+
+        $date->addDay();
+      } //.end while
+    } //.end if
+
+    return $creditsPerDay;
   }
 
   protected function addInvoices()
