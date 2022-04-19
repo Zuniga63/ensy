@@ -23,7 +23,6 @@ class CarmuSeeder extends Seeder
    */
   public function run()
   {
-    $this->command->info('Se inician operaciones preliminares.');
     $this->truncateTables();
 
     $this->command->info("Se inicia la inserción de los clientes.");
@@ -31,14 +30,14 @@ class CarmuSeeder extends Seeder
     $this->deleteCustomerWithBalanceZero();
 
     $this->command->info("Se registran las ventas de cliente eliminados.");
-    #$this->registerCreditOfCustomerDeleted();
+    $this->registerCreditOfCustomerDeleted();
 
     $this->command->info("Se inicia la inserción de las ventas por mostrador.");
-    #$this->addCounterSales();
-    #$this->command->newLine(2);
+    $this->addCounterSales();
+    $this->command->newLine(2);
 
-    #$this->command->info("Se agregan las otras transacciones");
-    #$this->addOtherTransactions();
+    $this->command->info("Se agregan las otras transacciones");
+    $this->addOtherTransactions();
   }
 
 
@@ -63,6 +62,7 @@ class CarmuSeeder extends Seeder
     DB::statement('SET FOREIGN_KEY_CHECKS=0');
     foreach ($tables as $table) {
       DB::table($table)->truncate();
+      $this->command->info("Se vació la tabla $table");
     } //end foreach
     DB::statement('SET FOREIGN_KEY_CHECKS=1');
 
@@ -72,6 +72,7 @@ class CarmuSeeder extends Seeder
       'name' => "Caja Principal",
       'slug' => 'caja_principal',
     ]);
+    $this->command->info("Se crea la caja principal");
 
     //Se crean las categorías principales
     DB::table('product_category')->insert([
@@ -100,6 +101,8 @@ class CarmuSeeder extends Seeder
       ['product_id' => 7, 'product_category_id' => 7],
       ['product_id' => 1, 'product_category_id' => 1],
     ]);
+
+    $this->command->info("Se crean productos basicos y categorías");
   } //end function
 
   protected function createCustomers()
@@ -109,7 +112,6 @@ class CarmuSeeder extends Seeder
       ->table('customer')
       ->orderBy('first_name')
       ->orderBy('last_name')
-      ->limit(10)
       ->get();
 
     /** @var int */
@@ -541,7 +543,10 @@ class CarmuSeeder extends Seeder
   {
     $customers = Customer::orderBy('id')->withSum('invoices as balance', 'balance')->get(['id']);
     $count = 0;
+    $this->command->info("Se eliminan los clientes con saldo cero.");
+    $this->command->getOutput()->progressStart($customers->count());
     $customers->each(function ($customer) use (&$count) {
+      $this->command->getOutput()->progressAdvance();
       if (!$customer->balance) {
         $customer->delete();
         $count++;
@@ -549,5 +554,6 @@ class CarmuSeeder extends Seeder
     });
 
     $this->command->info("Clientes eliminados: $count");
+    $this->command->getOutput()->progressFinish();
   }
 }
