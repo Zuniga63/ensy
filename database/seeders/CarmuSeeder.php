@@ -305,6 +305,7 @@ class CarmuSeeder extends Seeder
 
     //Se crea el abono de la factura
     $payment = new InvoicePayment([
+      'customer_id' => $invoice->customer_id,
       'payment_date' => $date,
       'description' => "Deposito en caja principal",
       'amount' => $amount
