@@ -27,15 +27,14 @@ class CarmuSeeder extends Seeder
     $this->truncateTables();
 
     $this->command->info("Se inicia la inserción de los clientes.");
-    $this->createCustomers();
-    #$this->command->newLine(2);
+    #$this->createCustomers();
 
-    #$this->command->info("Se inicia la inserción de las ventas por mostrador.");
-    #$this->addInvoices();
+    $this->command->info("Se inicia la inserción de las ventas por mostrador.");
+    $this->addCounterSales();
     #$this->command->newLine(2);
 
     #$this->command->info("Se agregan las otras transacciones");
-    #$this->addOtherTransactions();
+    $this->addOtherTransactions();
   }
 
 
@@ -346,54 +345,12 @@ class CarmuSeeder extends Seeder
     return $creditsPerDay;
   }
 
-  protected function addInvoices()
+  protected function addCounterSales()
   {
-    $this->command->info("Se recupera la información de las ventas.");
-    $data = DB::connection('carmu_old')->table('sale')
-      ->orderBy('sale_date')
-      ->join('sale_has_category', 'sale.sale_id', '=', 'sale_has_category.sale_id')
-      ->join('sale_category', 'sale_category.category_id', '=', 'sale_has_category.category_id')
-      ->select('sale.*', 'sale_category.*')
-      ->get();
-
     $invoiceNumber = Invoice::max('number') + 1;
-    $dailySales = new Collection();
-    $dataIndex = 0;
-    $date = Carbon::createFromFormat('Y-m-d H:i:s', $data[0]->sale_date)->midDay();
-    $now = Carbon::now();
+    $dailySales = $this->getSalesPerDay();
 
-    $this->command->info("Se agrupan las ventas por días.");
-    while ($date->lessThanOrEqualTo($now)) {
-      $startDay = $date->copy()->startOfDay();
-      $endDay = $date->copy()->endOfDay();
-      $daily = new Collection();
-      $amount = "0";
-
-      for ($index = $dataIndex; $index < $data->count(); $index++) {
-        $dataItem = $data[$index];
-        $dataDate = Carbon::createFromFormat('Y-m-d H:i:s', $dataItem->sale_date);
-
-        if ($dataDate->greaterThanOrEqualTo($startDay) && $dataDate->lessThanOrEqualTo($endDay)) {
-          $daily->push($dataItem);
-          $amount = bcadd($amount, $dataItem->amount);
-          $dataIndex++;
-        } else {
-          break;
-        }
-      }
-
-      if ($daily->count() > 0) {
-        $dailySales->push([
-          'date' => $date->copy(),
-          'sales' => $daily,
-          'amount' => $amount,
-        ]);
-      }
-
-      $date->addDay();
-    }
-
-    $this->command->info("Se crean las facturas.");
+    $this->command->getOutput()->progressStart($dailySales->count());
 
     //Ahora se registran las facturas
     $dailySales->each(function ($daily) use (&$invoiceNumber) {
@@ -401,8 +358,6 @@ class CarmuSeeder extends Seeder
       $amount = $daily['amount'];
       /** @var Collection */
       $sales = $daily['sales'];
-
-      $this->command->info("Factura del día: " . $date->format('Y-m-d'));
 
       $invoice = new Invoice([
         'seller_id' => 1,
@@ -429,14 +384,15 @@ class CarmuSeeder extends Seeder
         'blocked' => true,
       ]);
 
-      $items = [];
+      if ($transaction->save()) {
+        $payment->transaction()->associate($transaction);
+      }
 
-      $transaction->save();
       $invoice->save();
-
-      $payment->transaction()->addConstraints($transaction);
       $invoice->payments()->save($payment);
 
+      //Se crean los items
+      $items = [];
       $sales->each(function ($sale) use (&$items) {
         $item = new InvoiceItem([
           'product_id' => null,
@@ -456,9 +412,57 @@ class CarmuSeeder extends Seeder
       $invoice->items()->saveMany($items);
 
       $invoiceNumber++;
+      $this->command->getOutput()->progressAdvance();
     });
 
-    $this->command->info("Finaliza el proceso de agregar ventas por mostrador.");
+    $this->command->getOutput()->progressFinish();
+  }
+
+  protected function getSalesPerDay()
+  {
+    $data = DB::connection('carmu_old')->table('sale')
+      ->orderBy('sale_date')
+      ->join('sale_has_category', 'sale.sale_id', '=', 'sale_has_category.sale_id')
+      ->join('sale_category', 'sale_category.category_id', '=', 'sale_has_category.category_id')
+      ->select('sale.*', 'sale_category.*')
+      ->get();
+
+    $dailySales = new Collection();
+    $dataIndex = 0;
+    $date = Carbon::createFromFormat('Y-m-d H:i:s', $data[0]->sale_date)->midDay();
+    $now = Carbon::now();
+
+    while ($date->lessThanOrEqualTo($now)) {
+      $startDay = $date->copy()->startOfDay();
+      $endDay = $date->copy()->endOfDay();
+      $daily = new Collection();
+      $amount = "0";
+
+      for ($index = $dataIndex; $index < $data->count(); $index++) {
+        $dataItem = $data[$index];
+        $dataDate = Carbon::createFromFormat('Y-m-d H:i:s', $dataItem->sale_date);
+
+        if ($dataDate->greaterThanOrEqualTo($startDay) && $dataDate->lessThanOrEqualTo($endDay)) {
+          $daily->push($dataItem);
+          $amount = bcadd($amount, $dataItem->amount);
+          $dataIndex++;
+        } else {
+          break;
+        } //.end if-else
+      } //.end for
+
+      if ($daily->count() > 0) {
+        $dailySales->push([
+          'date' => $date->copy(),
+          'sales' => $daily,
+          'amount' => $amount,
+        ]);
+      } //.end if
+
+      $date->addDay();
+    } //.end while
+
+    return $dailySales;
   }
 
   protected function addOtherTransactions()
