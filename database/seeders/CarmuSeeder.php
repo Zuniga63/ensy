@@ -29,12 +29,15 @@ class CarmuSeeder extends Seeder
     $this->command->info("Se inicia la inserción de los clientes.");
     #$this->createCustomers();
 
+    $this->command->info("Se registran las ventas de cliente eliminados.");
+    $this->registerCreditOfCustomerDeleted();
+
     $this->command->info("Se inicia la inserción de las ventas por mostrador.");
-    $this->addCounterSales();
+    #$this->addCounterSales();
     #$this->command->newLine(2);
 
     #$this->command->info("Se agregan las otras transacciones");
-    $this->addOtherTransactions();
+    #$this->addOtherTransactions();
   }
 
 
@@ -256,6 +259,34 @@ class CarmuSeeder extends Seeder
     } //.end forEach
   }
 
+  protected function registerCreditOfCustomerDeleted()
+  {
+    $creditList = DB::connection('carmu_old')
+      ->table('customer_credit')
+      ->whereNull('customer_id')
+      ->orderBy('credit_date')
+      ->get();
+
+    $customer = new Customer([
+      'first_name' => 'Cliente Eliminado',
+    ]);
+    $customer->save();
+
+    $creditList = $this->groupCreditPerDay($creditList);
+    $invoices = $this->registerCustomerInvoices($customer, $creditList);
+
+    $invoices->each(function ($invoice) {
+      //Se crea el pago
+      $this->registerInvoicePayment($invoice->expedition_date, $invoice, $invoice->balance);
+      //Se anula el saldo
+      $invoice->balance = null;
+      $invoice->save();
+    });
+
+    //Se elimina el cliente
+    $customer->delete();
+  }
+
   /**
    * Se encarga de registrar un pago a una factura correctamente
    * @param string $date - Fecha del pago
@@ -275,7 +306,7 @@ class CarmuSeeder extends Seeder
       'amount' => $amount
     ]);
 
-    if ($date->lessThan($dateRestriction)) {
+    if ($date->greaterThanOrEqualTo($dateRestriction)) {
       //Se crea la transacción
       $transaction = new CashboxTransaction([
         'cashbox_id' => 1,
@@ -347,13 +378,16 @@ class CarmuSeeder extends Seeder
 
   protected function addCounterSales()
   {
+    $format = "Y-m-d H:i:s";
+    $dateRestriction = Carbon::createFromFormat($format, "2021-03-01 05:59:59");
+
     $invoiceNumber = Invoice::max('number') + 1;
     $dailySales = $this->getSalesPerDay();
 
     $this->command->getOutput()->progressStart($dailySales->count());
 
     //Ahora se registran las facturas
-    $dailySales->each(function ($daily) use (&$invoiceNumber) {
+    $dailySales->each(function ($daily) use (&$invoiceNumber, $dateRestriction) {
       $date = $daily['date'];
       $amount = $daily['amount'];
       /** @var Collection */
@@ -376,17 +410,20 @@ class CarmuSeeder extends Seeder
         'amount' => $amount
       ]);
 
-      $transaction = new CashboxTransaction([
-        'cashbox_id' => 1,
-        'transaction_date' => $date->format('Y-m-d H:i'),
-        'description' => "Pago de la factura N° $invoiceNumber",
-        'amount' => $amount,
-        'blocked' => true,
-      ]);
+      if ($date->greaterThanOrEqualTo($dateRestriction)) {
+        $transaction = new CashboxTransaction([
+          'cashbox_id' => 1,
+          'transaction_date' => $date->format('Y-m-d H:i'),
+          'description' => "Pago de la factura N° $invoiceNumber",
+          'amount' => $amount,
+          'blocked' => true,
+        ]);
 
-      if ($transaction->save()) {
-        $payment->transaction()->associate($transaction);
+        if ($transaction->save()) {
+          $payment->transaction()->associate($transaction);
+        }
       }
+
 
       $invoice->save();
       $invoice->payments()->save($payment);
