@@ -15,12 +15,38 @@
         <customer-info :customer="customer" class="static lg:sticky top-4 col-span-3 lg:col-span-1" />
         <div class="col-span-3 lg:col-span-2 w-full">
           <tab-component :tabs="tabs" :tabSelected="tab" @selectTab="tab = $event">
+            <template #controls>
+              <!-- Control para las facturas -->
+              <select
+                name="invoiceFilter"
+                v-show="tab === 'facturas'"
+                v-model="invoiceFilter"
+                class="border border-gray-200 rounded-sm text-gray-800 text-sm font-semibold"
+              >
+                <option value="all">Todas las facturas</option>
+                <option value="pending">Solo pendientes</option>
+                <option value="paid">Solo Pagadas</option>
+                <option value="cancel">Solo Canceladas</option>
+              </select>
+
+              <select
+                name=""
+                v-show="tab === 'pagos'"
+                v-model="paymentGroup"
+                class="border border-gray-200 rounded-sm text-gray-800 text-sm font-semibold"
+              >
+                <option value="individual">Mostrar Individualmente</option>
+                <option value="daily">Agrupar por días</option>
+                <option value="monthly">Agrupar por mes</option>
+              </select>
+            </template>
+
             <template #facturas>
-              <customer-invoices :invoices="customer.invoices" />
+              <customer-invoices :invoices="customer.invoices" :filterBy="invoiceFilter" />
             </template>
 
             <template #pagos>
-              <customer-payments :payments="customer.invoice_payments" />
+              <customer-payments :payments="customer.invoice_payments" :groupBy="paymentGroup" />
             </template>
           </tab-component>
         </div>
@@ -44,6 +70,8 @@ export default {
     return {
       tabs: ["facturas", "pagos"],
       tab: "facturas",
+      invoiceFilter: "pending",
+      paymentGroup: "daily",
     };
   },
 };

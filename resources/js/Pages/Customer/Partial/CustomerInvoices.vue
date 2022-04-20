@@ -1,12 +1,17 @@
 <template>
-  <div class="shadow border-b border-gray-300 overflow-y-auto overflow-x-auto max-h-screen">
+  <div class="shadow border-b border-gray-300 overflow-y-auto overflow-x-auto min-h-[15rem] max-h-screen">
     <table class="relative min-w-full table-auto">
       <thead class="sticky top-0 bg-gray-50">
         <tr>
           <!-- # -->
           <th scope="col" class="hidden lg:table-cell px-6 py-3 text-center text-gray-500 text-sm">#</th>
           <!-- Fecha-->
-          <th scope="col" class="px-3 sm:px-6 py-3 text-center text-xs sm:text-sm text-gray-500 tracking-wider uppercase">Fecha</th>
+          <th
+            scope="col"
+            class="px-3 sm:px-6 py-3 text-center text-xs sm:text-sm text-gray-500 tracking-wider uppercase"
+          >
+            Fecha
+          </th>
           <!-- Subtotal -->
           <th
             scope="col"
@@ -22,8 +27,18 @@
             Desct.
           </th>
           <!-- Valor -->
-          <th scope="col" class="px-3 sm:px-6 py-3 text-center text-xs sm:text-sm text-gray-500 tracking-wider uppercase">Importe</th>
-          <th scope="col" class="px-3 sm:px-6 py-3 text-center text-xs sm:text-sm text-gray-500 tracking-wider uppercase">Saldo</th>
+          <th
+            scope="col"
+            class="px-3 sm:px-6 py-3 text-center text-xs sm:text-sm text-gray-500 tracking-wider uppercase"
+          >
+            Importe
+          </th>
+          <th
+            scope="col"
+            class="px-3 sm:px-6 py-3 text-center text-xs sm:text-sm text-gray-500 tracking-wider uppercase"
+          >
+            Saldo
+          </th>
 
           <th scope="col" class="hidden lg:table-cell relative px-6 py-3">
             <span class="sr-only">Actions</span>
@@ -31,14 +46,14 @@
         </tr>
       </thead>
       <tbody class="bg-white divide-y divide-gray-200">
-        <tr v-for="invoice in invoices" :key="invoice.id" class="transition-colors hover:bg-indigo-50">
+        <tr v-for="invoice in filterList" :key="invoice.id" class="transition-colors hover:bg-indigo-50">
           <!-- Index -->
           <td class="hidden lg:table-cell px-3 py-2 text-gray-800 text-center text-sm">
             {{ invoice.invoice_number }}
           </td>
 
           <!-- Date -->
-          <td class="px-3 py-2 text-gray-800 text-xs lg:text-sm">
+          <td class="px-3 py-2 text-gray-800 text-xs lg:text-sm text-center">
             <span class="lg:hidden"> {{ formatDate(invoice.expedition_date, true) }} </span>
             <span class="hidden lg:inline-block"> {{ formatDate(invoice.expedition_date) }} </span>
           </td>
@@ -74,7 +89,7 @@
 import { formatCurrency } from "@/utilities";
 import dayjs from "dayjs";
 export default {
-  props: ["invoices"],
+  props: ["invoices", "filterBy"],
   methods: {
     formatCurrency,
     formatDate(date, short = false) {
@@ -82,6 +97,27 @@ export default {
       if (short) return date.format("DD-MM-YY");
 
       return date.format("DD-MM-YYYY");
+    },
+    /**
+     * Se encarga de filtrar las facturas segun si están pagadas,
+     * pendientes o anuladas.
+     * @param {array} list listado de facturas.
+     * @return {array}
+     */
+    filterByGeneral(list) {
+      if (this.filterBy === "all") return list;
+      if (this.filterBy === "paid") return list.filter((item) => !item.balance && !item.cancel);
+      if (this.filterBy === "pending") return list.filter((item) => item.balance && !item.cancel);
+      if (this.filterBy === "canceled") return list.filter((item) => item.cancel);
+
+      return [];
+    },
+  }, //.end mthod
+  computed: {
+    filterList() {
+      let list = this.invoices.slice();
+      list = this.filterByGeneral(list);
+      return list;
     },
   },
 };
