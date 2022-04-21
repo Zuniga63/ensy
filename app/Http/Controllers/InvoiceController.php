@@ -268,6 +268,9 @@ class InvoiceController extends Controller
 
           if ($customer->save()) {
             $invoice->customer_id = $customer->id;
+            array_map(function ($payment) use ($customer) {
+              $payment->customer_id = $customer->id;
+            }, $payments);
           }
         }
       }
