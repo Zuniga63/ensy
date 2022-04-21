@@ -23,7 +23,12 @@ class CustomerController extends Controller
   {
     $customers = Customer::orderBy('first_name')
       ->orderBy('last_name')
-      ->with('information', 'contacts')
+      ->with([
+        'information',
+        'contacts',
+        'lastInvoice',
+        'lastPayment',
+      ])
       ->withSum(['invoices as balance' => function (Builder $query) {
         $query->where('cancel', 0);
       }], 'balance')
