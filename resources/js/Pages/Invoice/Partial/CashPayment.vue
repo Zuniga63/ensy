@@ -1,18 +1,5 @@
 <template>
-  <div
-    class="
-      relative
-      flex
-      items-start
-      px-4
-      pt-6
-      pb-2
-      mb-4
-      border border-gray-200
-      rounded-md
-      shadow
-    "
-  >
+  <div class="relative flex items-start px-4 pt-6 pb-2 mb-4 border border-gray-200 rounded-md shadow">
     <!-- Pill -->
     <span
       class="
@@ -35,11 +22,7 @@
     <div class="flex-grow grid grid-cols-2 gap-x-4 gap-y-2 items-start mr-4">
       <!-- Cashbox -->
       <div class="flex items-center">
-        <custom-label
-          for="invoiceCashbox"
-          value="Caja"
-          class="mr-2 text-sm text-gray-800"
-        />
+        <custom-label for="invoiceCashbox" value="Caja" class="mr-2 text-sm text-gray-800" />
 
         <select
           name="invoiceCashbox"
@@ -54,10 +37,7 @@
             border border-gray-200
             rounded-md
             text-xs text-gray-800
-            focus:border-indigo-400
-            focus:ring
-            focus:ring-indigo-500
-            focus:ring-opacity-40
+            focus:border-indigo-400 focus:ring focus:ring-indigo-500 focus:ring-opacity-40
           "
           ref="input"
           @keydown.enter="add"
@@ -71,11 +51,7 @@
 
       <!-- Amount -->
       <div class="flex items-center">
-        <custom-label
-          for="invoiceCashboxAmount"
-          value="Importe"
-          class="mr-2 text-sm text-gray-800"
-        />
+        <custom-label for="invoiceCashboxAmount" value="Importe" class="mr-2 text-sm text-gray-800" />
 
         <currency-input
           name="invoiceCashboxAmount"
@@ -92,19 +68,13 @@
         <div class="flex">
           <!-- Register Transaction -->
           <label class="flex items-center mr-3">
-            <jet-checkbox
-              name="registerTransaction"
-              v-model:checked="registerTransaction"
-            />
+            <jet-checkbox name="registerTransaction" v-model:checked="registerTransaction" />
             <span class="ml-2 text-sm text-gray-600">Registrar Transacción</span>
           </label>
 
           <!-- Use for Change -->
           <label class="flex items-center mr-3">
-            <jet-checkbox
-              name="useForChange"
-              v-model:checked="useForChange"
-            />
+            <jet-checkbox name="useForChange" v-model:checked="useForChange" />
             <span class="ml-2 text-sm text-gray-600">Usar para cambio</span>
           </label>
         </div>
@@ -132,11 +102,7 @@
         stroke="currentColor"
         stroke-width="2"
       >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          d="M12 4v16m8-8H4"
-        />
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
       </svg>
     </button>
   </div>
@@ -155,11 +121,11 @@ export default {
     CurrencyInput,
     JetCheckbox,
   },
-  props: ["boxs"],
+  props: ["boxs", "sumary"],
   emits: ["addPayment"],
   data() {
     return {
-      box: null,
+      box: this.boxs.length > 0 ? this.boxs[0] : null,
       amount: 0,
       registerTransaction: true,
       useForChange: false,
@@ -172,17 +138,16 @@ export default {
         amount: this.amount,
         registerTransaction: this.registerTransaction,
         useForChange: this.useForChange,
-        error:false,
-        errors:{
+        error: false,
+        errors: {
           boxId: false,
           amount: false,
           registerTransaction: false,
           useForChange: false,
-        }
+        },
       };
     },
     reset() {
-      this.box = null;
       this.amount = 0;
       this.registerTransaction = true;
       this.useForChange = false;
@@ -192,6 +157,13 @@ export default {
       if (this.box && this.amount > 0) {
         this.$emit("addPayment", this.getData());
         this.reset();
+      }
+    },
+  },
+  watch: {
+    "sumary.credit"(amount) {
+      if (amount > 0) {
+        this.amount = this.sumary.credit;
       }
     },
   },
