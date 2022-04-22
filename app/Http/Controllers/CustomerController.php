@@ -32,6 +32,7 @@ class CustomerController extends Controller
         'contacts',
         'lastInvoice',
         'lastPayment',
+        'oldInvoicePending'
       ])
       ->withSum(['invoices as balance' => function (Builder $query) {
         $query->where('cancel', 0);
