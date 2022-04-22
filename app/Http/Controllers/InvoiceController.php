@@ -233,6 +233,48 @@ class InvoiceController extends Controller
         ];
       }
 
+      /**
+       * Se guarda el cliente si esté no se encuentra en el sistem
+       */
+      if (!$request->customerId && $request->customerName && $request->customerDocument) {
+        if (Customer::where('document_number', $request->customerDocument)->doesntExist()) {
+          //Se divide el nombre
+          $names = explode(" ", $request->customerName);
+          $count = count($names);
+          $firstName = null;
+          $lastName = null;
+
+          if ($count === 1) {
+            $firstName = $names[0];
+          } else if ($count === 2) {
+            $firstName = $names[0];
+            $lastName = $names[1];
+          } else if ($count === 3) {
+            $firstName = $names[0] . " " . $names[1];
+            $lastName = $names[2];
+          } else if ($count === 4) {
+            $firstName = "$names[0] $names[1]";
+            $lastName = "$names[2] $names[3]";
+          } else {
+            $firstName = "$names[0] $names[1]";
+            $lastName = implode(" ", array_slice($names, 2));
+          }
+
+          $customer = new Customer([
+            'first_name' => $firstName,
+            'last_name' => $lastName,
+            'document_number' => $request->customerDocument
+          ]);
+
+          if ($customer->save()) {
+            $invoice->customer_id = $customer->id;
+            array_map(function ($payment) use ($customer) {
+              $payment->customer_id = $customer->id;
+            }, $payments);
+          }
+        }
+      }
+
 
       //Se guarda el modelo
       $invoice->save();

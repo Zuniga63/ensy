@@ -41,7 +41,7 @@ class Customer extends Model
   public function getFullNameAttribute()
   {
     $fullName = "$this->first_name $this->last_name";
-    return $this->attributes['fullName'] = trim($fullName);
+    return trim($fullName);
   }
 
   public function getImageUrlAttribute()
@@ -123,5 +123,24 @@ class Customer extends Model
   public function invoicePayments()
   {
     return $this->hasMany(InvoicePayment::class, 'customer_id');
+  }
+
+  public function lastInvoice()
+  {
+    return $this->hasOne(Invoice::class)
+      ->orderBy('expedition_date', 'DESC')
+      ->where('cancel', 0)
+      ->without('items')
+      ->select(['id', 'customer_id', 'amount', 'expedition_date as date', 'cancel']);
+  }
+
+  public function lastPayment()
+  {
+    return $this->hasOne(InvoicePayment::class)
+      ->where('cancel', 0)
+      ->where('initial_payment', 0)
+      ->orderBy('payment_date', 'DESC')
+      ->without('transaction')
+      ->select(['id', 'customer_id', 'payment_date as date', 'amount']);
   }
 }

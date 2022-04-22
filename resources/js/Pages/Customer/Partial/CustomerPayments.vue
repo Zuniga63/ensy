@@ -177,7 +177,6 @@ export default {
   computed: {
     paymentList() {
       let list = this.payments.slice();
-      this.pa;
       list = this.groupPayments(list);
       return list;
     },

@@ -77,6 +77,21 @@
               v-model="bankAccount"
             />
           </div>
+
+          <!-- General Filters -->
+          <div class="hidden lg:flex lg:col-span-4">
+            <!-- Filtro por actividad -->
+            <label class="flex items-center mr-3">
+              <jet-checkbox class="mr-2" v-model:checked="filterByActivity" />
+              <span>Clientes Activos</span>
+            </label>
+
+            <!-- Filtro por saldo -->
+            <label class="flex items-center">
+              <jet-checkbox class="mr-2" v-model:checked="filterByBalance" />
+              <span>Clientes con Saldo</span>
+            </label>
+          </div>
         </div>
 
         <!-- Tabla con los datos de los clientes -->
@@ -106,7 +121,7 @@
                   scope="col"
                   class="hidden lg:table-cell px-6 py-3 text-center text-gray-500 tracking-wider uppercase"
                 >
-                  N° de Cuenta
+                  Historial
                 </th>
 
                 <!-- Saldo -->
@@ -142,7 +157,7 @@
                     </div>
                     <!-- Nombre y correo -->
                     <div class="flex flex-col justify-center">
-                      <span class="capitalize">{{ customer.full_name }}</span>
+                      <span class="capitalize block max-w-[10rem] xl:max-w-[18rem]">{{ customer.full_name }}</span>
                       <!-- Documento -->
                       <span v-if="customer.document_number" class="hidden lg:block tracking-widest text-sm">
                         <span class="text-gray-400">{{ customer.document_type }}: </span>
@@ -212,25 +227,17 @@
                   <span v-else class="text-gray-400">No registrado.</span>
                 </td>
 
-                <!-- Numero de cuenta -->
+                <!-- History -->
                 <td class="hidden lg:table-cell px-3 py-2 text-gray-800">
-                  <div v-if="customer.information && customer.information.bank_account_number">
-                    <div class="flex flex-col items-center">
-                      <!-- Banco y tipo de cuenta -->
-                      <div class="text-gray-400 text-sm">
-                        <span v-if="customer.information.bank_name">
-                          {{ customer.information.bank_name }}
-                        </span>
-                        <span v-if="customer.information.bank_account_type == 'savings'"> - Ahorros </span>
-                        <span v-if="customer.information.bank_account_type == 'current'"> - Corriente </span>
-                      </div>
-                      <!-- Numero de cuenta -->
-                      <span>
-                        {{ customer.information.bank_account_number }}
-                      </span>
-                    </div>
+                  <div class="flex flex-col items-center">
+                    <p v-if="customer.last_invoice" class="text-gray-800 text-xs">
+                      Ultima compra: {{ fromNow(customer.last_invoice.date) }}
+                    </p>
+                    <p v-if="customer.last_payment" class="text-gray-800 text-xs">
+                      Ultimo pago: {{ fromNow(customer.last_payment.date) }}
+                    </p>
+                    <p class="text-gray-400 italic text-xs">Registro:{{ fromNow(customer.created_at) }}</p>
                   </div>
-                  <p v-else class="text-gray-400 text-center">No registrado.</p>
                 </td>
 
                 <td class="px-3 py-2 text-gray-800 text-right text-xs sm:text-sm lg:text-base">
@@ -240,7 +247,12 @@
                 <!-- Acciones -->
                 <td class="hidden lg:table-cell px-3 py-2">
                   <div class="flex justify-end">
-                    <row-button type="show" class="mr-2" :href="route('customer.show', customer.id)" title="Ver Cliente" />
+                    <row-button
+                      type="show"
+                      class="mr-2"
+                      :href="route('customer.show', customer.id)"
+                      title="Ver Cliente"
+                    />
                     <row-button
                       type="edit"
                       class="mr-2"
@@ -268,10 +280,14 @@ import CustomLabel from "@/Components/Form/Label.vue";
 import JetInput from "@/Jetstream/Input.vue";
 import WhatsappIcon from "@/Components/Svgs/Whatsapp.vue";
 import PhoneIcon from "@/Components/Svgs/Phone.vue";
+import JetCheckbox from "@/Jetstream/Checkbox.vue";
 
 import Swal from "sweetalert2";
 /* import axios from "axios"; */
 import { formatCurrency, formatDocument, formatPhone, normalizeString, selectText } from "@/utilities";
+import dayjs from "dayjs";
+import "dayjs/locale/es-do";
+import relativeTime from "dayjs/plugin/relativeTime";
 
 export default {
   components: {
@@ -283,12 +299,19 @@ export default {
     JetInput,
     WhatsappIcon,
     PhoneIcon,
+    JetCheckbox,
   },
   props: {
     customers: {
       type: Array,
       default: [],
     },
+  },
+  setup(props) {
+    dayjs.locale("es-do");
+    dayjs.extend(relativeTime);
+
+    return { formatCurrency, formatDocument, formatPhone, normalizeString, selectText };
   },
   data() {
     return {
@@ -308,6 +331,8 @@ export default {
        * @type {string} Correo electronico del cliente filtrar
        */
       email: null,
+      filterByActivity: true,
+      filterByBalance: true,
     };
   },
   methods: {
@@ -470,16 +495,43 @@ export default {
         return false;
       });
     },
-    selectText,
+    /**
+     * Este metodo se encarga de aplicar los filtros generales
+     * @param {array} list - Listado de clientes a aplicar el filtro.
+     * @return {array}
+     */
+    generalFilter(list) {
+      let result = list;
+      if (this.filterByBalance) result = list.filter((item) => (item.balance ? true : false));
+      if (this.filterByActivity) {
+        let dateLimit = dayjs().subtract(3, "month");
+        result = result.filter((item) => {
+          if (item.last_invoice) {
+            if(dateLimit.isBefore(item.last_invoice.date)) return true;
+          }
+
+          if (item.last_payment) {
+            if(dateLimit.isBefore(item.last_payment.date)) return true;
+          }
+
+          return false;
+        });
+      }
+
+      return result;
+    },
+    fromNow(date) {
+      return dayjs(date).fromNow();
+    },
+    /* selectText,
     formatDocument,
     formatPhone,
-    formatCurrency,
+    formatCurrency, */
   },
   computed: {
     customerList() {
       //Se da prioridad al nombre por ser un campo obligatorio.
-      let result = this.customers;
-
+      let result = this.generalFilter(this.customers.slice());
       if (this.customerName) result = this.filterByName(this.customerName, result);
       if (this.document) result = this.filterByDocument(this.document, result);
       if (this.email) result = this.filterByEmail(this.email, result);
@@ -488,8 +540,8 @@ export default {
       return result;
     },
   },
-  /*  beforeMount() {
-    console.log(this.customers);
-  }, */
+  beforeMount() {
+    console.log(this.customers[0]);
+  },
 };
 </script>
