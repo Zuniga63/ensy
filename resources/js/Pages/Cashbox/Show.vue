@@ -12,19 +12,28 @@
       </p>
     </template>
 
-    <div class="relative grid grid-cols-5 items-start pt-5">
-      <div class="hidden lg:block sticky top-4 w-full px-4">
-        <h2 class="mb-4 text-gray-800 font-semibold text-center text-sm uppercase">Moverse a otra Caja</h2>
-        <div
-          v-for="(box, index) in boxs"
-          :key="index"
-          class="p-2 mb-4 rounded bg-gray-800 hover:cursor-pointer hover:opacity-80 transition-opacity"
-          @click="chageBox(box.slug)"
-        >
-          <h2 class="mb-2 text-gray-50 text-sm text-center font-bold">{{ box.name }}</h2>
-          <p class="text-xs text-gray-50 text-center font-bold">{{ formatCurrency(box.balance) }}</p>
+    <div class="relative grid grid-cols-5 gap-2 items-start w-full lg:w-11/12 mx-auto pt-5">
+      <!-- Sidebar -->
+      <aside class="hidden lg:block sticky top-4 w-full">
+        <div class="px-2 py-4 border border-gray-200 rounded bg-white shadow-md">
+          <h2 class="mb-4 text-gray-800 font-semibold text-center text-sm uppercase">Cajas Activas</h2>
+          <div
+            v-for="(box, index) in boxs"
+            :key="index"
+            class="p-2 mb-4 last:mb-0 rounded hover:cursor-pointer hover:opacity-80 transition-opacity"
+            :class="{
+              'bg-gray-800': box.id !== cashbox.id,
+              'bg-indigo-600': box.id === cashbox.id,
+            }"
+            @click="chageBox(box.slug)"
+          >
+            <h2 class="mb-2 text-gray-50 text-sm text-center font-bold">{{ box.name }}</h2>
+            <p class="text-xs text-gray-50 text-center font-bold">{{ formatCurrency(box.balance) }}</p>
+          </div>
         </div>
-      </div>
+      </aside>
+
+      <!-- Contenido -->
       <div class="relative col-span-5 lg:col-span-4 w-full px-2 pb-20">
         <!-- Tab Component -->
         <tab-component :tabs="tabs" :tabSelected="tab" @selectTab="tab = $event">

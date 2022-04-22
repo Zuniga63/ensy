@@ -12,7 +12,13 @@
 
     <div class="w-full lg:w-11/12 py-10 sm:px-6 lg:px-8 mx-auto">
       <div class="relative grid grid-cols-3 gap-4 items-start">
-        <customer-info :customer="customer" class="static lg:sticky top-4 col-span-3 lg:col-span-1" />
+        <!-- Sidebar -->
+        <customer-info
+          :customer="customer"
+          class="static lg:sticky top-4 col-span-3 lg:col-span-1"
+          @addNewPayment="showingModal = true"
+        />
+        <!-- Content -->
         <div class="col-span-3 lg:col-span-2 w-full">
           <tab-component :tabs="tabs" :tabSelected="tab" @selectTab="tab = $event">
             <template #controls>
@@ -51,6 +57,17 @@
           </tab-component>
         </div>
       </div>
+
+      <!-- Modal -->
+      <modal-component :show="showingModal" :closeable="!lockModal" maxWidth="sm" @close="closeModal">
+        <customer-payment-form
+          :customer="customer"
+          :boxs="boxs"
+          @hiddenForm="closeModal"
+          @lockModal="lockModal = true"
+          @unlockModal="lockModal = false"
+        />
+      </modal-component>
     </div>
   </app-layout>
 </template>
@@ -62,17 +79,36 @@ import CustomerInfo from "./Partial/CustomerInfo.vue";
 import TabComponent from "@/Components/Tab.vue";
 import CustomerInvoices from "./Partial/CustomerInvoices.vue";
 import CustomerPayments from "./Partial/CustomerPayments.vue";
+import ModalComponent from "@/Components/Modal.vue";
+import CustomerPaymentForm from "./Partial/CustomerPaymentForm.vue";
 
 export default {
-  components: { AppLayout, LinkButton, CustomerInfo, TabComponent, CustomerInvoices, CustomerPayments },
-  props: ["customer"],
+  components: {
+    AppLayout,
+    LinkButton,
+    CustomerInfo,
+    TabComponent,
+    CustomerInvoices,
+    CustomerPayments,
+    ModalComponent,
+    CustomerPaymentForm,
+  },
+  props: ["customer", "boxs"],
   data() {
     return {
       tabs: ["facturas", "pagos"],
       tab: "facturas",
       invoiceFilter: "pending",
       paymentGroup: "daily",
+      showingModal: false,
+      lockModal: false,
     };
+  },
+  methods: {
+    closeModal() {
+      this.showingModal = false;
+      this.lockModal = false;
+    },
   },
 };
 </script>

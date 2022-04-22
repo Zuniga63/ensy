@@ -48,6 +48,35 @@
         <p>Registrado: {{ createdAt.format("ddd DD-MM-YYYY") }} - {{ createdAt.fromNow() }}</p>
         <p v-if="!updateIsSameCreate">Actualizado {{ updatedAt.fromNow() }}</p>
       </div>
+
+      <!-- Actions -->
+      <div class="col-span-2 mt-4">
+        <button
+          v-if="customer.balance"
+          class="
+            block
+            w-full
+            lg:w-3/4
+            mx-auto
+            px-4
+            py-2
+            border border-indigo-600
+            rounded-lg
+            font-bold
+            text-sm text-indigo-800
+            hover:text-white
+            bg-transparent
+            hover:bg-indigo-600
+            active:bg-indigo-800
+            tracking-wider
+            transition-colors
+            shadow-lg
+          "
+          @click="$emit('addNewPayment')"
+        >
+          Registrar Abono
+        </button>
+      </div>
     </div>
   </div>
 </template>
@@ -61,6 +90,7 @@ import relativeTime from "dayjs/plugin/relativeTime";
 
 export default {
   props: ["customer"],
+  emits: ["addNewPayment"],
   setup(props) {
     dayjs.locale("es-do");
     dayjs.extend(relativeTime);

@@ -48,7 +48,7 @@
           <div class="grid grid-cols-4 gap-4 items-start">
             <!-- Cash Controls -->
             <div class="col-span-3">
-              <cash-payment :boxs="boxs" @add-payment="addPayment" />
+              <cash-payment :boxs="boxs" :sumary="sumary" @add-payment="addPayment"  />
 
               <!-- Payment boxs -->
               <payment-list :payments="payments" @remove-payment="removePayment" @update-order="sortPayemntList" />
