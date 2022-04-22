@@ -81,13 +81,13 @@
           <!-- General Filters -->
           <div class="hidden lg:flex lg:col-span-4">
             <!-- Filtro por actividad -->
-            <label class="flex items-center mr-3">
+            <label class="flex items-center mr-3 hover:cursor-pointer">
               <jet-checkbox class="mr-2" v-model:checked="filterByActivity" />
               <span>Clientes Activos</span>
             </label>
 
             <!-- Filtro por saldo -->
-            <label class="flex items-center">
+            <label class="flex items-center hover:cursor-pointer">
               <jet-checkbox class="mr-2" v-model:checked="filterByBalance" />
               <span>Clientes con Saldo</span>
             </label>
@@ -331,8 +331,8 @@ export default {
        * @type {string} Correo electronico del cliente filtrar
        */
       email: null,
-      filterByActivity: true,
-      filterByBalance: true,
+      filterByActivity: false,
+      filterByBalance: false,
     };
   },
   methods: {
