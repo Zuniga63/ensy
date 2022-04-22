@@ -113,7 +113,7 @@
                         dayjs(user.sessions[0].lastActivity * 1000).fromNow()
                       }}
                     </span>
-                    <span v-else>Desconctado</span>
+                    <span v-else>Desconectado</span>
                   </div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
