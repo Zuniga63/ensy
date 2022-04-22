@@ -62,7 +62,7 @@ class Invoice extends Model
       $number  = "0" . $number;
     }
 
-    return $this->attributes['invoiceNumber'] = $prefix . $number;
+    return $prefix . $number;
   }
 
   /**

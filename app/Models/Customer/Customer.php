@@ -41,7 +41,7 @@ class Customer extends Model
   public function getFullNameAttribute()
   {
     $fullName = "$this->first_name $this->last_name";
-    return $this->attributes['fullName'] = trim($fullName);
+    return trim($fullName);
   }
 
   public function getImageUrlAttribute()
