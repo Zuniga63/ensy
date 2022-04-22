@@ -1,26 +1,26 @@
 <template>
   <Link v-if="href" :href="href" :class="classes" v-bind="$attrs">
-    <show-icon v-if="type === 'show'" :solid="solid" class="h-5 w-5" />
-    <edit-icon v-if="type === 'edit'" :solid="solid" class="h-5 w-5" />
-    <delete-icon v-if="type === 'delete'" :solid="solid" class="h-5 w-5" />
+    <folder-open-icon v-if="type === 'show'" :solid="solid" class="h-5 w-5" />
+    <edit-icon v-else-if="type === 'edit'" :solid="solid" class="h-5 w-5" />
+    <delete-icon v-else-if="type === 'delete'" :solid="solid" class="h-5 w-5" />
   </Link>
 
   <a href="javascript:;" v-else :class="classes" @click="$emit('click')" v-bind="$attrs">
-    <show-icon v-if="type === 'show'" :solid="solid" class="h-5 w-5" />
-    <edit-icon v-if="type === 'edit'" :solid="solid" class="h-5 w-5" />
-    <delete-icon v-if="type === 'delete'" :solid="solid" class="h-5 w-5" />
+    <folder-open-icon v-if="type === 'show'" :solid="solid" class="h-5 w-5" />
+    <edit-icon v-else-if="type === 'edit'" :solid="solid" class="h-5 w-5" />
+    <delete-icon v-else-if="type === 'delete'" :solid="solid" class="h-5 w-5" />
   </a>
 </template>
 <script>
 import { Link } from "@inertiajs/inertia-vue3";
-import ShowIcon from "@/Components/Svgs/ClipboardList.vue";
+import FolderOpenIcon from "@/Components/Svgs/FolderOpen.vue";
 import EditIcon from "@/Components/Svgs/Edit.vue";
 import DeleteIcon from "@/Components/Svgs/Trash.vue";
 
 export default {
   components: {
     Link,
-    ShowIcon,
+    FolderOpenIcon,
     EditIcon,
     DeleteIcon,
   },

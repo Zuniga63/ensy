@@ -13,8 +13,7 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Poppins', 'sans-serif', ...defaultTheme.fontFamily.sans],
-        //sans: ['Montserrat', 'sans-serif', ...defaultTheme.fontFamily.sans],
+        sans: ['Nunito', 'sans-serif', ...defaultTheme.fontFamily.sans],
       },
       transitionProperty: {
         'height': 'height',

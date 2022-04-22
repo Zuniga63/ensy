@@ -81,15 +81,27 @@
           <!-- General Filters -->
           <div class="hidden lg:flex lg:col-span-4">
             <!-- Filtro por actividad -->
-            <label class="flex items-center mr-3">
+            <label class="flex items-center mr-3 hover:cursor-pointer">
               <jet-checkbox class="mr-2" v-model:checked="filterByActivity" />
               <span>Clientes Activos</span>
             </label>
 
             <!-- Filtro por saldo -->
-            <label class="flex items-center">
+            <label class="flex items-center hover:cursor-pointer mr-3">
               <jet-checkbox class="mr-2" v-model:checked="filterByBalance" />
               <span>Clientes con Saldo</span>
+            </label>
+
+            <!-- Filtrar por valor -->
+            <label class="hidden lg:flex items-center mr-3 hover:cursor-pointer" v-show="filterByBalance">
+              <jet-checkbox class="mr-2" v-model:checked="sortByBalance" />
+              <span>Ordenar por saldo.</span>
+            </label>
+
+            <!-- Filtrar por morosidad -->
+            <label class="hidden lg:flex items-center hover:cursor-pointer" v-show="filterByBalance">
+              <jet-checkbox class="mr-2" v-model:checked="sortByDelinquent" />
+              <span>Por morosidad.</span>
             </label>
           </div>
         </div>
@@ -230,8 +242,11 @@
                 <!-- History -->
                 <td class="hidden lg:table-cell px-3 py-2 text-gray-800">
                   <div class="flex flex-col items-center">
+                    <p v-if="showOldInvoicePending(customer)" class="text-gray-800 text-xs">
+                      Fact. mas antigua: {{ fromNow(customer.old_invoice_pending.date) }}
+                    </p>
                     <p v-if="customer.last_invoice" class="text-gray-800 text-xs">
-                      Ultima compra: {{ fromNow(customer.last_invoice.date) }}
+                      Fact. mas reciente: {{ fromNow(customer.last_invoice.date) }}
                     </p>
                     <p v-if="customer.last_payment" class="text-gray-800 text-xs">
                       Ultimo pago: {{ fromNow(customer.last_payment.date) }}
@@ -331,8 +346,10 @@ export default {
        * @type {string} Correo electronico del cliente filtrar
        */
       email: null,
-      filterByActivity: true,
-      filterByBalance: true,
+      filterByActivity: false,
+      filterByBalance: false,
+      sortByBalance: false,
+      sortByDelinquent: false,
     };
   },
   methods: {
@@ -501,32 +518,62 @@ export default {
      * @return {array}
      */
     generalFilter(list) {
-      let result = list;
-      if (this.filterByBalance) result = list.filter((item) => (item.balance ? true : false));
+      if (this.filterByBalance) {
+        list = list.filter((item) => (item.balance ? true : false));
+        if (this.sortByBalance) this.sortItemsByBalance(list);
+        if (this.sortByDelinquent) this.sortItemByDelinquentInvoice(list);
+      }
       if (this.filterByActivity) {
         let dateLimit = dayjs().subtract(3, "month");
-        result = result.filter((item) => {
+        list = list.filter((item) => {
           if (item.last_invoice) {
-            if(dateLimit.isBefore(item.last_invoice.date)) return true;
+            if (dateLimit.isBefore(item.last_invoice.date)) return true;
           }
 
           if (item.last_payment) {
-            if(dateLimit.isBefore(item.last_payment.date)) return true;
+            if (dateLimit.isBefore(item.last_payment.date)) return true;
           }
 
           return false;
         });
       }
 
-      return result;
+      return list;
+    },
+    /**
+     * Se encarga de agrupar de mayor a menor los clientes con saldo.
+     * @param {array} list - Listado de clientes a aplicar el filtro.
+     * @return {array}
+     */
+    sortItemsByBalance(list) {
+      return list.sort((item1, item2) => {
+        let amount1 = parseFloat(item1.balance);
+        let amount2 = parseFloat(item2.balance);
+
+        if (amount1 > amount2) return -1;
+        if (amount1 < amount2) return 1;
+
+        return 0;
+      });
+    },
+    sortItemByDelinquentInvoice(list) {
+      let now = dayjs();
+      list.sort((item1, item2) => {
+        let diff1 = now.diff(dayjs(item1.old_invoice_pending.date), 'months');
+        let diff2 = now.diff(dayjs(item2.old_invoice_pending.date), 'months');
+
+        if (diff1 > diff2) return -1;
+        if (diff1 < diff2) return 1;
+
+        return 0;
+      });
     },
     fromNow(date) {
       return dayjs(date).fromNow();
     },
-    /* selectText,
-    formatDocument,
-    formatPhone,
-    formatCurrency, */
+    showOldInvoicePending(customer) {
+      return customer.old_invoice_pending && customer.last_invoice.id !== customer.old_invoice_pending.id;
+    },
   },
   computed: {
     customerList() {

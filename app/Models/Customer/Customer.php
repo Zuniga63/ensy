@@ -125,6 +125,9 @@ class Customer extends Model
     return $this->hasMany(InvoicePayment::class, 'customer_id');
   }
 
+  /**
+   * Get the invoice more recent of customer
+   */
   public function lastInvoice()
   {
     return $this->hasOne(Invoice::class)
@@ -134,6 +137,9 @@ class Customer extends Model
       ->select(['id', 'customer_id', 'amount', 'expedition_date as date', 'cancel']);
   }
 
+  /**
+   * Get the payment more recent of customer
+   */
   public function lastPayment()
   {
     return $this->hasOne(InvoicePayment::class)
@@ -142,5 +148,15 @@ class Customer extends Model
       ->orderBy('payment_date', 'DESC')
       ->without('transaction')
       ->select(['id', 'customer_id', 'payment_date as date', 'amount']);
+  }
+
+  public function oldInvoicePending()
+  {
+    return $this->hasOne(Invoice::class)
+      ->where('cancel', 0)
+      ->without('items')
+      ->whereNotNull('balance')
+      ->orderBy('expedition_date')
+      ->select(['id', 'customer_id', 'balance', 'expedition_date as date', 'cancel']);
   }
 }
