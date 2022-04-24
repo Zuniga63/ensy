@@ -335,24 +335,28 @@ class CashboxController extends Controller
       $message = "Esta transacción no se puede eliminar porque está bloqueda.";
     } else {
       try {
-        if ($cashbox_transaction->transfer) {
-          /**
-           * @var CashboxTransaction
-           */
-          $other = CashboxTransaction::where('code', $cashbox_transaction->code)
-            ->where('id', '!=', $cashbox_transaction->id)
-            ->first();
+        if (auth()->user()->id <= 2) {
+          if ($cashbox_transaction->transfer) {
+            /**
+             * @var CashboxTransaction
+             */
+            $other = CashboxTransaction::where('code', $cashbox_transaction->code)
+              ->where('id', '!=', $cashbox_transaction->id)
+              ->first();
 
-          DB::beginTransaction();
-          $cashbox_transaction->delete();
-          if ($other) {
-            $other->delete();
+            DB::beginTransaction();
+            $cashbox_transaction->delete();
+            if ($other) {
+              $other->delete();
+            }
+            DB::commit();
+          } else {
+            $cashbox_transaction->delete();
           }
-          DB::commit();
-        } else {
-          $cashbox_transaction->delete();
+          $ok = true;
+        }else{
+          $message = "Solo el adminsitrador puede eliminar transacciones.";
         }
-        $ok = true;
       } catch (\Throwable $th) {
         $message = "Por problemas internos no se pudo eliminar. Intentelo nuevamente mas tarde.";
       }
