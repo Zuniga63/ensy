@@ -196,7 +196,7 @@
               {{ invoice.time.expeditionDate }}
             </p>
           </header>
-          <div class="p-2">
+          <div class="relative p-2">
             <!-- Customer -->
             <p class="text-xs text-gray-700 line-clamp-1">
               Cliente:
@@ -240,6 +240,13 @@
             <p class="text-xs text-red-800 line-clamp-1 text-center" v-if="invoice.cancel">
               *{{ invoice.cancel_message }}*
             </p>
+
+            <!-- Eye -->
+            <star-icon
+              class="absolute top-2 right-2 h-5 w-5 text-yellow-500"
+              solid
+              v-if="selectedInvoice?.id === invoice.id"
+            />
           </div>
         </li>
       </ul>
@@ -279,6 +286,7 @@
 
 <script>
 import SearchIcon from "@/Components/Svgs/Search.vue";
+import StarIcon from "@/Components/Svgs/Star.vue";
 import JetCheckbox from "@/Jetstream/Checkbox.vue";
 import { formatCurrency, normalizeString } from "@/utilities.js";
 import dayjs from "dayjs";
@@ -290,12 +298,17 @@ export default {
   components: {
     SearchIcon,
     JetCheckbox,
+    StarIcon,
   },
   emits: ["enabledForm", "loadInvoice"],
   props: {
     invoices: {
       type: Array,
       default: [],
+    },
+    selectedInvoice: {
+      type: Object,
+      default: null,
     },
   },
   setup(props) {
