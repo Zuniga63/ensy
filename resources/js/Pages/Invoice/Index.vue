@@ -15,6 +15,7 @@
         <sidebar
           @enabled-form="showFormModal"
           :invoices="invoices"
+          :selectedInvoice="invoice"
           @load-invoice="getInvoice"
           class="sticky top-4 col-span-4 w-11/12 mx-auto lg:w-full lg:col-span-1"
         />
