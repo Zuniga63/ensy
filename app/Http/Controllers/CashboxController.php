@@ -26,7 +26,17 @@ class CashboxController extends Controller
   public function index()
   {
     $boxs = $this->getBoxs();
-    $annualReport = $this->getAnnualReport();
+    $year = Carbon::now()->year;
+    $annualReport = [
+      [
+        "year" => $year - 1,
+        "reports" => $this->getAnnualReport($year - 1)
+      ],
+      [
+        "year" => $year,
+        "reports" => $this->getAnnualReport($year)
+      ],
+    ];
     return Inertia::render('Cashbox/Index', compact('boxs', "annualReport"));
   }
 
@@ -624,16 +634,16 @@ class CashboxController extends Controller
     return $box;
   }
 
-  protected function getAnnualReport()
+  protected function getAnnualReport($year)
   {
     $reports = [];
-    $now = Carbon::now();
+    $now = Carbon::now()->year($year);
     $date = $now->copy()->startOfYear();
     $months = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
     $month = 0;
 
     //Se agrega el resumen del año pasado.
-    $reports[] = $this->getLastYearResume();
+    #$reports[] = $this->getLastYearResume();
 
     //se agregan los reportes de este año
     do {
