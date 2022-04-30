@@ -26,7 +26,8 @@ class CashboxController extends Controller
   public function index()
   {
     $boxs = $this->getBoxs();
-    return Inertia::render('Cashbox/Index', compact('boxs'));
+    $annualReport = $this->getAnnualReport();
+    return Inertia::render('Cashbox/Index', compact('boxs', "annualReport"));
   }
 
   /**
@@ -621,6 +622,75 @@ class CashboxController extends Controller
     $box->balanceIsWrong = $diff > 0.00001;
 
     return $box;
+  }
+
+  protected function getAnnualReport()
+  {
+    $reports = [];
+    $now = Carbon::now();
+    $date = $now->copy()->startOfYear();
+    $months = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+    $month = 0;
+
+    //Se agrega el resumen del año pasado.
+    $reports[] = $this->getLastYearResume();
+
+    //se agregan los reportes de este año
+    do {
+      $startMonth = $date->copy();
+      $endMonth = $date->copy()->endOfMonth();
+
+      $label = $months[$month];
+      $resume = $this->getCashResume($startMonth, $endMonth);
+
+      //Se agrega el reporte 
+      $reports[] = array_merge(['label' => $label], $resume);
+
+      //Se actualiza los parametro globales
+      $date->addMonth();
+      $month++;
+    } while ($date->lessThanOrEqualTo($now));
+
+
+    return $reports;
+  }
+
+  protected function getLastYearResume()
+  {
+    $startYear = Carbon::now()->subYear()->startOfYear();
+    $endYear = $startYear->copy()->endOfYear();
+
+    return array_merge(['label' => $startYear->year], $this->getCashResume($startYear, $endYear));
+  }
+
+  /**
+   * Se encarga de recuperar el valor total de los ingresos, los egresos y el saldo
+   * total para las fechas marcadas.
+   * @param Carbon $startDate - Fecha de inicio
+   * @param Carbon $endDate - Fecha de finalización
+   */
+  protected function getCashResume($startDate, $endDate)
+  {
+    $initialBalance = CashboxTransaction::where('transaction_date', "<", $startDate)
+      ->sum("amount");
+
+    $incomes = CashboxTransaction::where('transaction_date', ">=", $startDate)
+      ->where("transaction_date", "<=", $endDate)
+      ->where("transfer", 0)
+      ->where('amount', ">", 0)
+      ->sum("amount");
+
+    $expenses = CashboxTransaction::where('transaction_date', ">=", $startDate)
+      ->where("transaction_date", "<=", $endDate)
+      ->where("transfer", 0)
+      ->where('amount', "<", 0)
+      ->sum("amount");
+
+    return [
+      'incomes' => $incomes,
+      'expenses' => bcmul($expenses, "-1", 2),
+      'balance' => bcadd($initialBalance, bcadd($incomes, $expenses, 2), 2)
+    ];
   }
 
   /**
