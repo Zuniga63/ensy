@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Cashbox;
+namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\Cashbox;
@@ -354,7 +354,7 @@ class CashboxController extends Controller
             $cashbox_transaction->delete();
           }
           $ok = true;
-        }else{
+        } else {
           $message = "Solo el adminsitrador puede eliminar transacciones.";
         }
       } catch (\Throwable $th) {
