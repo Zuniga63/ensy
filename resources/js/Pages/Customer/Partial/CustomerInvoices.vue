@@ -12,19 +12,12 @@
           >
             Fecha
           </th>
-          <!-- Subtotal -->
+          <!-- Descripción -->
           <th
             scope="col"
             class="hidden lg:table-cell px-6 py-3 text-center text-sm text-gray-500 tracking-wider uppercase"
           >
-            Subtotal
-          </th>
-          <!-- Descuento -->
-          <th
-            scope="col"
-            class="hidden lg:table-cell px-6 py-3 text-center text-sm text-gray-500 tracking-wider uppercase"
-          >
-            Desct.
+            Descripción
           </th>
           <!-- Valor -->
           <th
@@ -53,16 +46,21 @@
           </td>
 
           <!-- Date -->
-          <td class="px-3 py-2 text-gray-800 text-xs lg:text-sm text-center">
+          <td class="px-3 py-2 text-gray-800 text-xs lg:text-sm text-center whitespace-nowrap">
             <span class="lg:hidden"> {{ formatDate(invoice.expedition_date, true) }} </span>
             <span class="hidden lg:inline-block"> {{ formatDate(invoice.expedition_date) }} </span>
           </td>
 
-          <td class="hidden lg:table-cell px-3 py-2 text-gray-800 text-right text-xs sm:text-sm lg:text-base">
-            {{ formatCurrency(invoice.subtotal) }}
-          </td>
-          <td class="hidden lg:table-cell px-3 py-2 text-gray-800 text-right text-xs sm:text-sm lg:text-base">
-            {{ formatCurrency(invoice.discount) }}
+          <td
+            class="hidden lg:table-cell px-3 py-2 text-gray-600 text-letf italic"
+            :class="{
+              'text-xs': invoice.items.length > 1,
+              'text-sm': invoice.items.legth <= 1,
+            }"
+          >
+            <div v-for="item in invoice.items" :key="item.id" :class="{ 'line-through': item.cancel }">
+              <span> {{ item.quantity }} {{ item.description }} {{ formatCurrency(calculatePrice(item)) }} </span>
+            </div>
           </td>
           <td class="px-3 py-2 text-gray-800 text-right text-xs sm:text-sm lg:text-base">
             {{ formatCurrency(invoice.amount) }}
@@ -111,6 +109,12 @@ export default {
       if (this.filterBy === "canceled") return list.filter((item) => item.cancel);
 
       return [];
+    },
+    calculatePrice(item) {
+      const price = parseFloat(item.unit_value);
+      const discount = item.discount ? parseFloat(item.discount) : 0;
+
+      return price - discount;
     },
   }, //.end mthod
   computed: {

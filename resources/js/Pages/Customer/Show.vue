@@ -1,5 +1,5 @@
 <template>
-  <app-layout>
+  <app-layout :title="customer.full_name">
     <template #header>
       <div class="flex justify-between items-center w-full">
         <!-- TITLE OF HEADER -->

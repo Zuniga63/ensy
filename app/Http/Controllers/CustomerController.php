@@ -123,8 +123,7 @@ class CustomerController extends Controller
     $customer->load([
       'invoices' => function ($query) {
         $query->where('cancel', 0)
-          ->orderBy('expedition_date')
-          ->without('items');
+          ->orderBy('expedition_date');
       },
       'invoicePayments' => function ($query) {
         $query->where('cancel', 0)
