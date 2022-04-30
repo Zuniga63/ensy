@@ -1,7 +1,7 @@
 <?php
 
 use App\Http\Controllers\BusinessConfigController;
-use App\Http\Controllers\CashboxController;
+use App\Http\Controllers\Cashbox\CashboxController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\DailyActivityController;

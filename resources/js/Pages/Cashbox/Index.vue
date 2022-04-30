@@ -28,17 +28,11 @@
         </template>
 
         <template #graficas>
-          <div class="grid grid-cols-12 gap-8">
-            <annual-graph
-              :reports="annualReport[0].reports"
-              :title="annualReport[0].year"
-              class="col-span-12 2xl:col-span-6"
-            />
-            <annual-graph
-              :reports="annualReport[1].reports"
-              :title="annualReport[1].year"
-              class="col-span-12 2xl:col-span-6"
-            />
+          <div class="min-h-screen lg:min-h-full pt-4">
+            <h2 class="text-center text-gray-800 font-semibold mb-2">Componente en Construcción</h2>
+            <p class="text-sm text-gray-800 lg:text-center">
+              Las graficas aun no están disponibles, en estos momentos tenemos todos un equipo trabajando en ello.
+            </p>
           </div>
         </template>
       </tab-component>
@@ -63,7 +57,6 @@ import Box from "@/Pages/Cashbox/Box.vue";
 import BoxTable from "@/Pages/Cashbox/Table.vue";
 import TabComponent from "@/Components/Tab.vue";
 import LinkNewBox from "./Components/LinkNewBox.vue";
-import AnnualGraph from "./Components/AnnualGraph.vue";
 
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
@@ -79,9 +72,8 @@ export default {
     BoxTable,
     TabComponent,
     LinkNewBox,
-    AnnualGraph,
   },
-  props: ["boxs", "annualReport"],
+  props: ["boxs"],
   setup(props) {
     //----------------------------------------------------
     // SE ESTABLECEN LOS PARAMETROS DE dayjs
