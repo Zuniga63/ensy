@@ -21,6 +21,7 @@ class CashboxTransaction extends Model
    * @var array
    */
   protected $fillable = [
+    'cashbox_id',
     'transaction_date',
     'description',
     'amount',

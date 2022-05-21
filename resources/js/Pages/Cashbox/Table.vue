@@ -7,81 +7,19 @@
             <!-- Head -->
             <thead class="bg-gray-50">
               <!-- Nanme -->
-              <th
-                scope="col"
-                class="
-                  px-6
-                  py-3
-                  text-left text-sm text-gray-500
-                  uppercase
-                  tracking-widest
-                "
-              >
-                Nombre
-              </th>
+              <th scope="col" class="px-6 py-3 text-left text-sm text-gray-500 uppercase tracking-widest">Nombre</th>
               <!-- Base -->
-              <th
-                scope="col"
-                class="
-                  px-6
-                  py-3
-                  text-center text-sm text-gray-500
-                  uppercase
-                  tracking-widest
-                "
-              >
-                Base
-              </th>
+              <th scope="col" class="px-6 py-3 text-center text-sm text-gray-500 uppercase tracking-widest">Base</th>
               <!-- Incomes -->
-              <th
-                scope="col"
-                class="
-                  px-6
-                  py-3
-                  text-center text-sm text-gray-500
-                  uppercase
-                  tracking-widest
-                "
-              >
+              <th scope="col" class="px-6 py-3 text-center text-sm text-gray-500 uppercase tracking-widest">
                 Ingresos
               </th>
               <!-- Expenses -->
-              <th
-                scope="col"
-                class="
-                  px-6
-                  py-3
-                  text-center text-sm text-gray-500
-                  uppercase
-                  tracking-widest
-                "
-              >
-                Egresos
-              </th>
+              <th scope="col" class="px-6 py-3 text-center text-sm text-gray-500 uppercase tracking-widest">Egresos</th>
               <!-- Balance -->
-              <th
-                scope="col"
-                class="
-                  px-6
-                  py-3
-                  text-center text-sm text-gray-500
-                  uppercase
-                  tracking-widest
-                "
-              >
-                Saldo
-              </th>
+              <th scope="col" class="px-6 py-3 text-center text-sm text-gray-500 uppercase tracking-widest">Saldo</th>
               <!-- Acumulado -->
-              <th
-                scope="col"
-                class="
-                  px-6
-                  py-3
-                  text-center text-sm text-gray-500
-                  uppercase
-                  tracking-widest
-                "
-              >
+              <th scope="col" class="px-6 py-3 text-center text-sm text-gray-500 uppercase tracking-widest">
                 Acumulado
               </th>
 
@@ -105,23 +43,16 @@
                 <td class="px-6 py-2 whitespace-nowrap text-gray-800">
                   <div class="flex flex-col">
                     {{ box.name }}
-                    <span v-if="box.code" class="text-xs text-gray-400"
-                      >Codigo: {{ box.code }}
-                    </span>
+                    <span v-if="box.code" class="text-xs text-gray-400">Codigo: {{ box.code }} </span>
                   </div>
                 </td>
                 <!-- Base -->
-                <td
-                  class="px-6 py-2 whitespace-nowrap text-gray-800 text-right"
-                >
+                <td class="px-6 py-2 whitespace-nowrap text-gray-800 text-right">
                   <div class="flex flex-col">
                     <p>
                       {{ formatCurrency(box.base) }}
                     </p>
-                    <p
-                      v-if="box.lastClosure"
-                      class="-mt-1 text-sm text-gray-400"
-                    >
+                    <p v-if="box.lastClosure" class="-mt-1 text-sm text-gray-400">
                       {{ box.lastClosureFromNow }}
                     </p>
                   </div>
@@ -129,67 +60,25 @@
                 <!-- Ingresos -->
                 <td class="px-6 py-2 whitespace-nowrap text-right">
                   <div class="flex flex-col">
-                    <span class="text-green-500">{{
-                      formatCurrency(box.incomes)
-                    }}</span>
-                    <div
-                      class="flex items-center justify-between text-indigo-500"
-                      v-if="box.deposits"
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        class="h-4 w-4 mr-2"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          stroke-width="2"
-                          d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"
-                        />
-                      </svg>
-                      <span class="text-sm">{{
-                        formatCurrency(box.deposits)
-                      }}</span>
+                    <span class="text-green-500">{{ formatCurrency(box.incomes) }}</span>
+                    <div class="flex items-center justify-between text-indigo-500" v-if="box.deposits">
+                      <switch-icon class="h-4 w-4" solid/>
+                      <span class="text-sm">{{ formatCurrency(box.deposits) }}</span>
                     </div>
                   </div>
                 </td>
                 <!-- Expenses -->
                 <td class="px-6 py-2 whitespace-nowrap text-right">
                   <div class="flex flex-col">
-                    <span class="text-red-500">{{
-                      formatCurrency(box.expenses)
-                    }}</span>
-                    <div
-                      class="flex items-center justify-between text-orange-400"
-                      v-if="box.transfers"
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        class="h-4 w-4 mr-2"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          stroke-width="2"
-                          d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"
-                        />
-                      </svg>
-                      <span class="text-sm">{{
-                        formatCurrency(box.transfers)
-                      }}</span>
+                    <span class="text-red-500">{{ formatCurrency(box.expenses) }}</span>
+                    <div class="flex items-center justify-between text-orange-400" v-if="box.transfers">
+                      <switch-icon class="h-4 w-4" solid/>
+                      <span class="text-sm">{{ formatCurrency(box.transfers) }}</span>
                     </div>
                   </div>
                 </td>
                 <!-- Balance -->
-                <td
-                  class="px-6 py-2 whitespace-nowrap text-gray-800 text-right"
-                >
+                <td class="px-6 py-2 whitespace-nowrap text-gray-800 text-right">
                   <div class="flex flex-col">
                     <span
                       :class="{
@@ -198,18 +87,13 @@
                     >
                       {{ formatCurrency(box.balance) }}
                     </span>
-                    <span
-                      v-if="box.balanceIsWrong"
-                      class="text-sm text-red-800 text-opacity-90 -mt-1"
-                    >
+                    <span v-if="box.balanceIsWrong" class="text-sm text-red-800 text-opacity-90 -mt-1">
                       Existen inconsistencias.
                     </span>
                   </div>
                 </td>
                 <!-- Acumulado -->
-                <td
-                  class="px-6 py-2 whitespace-nowrap text-gray-800 text-right"
-                >
+                <td class="px-6 py-2 whitespace-nowrap text-gray-800 text-right">
                   <div class="flex flex-col">
                     <span>
                       {{ formatCurrency(box.accumulated) }}
@@ -217,117 +101,35 @@
                   </div>
                 </td>
                 <!-- Actions -->
-                <td
-                  class="
-                    flex
-                    justify-end
-                    px-6
-                    py-2
-                    whitespace-nowrap
-                    text-gray-800
-                  "
-                >
-                  <!-- Link for show Transactions -->
-                  <Link
-                    :href="route('cashbox.show', box.slug)"
-                    class="
-                      p-2
-                      mr-2
-                      border border-gray-200
-                      rounded
-                      bg-white
-                      hover:border-gray-400
-                      hover:ring
-                      hover:ring-gray-500
-                      hover:ring-opacity-30
-                      text-gray-800
-                      hover:text-opacity-80
-                    "
-                    title="Ver Transacciones"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      class="h-6 w-6"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
-                      />
-                    </svg>
-                  </Link>
-                  <!-- Link for Edit -->
-                  <Link
-                    :href="route('cashbox.edit', box.slug)"
-                    :title="'Actualizar ' + box.name"
-                    class="
-                      p-2
-                      border border-green-400
-                      rounded
-                      hover:bg-green-50
-                      hover:ring
-                      hover:ring-green-400
-                      hover:ring-opacity-40
-                      bg-white
-                      text-green-500
-                    "
-                    :class="{ 'mr-2': box.balance === 0 }"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      class="h-6 w-6"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                    >
-                      <path
-                        d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z"
-                      />
-                      <path
-                        fill-rule="evenodd"
-                        d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"
-                        clip-rule="evenodd"
-                      />
-                    </svg>
-                  </Link>
+                <td class="px-6 py-2 whitespace-nowrap text-gray-800">
+                  <div class="flex justify-end items-center">
+                    <!-- Link for show Transactions -->
+                    <row-button
+                      :href="route('cashbox.show', box.slug)"
+                      type="show"
+                      class="mr-2"
+                      :title="'Vizualizar ' + box.name"
+                    />
+                    <!-- Link for Edit -->
+                    <row-button
+                      :href="route('cashbox.edit', box.slug)"
+                      type="edit"
+                      :class="{ 'mr-2': box.balance === 0 }"
+                      :title="'Actualizar ' + box.name"
+                    />
 
-                  <!-- Link for delete box -->
-                  <a
-                    href="javascript:;"
-                    :title="'Eliminar Caja ' + box.name"
-                    class="
-                      p-2
-                      border border-red-400
-                      rounded
-                      bg-white
-                      hover:bg-red-50
-                      hover:ring
-                      hover:ring-red-400
-                      hover:ring-opacity-40
-                      text-red-500
-                    "
-                    @click="$emit('deleteBox', box.id)"
-                    v-if="box.balance === 0"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      class="h-6 w-6"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                    >
-                      <path
-                        fill-rule="evenodd"
-                        d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
-                        clip-rule="evenodd"
-                      />
-                    </svg>
-                  </a>
+                    <!-- Link for delete box -->
+                    <row-button
+                      type="delete"
+                      :title="'Actualizar ' + box.name"
+                      @click="$emit('deleteBox', box.id)"
+                      v-if="box.balance === 0"
+                    />
+                  </div>
                 </td>
               </tr>
 
+              <!-- Sumary -->
               <tr class="bg-gray-50">
                 <td colspan="2" class="relative px-6 py-3">
                   <span class="sr-only">Nothing</span>
@@ -336,86 +138,25 @@
                 <td class="px-6 py-2 text-right text-sm font-bold">
                   <div class="flex flex-col">
                     <span class="text-green-500">{{ incomes }}</span>
-                    <div
-                      class="flex items-center justify-between text-indigo-500"
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        class="h-4 w-4 mr-2"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          stroke-width="2"
-                          d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"
-                        />
-                      </svg>
+                    <div class="flex items-center justify-between text-indigo-500">
+                      <switch-icon class="h-4 w-4" solid/>
                       <span class="text-sm">{{ deposits }}</span>
                     </div>
                   </div>
                 </td>
                 <!-- Expeneses -->
-                <td
-                  class="px-6 py-2 text-right text-sm text-gray-500 font-bold"
-                >
+                <td class="px-6 py-2 text-right text-sm text-gray-500 font-bold">
                   <div class="flex flex-col">
                     <span class="text-red-500">{{ expenses }}</span>
-                    <div
-                      class="flex items-center justify-between text-orange-500"
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        class="h-4 w-4 mr-2"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          stroke-width="2"
-                          d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"
-                        />
-                      </svg>
+                    <div class="flex items-center justify-between text-orange-500">
+                      <switch-icon class="h-4 w-4" solid/>
                       <span class="text-sm">{{ transfers }}</span>
                     </div>
                   </div>
                 </td>
                 <!-- Balance -->
-                <td
-                  colspan="2"
-                  class="px-6 py-2 text-center text-xl text-gray-500 font-bold"
-                >
+                <td colspan="2" class="px-6 py-2 text-center text-xl text-gray-500 font-bold">
                   {{ balance }}
-                </td>
-                <td
-                  class="px-6 py-2 text-right text-sm text-gray-500 font-bold"
-                >
-                  <Link
-                    :href="route('cashbox.create')"
-                    class="
-                      inline-block
-                      w-full
-                      px-4
-                      py-2
-                      border border-white
-                      hover:border-gray-700
-                      rounded-md
-                      bg-gray-700
-                      hover:bg-transparent
-                      text-white
-                      hover:text-gray-700
-                      text-sm text-center
-                      tracking-wider
-                      uppercase
-                      font-bold
-                    "
-                  >
-                    Crear Caja
-                  </Link>
                 </td>
               </tr>
             </tbody>
@@ -426,60 +167,34 @@
   </div>
 </template>
 <script>
-import { Link } from "@inertiajs/inertia-vue3";
 import JetButton from "@/Jetstream/Button.vue";
+import RowButton from "@/Components/Table/RowButton.vue";
+import { formatCurrency } from "@/utilities";
+import SwitchIcon from "@/Components/Svgs/SwitchHorizontal.vue";
 
 export default {
-  components: {
-    JetButton,
-    Link,
-  },
+  components: { JetButton, RowButton, SwitchIcon },
   props: ["boxs"],
   emits: ["deleteBox"],
-  setup(props) {
-    let fractionDigits = 0;
-    let style = "currency";
-    let currency = "COP";
-
-    let formater = new Intl.NumberFormat("es-CO", {
-      style,
-      currency,
-      minimumFractionDigits: fractionDigits,
-    });
-
-    return { formater };
-  },
   methods: {
-    formatCurrency(number) {
-      return this.formater.format(number);
-    },
+    formatCurrency,
   },
   computed: {
     incomes() {
       // return this.boxs.reduce((prev, current) => prev + current.incomes, 0)
-      return this.formatCurrency(
-        this.boxs.reduce((prev, current) => prev + current.incomes, 0)
-      );
+      return this.formatCurrency(this.boxs.reduce((prev, current) => prev + current.incomes, 0));
     },
     expenses() {
-      return this.formatCurrency(
-        this.boxs.reduce((prev, current) => prev + current.expenses, 0)
-      );
+      return this.formatCurrency(this.boxs.reduce((prev, current) => prev + current.expenses, 0));
     },
     deposits() {
-      return this.formatCurrency(
-        this.boxs.reduce((prev, current) => prev + current.deposits, 0)
-      );
+      return this.formatCurrency(this.boxs.reduce((prev, current) => prev + current.deposits, 0));
     },
     transfers() {
-      return this.formatCurrency(
-        this.boxs.reduce((prev, current) => prev + current.transfers, 0)
-      );
+      return this.formatCurrency(this.boxs.reduce((prev, current) => prev + current.transfers, 0));
     },
     balance() {
-      return this.formatCurrency(
-        this.boxs.reduce((prev, current) => prev + current.balance, 0)
-      );
+      return this.formatCurrency(this.boxs.reduce((prev, current) => prev + current.balance, 0));
     },
   },
 };

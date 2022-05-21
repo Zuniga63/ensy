@@ -3,8 +3,10 @@
 use App\Http\Controllers\BuildingAdminController;
 use App\Http\Controllers\BuildingController;
 use App\Http\Controllers\BusinessConfigController;
-use App\Http\Controllers\Cashbox\CashboxController;
+use App\Http\Controllers\CashboxController;
 use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\DailyActivityController;
 use App\Http\Controllers\UserController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -104,6 +106,7 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
       'index' => 'customer.index',
       'create' => 'customer.create',
       'store' => 'customer.store',
+      'show' => 'customer.show',
       'edit' => 'customer.edit',
       'update' => 'customer.update',
       'destroy' => 'customer.destroy',
@@ -135,6 +138,7 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     ->name('customer.updateBankInformation');
   Route::post('/clientes/{customer}/store-customer-contact', [CustomerController::class, 'storeCustomerContact'])
     ->name('customer.sotreContact');
+  Route::post('/clientes/{customer}/store-payment', [CustomerController::class, 'storePayment'])->name('customer.storePayment');
   Route::delete('/clientes/{customer}/{customer_contact}', [CustomerController::class, 'destroyCustomerContact'])
     ->name('customer.destroyContact');
 
@@ -159,4 +163,31 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     ->name('building.updateAddress');
   Route::put('/inmuebles/{building}/update-building-state', [BuildingController::class, 'updateBuildingState'])
     ->name('building.updateBuildingState');
+
+  //-----------------------------------------------------------------------------
+  //  ROUTES FOR INVOICE ADMIN
+  //-----------------------------------------------------------------------------
+
+  Route::resource('facturacion', InvoiceController::class)
+    ->names([
+      'index' => 'invoice.index',
+      'store' => 'invoice.store',
+      'show' => 'invoice.show'
+    ])
+    ->parameters(['facturacion' => 'invoice']);
+  Route::put('facturar-pago', [InvoiceController::class, 'storePayments'])->name('invoice.storePayments');
+  Route::put('cancelar-pago-de-factura', [InvoiceController::class, 'cancelPayment'])->name('invoice.cancelPayment');
+  Route::put('cancelar-item-de-factura', [InvoiceController::class, 'cancelItem'])->name('invoice.cancelItem');
+  Route::put('cancelar-factura', [InvoiceController::class, 'cancelInvoice'])->name('invoice.cancel');
+  Route::get('reporte-facturacion/semanal', [InvoiceController::class, 'getWeeklyReport'])->name('invoice.weeklyReport');
+  Route::get('imprimir-factura/{invoice}', [InvoiceController::class, 'printInvoice'])->name('invoice.print');
+
+  //-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
+  // RUTAS PARA ADMINSITRAR ACTIVIDADES DIARIAS
+  //-----------------------------------------------------------------------------
+  //-----------------------------------------------------------------------------
+  Route::get('actividades-diarias', [DailyActivityController::class, 'index'])->name('dailyActivity.index');
+  Route::post('actividades-diarias', [DailyActivityController::class, 'store'])->name('dailyActivity.store');
+  Route::delete('actividades-diarias/{dailyActivity}',  [DailyActivityController::class, 'destroy'])->name('dailyActivity.destroy');
 });

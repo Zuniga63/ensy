@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Cashbox;
+namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\Cashbox;
@@ -25,43 +25,19 @@ class CashboxController extends Controller
    */
   public function index()
   {
-    /**
-     * Se recuperan las cajas con el ultimo cierre si lo tuviere.
-     * De los cierres solo se recuperan la base y la fecha.
-     */
-    $boxs = Cashbox::orderBy('order')
-      ->with(['closures' => function ($query) {
-        $query->orderBy('closing_date', 'DESC')
-          ->select(['id', 'cashbox_id', 'closing_date as closingDate', 'new_base as base'])
-          ->limit(1);
-      }])
-      ->get(['id', 'name', 'code', 'slug']);
-
-    $accumulated = 0;
-
-    /**
-     * Se transforman cada uno de los elementos para agregar
-     * los datos requeridos por la vista
-     */
-    $boxs->map(function ($box, $key) use(&$accumulated) {
-      $box->base = 0;
-      $box->lastClosure = null;
-      $box->balanceIsWrong = false;
-
-      $this->getCashAmount($box);
-      $this->formatCashProperties($box);
-      $this->validateBoxBalance($box);
-
-      $accumulated += $box->balance;
-      $box->accumulated = $accumulated;
-
-
-      //Se elimina el arreglo de los closures
-      unset($box->closures);
-      return $box;
-    });
-
-    return Inertia::render('Cashbox/Index', compact('boxs'));
+    $boxs = $this->getBoxs();
+    $year = Carbon::now()->year;
+    $annualReport = [
+      [
+        "year" => $year - 1,
+        "reports" => $this->getAnnualReport($year - 1)
+      ],
+      [
+        "year" => $year,
+        "reports" => $this->getAnnualReport($year)
+      ],
+    ];
+    return Inertia::render('Cashbox/Index', compact('boxs', "annualReport"));
   }
 
   /**
@@ -141,7 +117,10 @@ class CashboxController extends Controller
     $cashbox->balance = $balance;
 
     //Recupero la otras cajas
-    $boxs = Cashbox::orderBy('order')->where('id', '!=', $cashbox->id)->get(['id', 'name', 'slug']);
+    $boxs = Cashbox::orderBy('order')
+      #->where('id', '!=', $cashbox->id)
+      ->withSum('transactions as balance', 'amount')
+      ->get(['id', 'name', 'slug']);
 
     return Inertia::render('Cashbox/Show', compact('cashbox', 'boxs'));
   }
@@ -273,25 +252,21 @@ class CashboxController extends Controller
     $attributes = $this->getTransactionAttributes();                                //Atributos de validación
     $request->validate($rules, [], $attributes);                                    //validación del formulario
 
-
-    $request->validate($rules, [], $attributes);
-
     $transaction = new CashboxTransaction();
     //Se establece la fecha de la transacción
+    $transactionDate = Carbon::now();
+
     if ($inputs['setDate']) {
-      $date = $inputs['date'];
       if ($inputs['setTime']) {
-        $time = $inputs['time'];
-        $transaction->transaction_date = Carbon::createFromFormat('Y-m-d H:i', "$date $time");
+        $transactionDate = $this->setTransactionDate($inputs['date'], $inputs['time']);
       } else {
-        $transaction->transaction_date = Carbon::createFromFormat('Y-m-d', $date)->endOfDay();
+        $transactionDate = $this->setTransactionDate($inputs['date']);
       }
-    } else {
-      $transaction->transaction_date = Carbon::now();
     }
 
     $transaction->description = $inputs['description'];
     $transaction->amount = floatval($inputs['amount']);
+    $transaction->transaction_date = $transactionDate->format('Y-m-d H:i');
 
     if ($inputs['type'] === 'expense') {
       $transaction->amount = $transaction->amount * -1;
@@ -337,17 +312,17 @@ class CashboxController extends Controller
       }
 
       //Se establece la fecha de la transacción
+      $transactionDate = Carbon::now();
+
       if ($inputs['setDate']) {
-        $date = $inputs['date'];
         if ($inputs['setTime']) {
-          $time = $inputs['time'];
-          $cashbox_transaction->transaction_date = Carbon::createFromFormat('Y-m-d H:i', "$date $time");
+          $transactionDate = $this->setTransactionDate($inputs['date'], $inputs['time']);
         } else {
-          $cashbox_transaction->transaction_date = Carbon::createFromFormat('Y-m-d', $date)->endOfDay();
+          $transactionDate = $this->setTransactionDate($inputs['date']);
         }
-      } else {
-        $cashbox_transaction->transaction_date = Carbon::now();
       }
+
+      $cashbox_transaction->transaction_date =  $transactionDate->format('Y-m-d H:i');
 
       $cashbox_transaction->save();
       $message = "Transacción Actualizada";
@@ -371,24 +346,28 @@ class CashboxController extends Controller
       $message = "Esta transacción no se puede eliminar porque está bloqueda.";
     } else {
       try {
-        if ($cashbox_transaction->transfer) {
-          /**
-           * @var CashboxTransaction
-           */
-          $other = CashboxTransaction::where('code', $cashbox_transaction->code)
-            ->where('id', '!=', $cashbox_transaction->id)
-            ->first();
+        if (auth()->user()->id <= 2) {
+          if ($cashbox_transaction->transfer) {
+            /**
+             * @var CashboxTransaction
+             */
+            $other = CashboxTransaction::where('code', $cashbox_transaction->code)
+              ->where('id', '!=', $cashbox_transaction->id)
+              ->first();
 
-          DB::beginTransaction();
-          $cashbox_transaction->delete();
-          if ($other) {
-            $other->delete();
+            DB::beginTransaction();
+            $cashbox_transaction->delete();
+            if ($other) {
+              $other->delete();
+            }
+            DB::commit();
+          } else {
+            $cashbox_transaction->delete();
           }
-          DB::commit();
+          $ok = true;
         } else {
-          $cashbox_transaction->delete();
+          $message = "Solo el adminsitrador puede eliminar transacciones.";
         }
-        $ok = true;
       } catch (\Throwable $th) {
         $message = "Por problemas internos no se pudo eliminar. Intentelo nuevamente mas tarde.";
       }
@@ -426,18 +405,13 @@ class CashboxController extends Controller
 
     //Se establece la fecha
     $transferDate = Carbon::now();
-    $now = Carbon::now();
 
     if ($inputs['setDate']) {
-      $date = $inputs['date'];
       if ($inputs['setTime']) {
-        $time = $inputs['time'];
-        $transferDate = Carbon::createFromFormat('Y-m-d H:i', "$date $time");
+        $transferDate = $this->setTransactionDate($inputs['date'], $inputs['time']);
       } else {
-        $transferDate = Carbon::createFromFormat('Y-m-d', $date)->endOfDay();
+        $transferDate = $this->setTransactionDate($inputs['date']);
       }
-
-      $transferDate = $transferDate->isAfter($now) ? $now : $transferDate;
     }
 
     //Se construye el mensaje 
@@ -457,14 +431,14 @@ class CashboxController extends Controller
 
 
     //Se construye la transacción de la caja remitente
-    $senderTrans->transaction_date = $transferDate;
+    $senderTrans->transaction_date = $transferDate->format('Y-m-d H:i');
     $senderTrans->description = "Transferencia a la cuenta \"$boxDestination->name\" $description";
     $senderTrans->amount = floatval($inputs['amount']) * -1;
     $senderTrans->code = $uId;
     $senderTrans->transfer = true;
 
     //Se construye la transacción de la caja destino
-    $addresseeTrans->transaction_date = $transferDate;
+    $addresseeTrans->transaction_date = $transferDate->format('Y-m-d H:i');
     $addresseeTrans->description = "Deposito de la cuenta \"$cashbox->name\" $description";
     $addresseeTrans->amount = floatval($inputs['amount']);
     $addresseeTrans->code = $uId;
@@ -488,6 +462,77 @@ class CashboxController extends Controller
   //-------------------------------------------------------------
   //    UTILIDADES
   //-------------------------------------------------------------
+
+  /**
+   * Se encarga de establece la fecha de la transacción
+   * @param String|Null $date - Fecha en formato Y-m-d
+   * @param String|Null $time - Hora en formato H:i
+   * @return Carbon\Carbon
+   */
+  protected function setTransactionDate($date = null, $time = null)
+  {
+    $transactionDate = Carbon::now();
+    $temporalDate = null;
+    if ($date) {
+      if ($time) {
+        $temporalDate = Carbon::createFromFormat('Y-m-d H:i', "$date $time");
+      } else {
+        $temporalDate = Carbon::createFromFormat('Y-m-d', $date)->endOfDay();
+      }
+
+      if ($temporalDate->lessThanOrEqualTo($transactionDate)) {
+        $transactionDate = $temporalDate;
+      }
+    }
+
+    return $transactionDate;
+  }
+
+  /**
+   * Se recuperan las cajas con el ultimo cierre si lo tuviere.
+   * De los cierres solo se recuperan la base y la fecha.
+   * @return Collections
+   */
+  protected function getBoxs()
+  {
+    /**
+     * Se recuperan las cajas con el ultimo cierre si lo tuviere.
+     * De los cierres solo se recuperan la base y la fecha.
+     */
+    $boxs = Cashbox::orderBy('order')
+      ->with(['closures' => function ($query) {
+        $query->orderBy('closing_date', 'DESC')
+          ->select(['id', 'cashbox_id', 'closing_date as closingDate', 'new_base as base'])
+          ->limit(1);
+      }])
+      ->get(['id', 'name', 'code', 'slug']);
+
+    $accumulated = 0;
+
+    /**
+     * Se transforman cada uno de los elementos para agregar
+     * los datos requeridos por la vista
+     */
+    $boxs->map(function ($box, $key) use (&$accumulated) {
+      $box->base = 0;
+      $box->lastClosure = null;
+      $box->balanceIsWrong = false;
+
+      $this->getCashAmount($box);
+      $this->formatCashProperties($box);
+      $this->validateBoxBalance($box);
+
+      $accumulated += $box->balance;
+      $box->accumulated = $accumulated;
+
+
+      //Se elimina el arreglo de los closures
+      unset($box->closures);
+      return $box;
+    });
+
+    return $boxs;
+  }
 
   /**
    * Este metodo realiza las consultas requeridas para calular
@@ -589,6 +634,75 @@ class CashboxController extends Controller
     return $box;
   }
 
+  protected function getAnnualReport($year)
+  {
+    $reports = [];
+    $now = Carbon::now()->year($year);
+    $date = $now->copy()->startOfYear();
+    $months = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+    $month = 0;
+
+    //Se agrega el resumen del año pasado.
+    #$reports[] = $this->getLastYearResume();
+
+    //se agregan los reportes de este año
+    do {
+      $startMonth = $date->copy();
+      $endMonth = $date->copy()->endOfMonth();
+
+      $label = $months[$month];
+      $resume = $this->getCashResume($startMonth, $endMonth);
+
+      //Se agrega el reporte 
+      $reports[] = array_merge(['label' => $label], $resume);
+
+      //Se actualiza los parametro globales
+      $date->addMonth();
+      $month++;
+    } while ($date->lessThanOrEqualTo($now));
+
+
+    return $reports;
+  }
+
+  protected function getLastYearResume()
+  {
+    $startYear = Carbon::now()->subYear()->startOfYear();
+    $endYear = $startYear->copy()->endOfYear();
+
+    return array_merge(['label' => $startYear->year], $this->getCashResume($startYear, $endYear));
+  }
+
+  /**
+   * Se encarga de recuperar el valor total de los ingresos, los egresos y el saldo
+   * total para las fechas marcadas.
+   * @param Carbon $startDate - Fecha de inicio
+   * @param Carbon $endDate - Fecha de finalización
+   */
+  protected function getCashResume($startDate, $endDate)
+  {
+    $initialBalance = CashboxTransaction::where('transaction_date', "<", $startDate)
+      ->sum("amount");
+
+    $incomes = CashboxTransaction::where('transaction_date', ">=", $startDate)
+      ->where("transaction_date", "<=", $endDate)
+      ->where("transfer", 0)
+      ->where('amount', ">", 0)
+      ->sum("amount");
+
+    $expenses = CashboxTransaction::where('transaction_date', ">=", $startDate)
+      ->where("transaction_date", "<=", $endDate)
+      ->where("transfer", 0)
+      ->where('amount', "<", 0)
+      ->sum("amount");
+
+    return [
+      'incomes' => $incomes,
+      'expenses' => bcmul($expenses, "-1", 2),
+      'balance' => bcadd($initialBalance, bcadd($incomes, $expenses, 2), 2)
+    ];
+  }
+
   /**
    * This method build the rule for validate new transaction o
    * update.
@@ -607,7 +721,7 @@ class CashboxController extends Controller
     if ($setDate) {
       $rules['date'] = 'required|date_format:Y-m-d';
       if ($setTime) {
-        $rules['time'] = 'required|date_format:H:s';
+        $rules['time'] = 'required|date_format:H:i';
       }
     }
 

@@ -236,6 +236,14 @@
                       Configuración
                     </jet-dropdown-link>
 
+                    <div class="block px-4 py-2 text-xs text-gray-400">
+                      Miscelaneos
+                    </div>
+
+                    <jet-dropdown-link :href="route('dailyActivity.index')">
+                      Actividades
+                    </jet-dropdown-link>
+
                     <div class="border-t border-gray-100"></div>
 
                     <!-- Authentication -->
@@ -497,6 +505,7 @@ export default {
         { id: 3, name: "Clientes", routeName: "customer.index" },
         { id: 4, name: "Administraciones", routeName: "buildingAdmin.index" },
         { id: 5, name: "Inmuebles", routeName: "building.index" },
+        { id: 6, name: "Facturación", routeName: "invoice.index" },
       ],
     };
   },

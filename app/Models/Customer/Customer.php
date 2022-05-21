@@ -3,6 +3,8 @@
 namespace App\Models\Customer;
 
 use App\Models\Building;
+use App\Models\Invoice\Invoice;
+use App\Models\Invoice\InvoicePayment;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -47,7 +49,7 @@ class Customer extends Model
   public function getFullNameAttribute()
   {
     $fullName = "$this->first_name $this->last_name";
-    return $this->attributes['fullName'] = trim($fullName);
+    return trim($fullName);
   }
 
   public function getImageUrlAttribute()
@@ -122,5 +124,55 @@ class Customer extends Model
   public function buildings()
   {
     return $this->hasMany(Building::class, 'owner_id');
+  }
+  /**
+   * Get the invoice that this user has registered.
+   */
+  public function invoices()
+  {
+    return $this->hasMany(Invoice::class, 'customer_id');
+  }
+
+  /**
+   * Get the payment registered for this customer
+   */
+  public function invoicePayments()
+  {
+    return $this->hasMany(InvoicePayment::class, 'customer_id');
+  }
+
+  /**
+   * Get the invoice more recent of customer
+   */
+  public function lastInvoice()
+  {
+    return $this->hasOne(Invoice::class)
+      ->orderBy('expedition_date', 'DESC')
+      ->where('cancel', 0)
+      ->without('items')
+      ->select(['id', 'customer_id', 'amount', 'expedition_date as date', 'cancel']);
+  }
+
+  /**
+   * Get the payment more recent of customer
+   */
+  public function lastPayment()
+  {
+    return $this->hasOne(InvoicePayment::class)
+      ->where('cancel', 0)
+      ->where('initial_payment', 0)
+      ->orderBy('payment_date', 'DESC')
+      ->without('transaction')
+      ->select(['id', 'customer_id', 'payment_date as date', 'amount']);
+  }
+
+  public function oldInvoicePending()
+  {
+    return $this->hasOne(Invoice::class)
+      ->where('cancel', 0)
+      ->without('items')
+      ->whereNotNull('balance')
+      ->orderBy('expedition_date')
+      ->select(['id', 'customer_id', 'balance', 'expedition_date as date', 'cancel']);
   }
 }

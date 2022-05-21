@@ -2,10 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Cashbox;
+use App\Models\CashboxTransaction;
 use App\Models\CountryDepartment;
 use App\Models\Customer\Customer;
 use App\Models\Customer\CustomerContact;
 use App\Models\Customer\CustomerInformation;
+use App\Models\Invoice\InvoicePayment;
+use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redirect;
@@ -22,8 +27,16 @@ class CustomerController extends Controller
   {
     $customers = Customer::orderBy('first_name')
       ->orderBy('last_name')
-      ->with('information', 'contacts')
-      ->withCount('buildings')
+      ->with([
+        'information',
+        'contacts',
+        'lastInvoice',
+        'lastPayment',
+        'oldInvoicePending'
+      ])
+      ->withSum(['invoices as balance' => function (Builder $query) {
+        $query->where('cancel', 0);
+      }], 'balance')
       ->get();
 
     return Inertia::render('Customer/Index', compact('customers'));
@@ -107,7 +120,122 @@ class CustomerController extends Controller
    */
   public function show(Customer $customer)
   {
-    //
+    $customer->load([
+      'invoices' => function ($query) {
+        $query->where('cancel', 0)
+          ->orderBy('expedition_date');
+      },
+      'invoicePayments' => function ($query) {
+        $query->where('cancel', 0)
+          ->orderBy('payment_date')
+          ->without('transaction');
+      }
+    ])
+      ->loadSum(['invoices as balance' => function (Builder $query) {
+        $query->where('cancel', 0);
+      }], 'balance');
+
+    $boxs = Cashbox::orderBy('order')->get(['id', 'name']);
+    return Inertia::render('Customer/Show', compact('customer', 'boxs'));
+  }
+
+  /**
+   * @param \Illuminate\Http\Request  $request
+   * @param  \App\Models\Customer\Customer  $customer
+   * @return \Illuminate\Http\Response
+   */
+  public function storePayment(Customer $customer, Request $request)
+  {
+    $rules = [
+      'cashboxId' => 'required|integer|exists:cashbox,id',
+      'amount' => 'required|numeric|min:1|max:99999999'
+    ];
+    $attr = [
+      'cashboxId' => 'caja',
+      'amount' => 'importe',
+    ];
+
+    $msg = [
+      'amount.max' => "El importe debe ser menor que $99.999.999",
+    ];
+
+    $request->validate($rules, $msg, $attr);
+
+    //Se recuperan las facturas
+    $customer->load(['invoices' => function ($query) {
+      $query->where('cancel', 0)
+        ->orderBy('expedition_date')
+        ->whereNotNull('balance')
+        ->without('items');
+    }]);
+
+    $box = Cashbox::find($request->cashboxId);
+
+    $amount = $request->amount;     //Valor total del abono
+    $paymentCount = 0;                     //Numero de facturas abonadas
+    $paidCount = 0;
+
+    DB::beginTransaction();
+
+    foreach ($customer->invoices as $invoice) {
+      $paymentAmount = "0";
+
+      if (bccomp($amount, "0") > 0) {
+        //Hay dinero para pagar facturas.
+        $amountDiff = bccomp($amount, $invoice->balance);
+        if ($amountDiff >= 0) {
+          //Se paga la factura completamente y queda para la siguiente.
+          $paymentAmount = $invoice->balance;
+          $invoice->balance = null;
+          $paidCount++;
+
+          $amountDiff > 0 ?  $amount = bcsub($amount, $paymentAmount) : $amount = "0";
+        } else {
+          //Se hace solamente un abono.
+          $paymentAmount = $amount;
+          $invoice->balance = bcsub($invoice->balance, $paymentAmount);
+          $paymentCount++;
+
+          $amount = "0";
+        }
+      } else {
+        break;
+      }
+
+      //Se crea el pago
+      /** @var InvoicePayment */
+      $invoicePayment = new InvoicePayment([
+        'customer_id' => $customer->id,
+        'payment_date' => Carbon::now()->format('Y-m-d H:i'),
+        'description' => "Deposito en $box->name",
+        'amount' => $paymentAmount
+      ]);
+
+      //Se crea la transacción 
+      $transaction = new CashboxTransaction([
+        'transaction_date' => Carbon::now()->format('Y-m-d H:i'),
+        'description' => "Abono: Pago a la factura N° $invoice->invoice_number del cliente $customer->full_name",
+        'amount' => $paymentAmount,
+        'blocked' => true,
+      ]);
+
+      if ($box->transactions()->save($transaction)) {
+        $invoicePayment->transaction()->associate($transaction);
+      }
+
+      $invoice->payments()->save($invoicePayment);
+      $invoice->save();
+    }
+
+    DB::commit();
+
+    $res = [
+      'ok' => true,
+      'paidCount' => $paidCount,
+      'paymentCount' => $paymentCount
+    ];
+
+    return Redirect::route('customer.show', $customer->id)->with('message', $res);
   }
 
   /**
@@ -209,10 +337,22 @@ class CustomerController extends Controller
    */
   public function destroy(Customer $customer)
   {
-    $customer->delete();
+    $ok = false;
+    $message = null;
+
+    $customer->loadSum(['invoices as balance' => function (Builder $query) {
+      $query->where('cancel', 0);
+    }], 'balance');
+    if (!$customer->balance) {
+      $customer->delete();
+      $ok = true;
+    } else {
+      $message = "El cliente no se puede eliminar porque tiene facturas pendientes";
+    }
     $res = [
-      'ok' => true,
-      'customer' => $customer->toArray()
+      'ok' => $ok,
+      'customer' => $customer->toArray(),
+      'message' => $message
     ];
 
     return $res;

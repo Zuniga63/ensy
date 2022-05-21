@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Invoice\Invoice;
 use App\Notifications\MyEmailVerification;
 use App\Notifications\MyResetPassword;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
@@ -94,5 +95,13 @@ class User extends Authenticatable implements MustVerifyEmail
   public function sessions()
   {
     return $this->hasMany(Session::class, 'user_id');
+  }
+
+  /**
+   * Get the invoice that this user has made
+   */
+  public function invoices()
+  {
+    return $this->hasMany(Invoice::class, 'seller_id');
   }
 }

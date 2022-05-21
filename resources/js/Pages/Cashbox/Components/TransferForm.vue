@@ -1,25 +1,12 @@
 <template>
   <form
-    class="
-      w-11/12
-      lg:w-96
-      px-4
-      py-6
-      border border-gray-300
-      rounded-lg
-      bg-white
-      shadow
-      overflow-hidden
-    "
+    class="w-11/12 lg:w-96 px-4 py-6 border border-gray-300 rounded-lg bg-white shadow overflow-hidden"
     @submit.prevent="submit"
   >
     <header class="border-b-4 border-double border-slate-700 mb-4">
-      <h3 class="text-base text-gray-800 font-bold">
-        Registrar una Transferencia
-      </h3>
+      <h3 class="text-base text-gray-800 font-bold">Registrar una Transferencia</h3>
       <p class="text-sm text-gray-800 text-opacity-95">
-        Este formulario permite transferir dinero a otras cajas de la
-        paltaforma.
+        Este formulario permite transferir dinero a otras cajas de la paltaforma.
       </p>
     </header>
 
@@ -27,14 +14,8 @@
     <div class="pb-4">
       <!-- Selección de la fecha -->
       <div class="flex items-center mb-2">
-        <JetCheckbox
-          class="mr-2"
-          v-model:checked="form.setDate"
-          id="setTransferDate"
-        />
-        <label for="setTransferDate" class="text-sm text-gray-800"
-          >Seleccionar fecha</label
-        >
+        <JetCheckbox class="mr-2" v-model:checked="form.setDate" id="setTransferDate" />
+        <label for="setTransferDate" class="text-sm text-gray-800">Seleccionar fecha</label>
       </div>
 
       <!-- Conjunto de controles para la fecha y la hora -->
@@ -51,9 +32,7 @@
         <div v-show="form.setDate" class="mb-2">
           <!-- Date -->
           <div class="grid grid-cols-12 items-center">
-            <label for="transferDate" class="col-span-3 text-sm text-gray-800"
-              >Fecha</label
-            >
+            <label for="transferDate" class="col-span-3 text-sm text-gray-800">Fecha</label>
 
             <JetInput
               type="date"
@@ -63,23 +42,13 @@
               :max="form.setDate ? maxDate : null"
             />
 
-            <jet-input-error
-              :message="form.errors.date"
-              class="mt-2 col-span-12"
-            />
+            <jet-input-error :message="form.errors.date" class="mt-2 col-span-12" />
           </div>
 
           <!-- Checkbox for time -->
           <div class="flex items-center mb-2">
-            <JetCheckbox
-              name="setTransferTime"
-              id="setTransferTime"
-              class="mr-2"
-              v-model:checked="form.setTime"
-            />
-            <label for="setTransferTime" class="text-sm text-gray-800"
-              >Seleccionar hora</label
-            >
+            <JetCheckbox name="setTransferTime" id="setTransferTime" class="mr-2" v-model:checked="form.setTime" />
+            <label for="setTransferTime" class="text-sm text-gray-800">Seleccionar hora</label>
           </div>
 
           <transition
@@ -92,9 +61,7 @@
             leave-to-class="opacity-0 scale-90"
           >
             <div v-show="form.setTime" class="grid grid-cols-12 items-center">
-              <label for="transferTime" class="col-span-3 text-sm text-gray-800"
-                >Hora:</label
-              >
+              <label for="transferTime" class="col-span-3 text-sm text-gray-800">Hora:</label>
               <JetInput
                 type="time"
                 name="transactionTime"
@@ -103,10 +70,7 @@
                 v-model="form.time"
               />
 
-              <jet-input-error
-                :message="form.errors.time"
-                class="mt-2 col-span-12"
-              />
+              <jet-input-error :message="form.errors.time" class="mt-2 col-span-12" />
             </div>
           </transition>
         </div>
@@ -114,9 +78,7 @@
 
       <!-- boxDestination -->
       <div class="mb-2">
-        <label for="boxDestination" class="block mb-2 text-sm text-gray-800"
-          >Caja Destino</label
-        >
+        <label for="boxDestination" class="block mb-2 text-sm text-gray-800">Caja Destino</label>
 
         <select
           name="boxDestination"
@@ -127,10 +89,7 @@
             w-full
             p-2
             border border-gray-300
-            focus:border-indigo-300
-            focus:ring
-            focus:ring-indigo-200
-            focus:ring-opacity-50
+            focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50
             rounded-md
             shadow-sm
             text-sm text-gray-800
@@ -146,11 +105,7 @@
 
       <!-- Description -->
       <div class="mb-2">
-        <label
-          for="description"
-          class="block mb-2 text-basetext-gray-800 text-center"
-          >Descripción</label
-        >
+        <label for="description" class="block mb-2 text-basetext-gray-800 text-center">Descripción</label>
         <textarea
           name="description"
           id="description"
@@ -160,10 +115,7 @@
             w-full
             p-2
             border border-gray-300
-            focus:border-indigo-300
-            focus:ring
-            focus:ring-indigo-200
-            focus:ring-opacity-50
+            focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50
             rounded-md
             shadow-sm
             text-sm text-gray-800
@@ -175,9 +127,7 @@
       </div>
       <!-- Importe -->
       <div class="mb-2">
-        <label for="amount" class="inline-block mb-1 text-sm text-gray-800"
-          >Importe</label
-        >
+        <label for="amount" class="inline-block mb-1 text-sm text-gray-800">Importe</label>
         <CurrencyInput
           name="amount"
           id="amount"
@@ -187,52 +137,20 @@
           placeholder="Importe a transferir."
           autocomplete="off"
         />
-        <jet-input-error
-          :message="form.errors.amount"
-          class="col-span-12 mt-2"
-        />
+        <jet-input-error :message="form.errors.amount" class="col-span-12 mt-2" />
       </div>
     </div>
 
-    <footer
-      class="
-        flex
-        justify-between
-        pt-2
-        border-t-4 border-double border-slate-900
-      "
-    >
-      <JetButton>
+    <footer class="flex justify-between pt-2 border-t-4 border-double border-slate-900">
+      <JetButton :disabled="form.processing">
         <!-- Spin -->
-        <svg
-          class="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          v-show="processing"
-        >
-          <circle
-            class="opacity-25"
-            cx="12"
-            cy="12"
-            r="10"
-            stroke="currentColor"
-            stroke-width="4"
-          ></circle>
-          <path
-            class="opacity-75"
-            fill="currentColor"
-            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-          ></path>
-        </svg>
+        <spin-icon v-show="form.processing" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" />
 
         <!-- Message -->
-        <span v-show="!processing">Transferir</span>
-        <span v-show="processing">Procesando...</span>
+        <span v-show="!form.processing">Transferir</span>
+        <span v-show="form.processing">Procesando...</span>
       </JetButton>
-      <JetDangerButton type="button" @click="hiddenForm"
-        >Cancelar</JetDangerButton
-      >
+      <JetDangerButton type="button" @click="hiddenForm" :disabled="form.processing">Cancelar</JetDangerButton>
     </footer>
   </form>
 </template>
@@ -245,6 +163,7 @@ import JetCheckbox from "@/Jetstream/Checkbox.vue";
 import JetInput from "@/Jetstream/Input.vue";
 import CurrencyInput from "@/Components/CurrencyInput.vue";
 import { useForm } from "@inertiajs/inertia-vue3";
+import SpinIcon from "@/Components/Svgs/Spin.vue";
 
 export default {
   components: {
@@ -254,6 +173,7 @@ export default {
     JetCheckbox,
     JetInput,
     CurrencyInput,
+    SpinIcon,
   },
   props: {
     cashboxId: {
@@ -268,13 +188,15 @@ export default {
     maxDate: {
       type: String,
     },
+    lastDate: String,
+    lastTime: String,
   },
   setup(props) {
     const form = useForm({
-      setDate: false,
-      date: null,
-      setTime: false,
-      time: null,
+      setDate: props.lastDate ? true : false,
+      date: props.lastDate,
+      setTime: props.lastTime ? true : false,
+      time: props.lastTime,
       boxDestination: null,
       description: null,
       amount: null,
@@ -282,29 +204,22 @@ export default {
 
     return { form };
   },
-  emits: ["hiddenForm"],
-  data() {
-    return {
-      processing: false,
-    };
-  },
+  emits: ["hiddenForm", "lockModal", "unlockModal", "updateTime"],
   methods: {
     hiddenForm() {
+      let time = { date: null, time: null };
+      if (this.form.setDate) time.date = this.form.date;
+      if (this.form.setTime) time.time = this.form.time;
+
+      this.$emit("updateTime", time);
       this.$emit("hiddenForm");
-      this.form.reset(
-        "description",
-        "amount",
-        "type",
-        "setDate",
-        "boxDestination"
-      );
     },
     submit() {
       this.form.post(route("cashbox.storeTransfer", this.cashboxId), {
         preserveScroll: true,
         preserveState: true,
         onStart: () => {
-          this.processing = true;
+          this.$emit("lockModal");
         },
         onSuccess: (page) => {
           this.hiddenForm();
@@ -319,7 +234,7 @@ export default {
           }
         },
         onFinish: () => {
-          this.processing = false;
+          this.$emit("unlockModal");
         },
       });
     },

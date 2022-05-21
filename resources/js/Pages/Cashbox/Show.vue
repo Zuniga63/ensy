@@ -5,201 +5,121 @@
         {{ cashbox.name }}
       </h2>
 
-      <p class="text-sm lg:text-base text-gray-400" v-if="cashbox.code">
-        codigo: {{ cashbox.code }}
-      </p>
+      <p class="text-sm lg:text-base text-gray-400" v-if="cashbox.code">codigo: {{ cashbox.code }}</p>
       <p class="lg:hidden text-base lg:text-lg text-gray-400">
         Saldo:
         <span class="font-bold"> {{ formatCurrency(cashbox.balance) }} </span>
       </p>
     </template>
 
-    <div>
-      <div
-        class="relative w-full px-2 pt-5 pb-20"
-        :class="{ 'blur-sm': modal }"
-      >
-        <!-- Tab Component -->
-        <div
-          class="
-            relative
-            border border-gray-200
-            rounded-lg
-            bg-white
-            min-h-screen
-          "
-        >
-          <div class="p-4">
-            <!-- TABS & CONTROLS -->
-            <div class="flex justify-between items-center pr-4">
-              <!-- Tabs -->
-              <ul class="flex flex-wrap list-none mb-2">
-                <li
-                  v-for="itemTab in tabs"
-                  :key="itemTab"
-                  @click.stop="tab = itemTab"
-                >
-                  <a
-                    href="javascript:;"
-                    class="
-                      block
-                      px-3
-                      py-3
-                      my-2
-                      border-x-0 border-t-0 border-b-2
-                      font-bold
-                      text-xs
-                      leading-tight
-                      uppercase
-                      hover:border-transparent hover:bg-gray-100
-                      focus:border-blue-500
-                    "
-                    :class="{
-                      'border-blue-500 text-blue-500 hover:border-blue-500':
-                        tab === itemTab,
-                    }"
-                  >
-                    {{ itemTab }}
-                  </a>
-                </li>
-              </ul>
-
-              <div class="hidden lg:flex">
-                <!-- Selector de caja -->
-                <select
-                  name="box"
-                  id="boxSelector"
-                  v-model="boxSlug"
-                  @change="chageBox"
-                  class="
-                    w-80
-                    px-4
-                    py-2
-                    border border-gray-200
-                    rounded
-                    mr-3
-                    text-sm text-gray-800
-                    focus:ring focus:ring-indigo-400 focus:ring-opacity-50
-                  "
-                  v-if="boxs.length"
-                >
-                  <option :value="null">Selecciona la caja a visitar</option>
-                  <option v-for="box in boxs" :key="box.id" :value="box.slug">
-                    {{ box.name }}
-                  </option>
-                </select>
-
-                <!-- Boton para recargar -->
-                <Link
-                  :href="route('cashbox.show', cashbox.slug)"
-                  preserve-state
-                  preserve-scroll
-                  class="
-                    p-2
-                    border border-gray-400
-                    rounded-full
-                    bg-gray-200
-                    text-gray-700
-                    hover:ring
-                    hover:ring-gray-500
-                    hover:ring-opacity-20
-                    hover:bg-gray-50
-                    transition-colors
-                  "
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="h-6 w-6"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                    />
-                  </svg>
-                </Link>
-              </div>
-            </div>
-
-            <!-- Content -->
-            <div class="pb-1">
-              <ShowBoxInfo
-                v-show="tab === tabs[0]"
-                :transactions="cashbox.transactions"
-              />
-              <ShowTransactions
-                v-show="tab === tabs[1]"
-                :transactions="cashbox.transactions"
-                @update-transaction="updateTransaction"
-                @delete-transaction="deleteTransaction"
-              />
-              <ShowBoxClosures v-show="tab === tabs[2]" />
-            </div>
+    <div class="relative grid grid-cols-5 gap-2 items-start w-full lg:w-11/12 mx-auto pt-5">
+      <!-- Sidebar -->
+      <aside class="hidden lg:block sticky top-4 w-full">
+        <div class="px-2 py-4 border border-gray-200 rounded bg-white shadow-md">
+          <h2 class="mb-4 text-gray-800 font-semibold text-center text-sm uppercase">Cajas Activas</h2>
+          <div
+            v-for="(box, index) in boxs"
+            :key="index"
+            class="p-2 mb-4 last:mb-0 rounded hover:cursor-pointer hover:opacity-80 transition-opacity"
+            :class="{
+              'bg-gray-800': box.id !== cashbox.id,
+              'bg-indigo-600': box.id === cashbox.id,
+            }"
+            @click="chageBox(box.slug)"
+          >
+            <h2 class="mb-2 text-gray-50 text-sm text-center font-bold">{{ box.name }}</h2>
+            <p class="text-xs text-gray-50 text-center font-bold">{{ formatCurrency(box.balance) }}</p>
           </div>
         </div>
+      </aside>
+
+      <!-- Contenido -->
+      <div class="relative col-span-5 lg:col-span-4 w-full px-2 pb-20">
+        <!-- Tab Component -->
+        <tab-component :tabs="tabs" :tabSelected="tab" @selectTab="tab = $event">
+          <template #controls>
+            <div class="">
+              <!-- Boton para recargar -->
+              <Link
+                :href="route('cashbox.show', cashbox.slug)"
+                preserve-state
+                preserve-scroll
+                class="
+                  block
+                  p-1
+                  sm:p-2
+                  border border-gray-400
+                  rounded-full
+                  bg-gray-200
+                  text-gray-700
+                  hover:ring hover:ring-gray-500 hover:ring-opacity-20 hover:bg-gray-50
+                  transition-colors
+                "
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-4 w-4 lg:h-6 lg:w-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                  />
+                </svg>
+              </Link>
+            </div>
+          </template>
+
+          <template #transacciones>
+            <ShowTransactions
+              :transactions="cashbox.transactions"
+              @update-transaction="updateTransaction"
+              @delete-transaction="deleteTransaction"
+            />
+          </template>
+
+          <template #info>
+            <ShowBoxInfo :transactions="cashbox.transactions" />
+          </template>
+
+          <template #cierres>
+            <ShowBoxClosures />
+          </template>
+        </tab-component>
       </div>
 
-      <transition
-        leave-active-class="transition ease-in duration-100"
-        leave-from-class="opacity-100"
-        leave-to-class="opacity-0"
-      >
-        <div
-          class="
-            fixed
-            inset-0
-            flex
-            items-center
-            justify-center
-            bg-indigo-300 bg-opacity-30
-            z-50
-          "
-          v-show="modal"
-          @click.self="hiddenModal"
-        >
-          <transition
-            name="show-form-modal"
-            enter-active-class="transition ease-out duration-200"
-            enter-from-class="opacity-0 scale-90"
-            enter-to-class="opacity-100 scale-100"
-            leave-active-class="transition ease-in duration-100"
-            leave-from-class="opacity-100 scale-100"
-            leave-to-class="opacity-0 scale-90"
-          >
-            <new-transaction-form
-              @hidden-form="hiddenModal"
-              :cashbox-id="cashbox.id"
-              :max-date="maxDate"
-              :transaction="transactionToUpdate"
-              v-show="transactionFormActive"
-            />
-          </transition>
+      <modal-component :show="modal" :closeable="closeableModal" @close="hiddenModal" maxWidth="sm">
+        <new-transaction-form
+          :cashbox-id="cashbox.id"
+          :max-date="maxDate"
+          :transaction="transactionToUpdate"
+          :lastDate="lastDate"
+          :lastTime="lastTime"
+          @lockModal="closeableModal = false"
+          @unlockModal="closeableModal = true"
+          @updateTime="updateTime"
+          @hidden-form="hiddenModal"
+          v-show="transactionFormActive"
+        />
 
-          <transition
-            name="show-form-modal"
-            enter-active-class="transition ease-out duration-200"
-            enter-from-class="opacity-0 scale-90"
-            enter-to-class="opacity-100 scale-100"
-            leave-active-class="transition ease-in duration-100"
-            leave-from-class="opacity-100 scale-100"
-            leave-to-class="opacity-0 scale-90"
-          >
-            <transfer-form
-              @hidden-form="hiddenModal"
-              :cashbox-id="cashbox.id"
-              :max-date="maxDate"
-              :balance="cashbox.balance"
-              :boxs="boxs"
-              v-show="transferFormActive"
-            />
-          </transition>
-        </div>
-      </transition>
-
+        <transfer-form
+          :cashbox-id="cashbox.id"
+          :max-date="maxDate"
+          :balance="cashbox.balance"
+          :boxs="boxs"
+          :lastDate="lastDate"
+          :lastTime="lastTime"
+          @lockModal="closeableModal = false"
+          @unlockModal="closeableModal = true"
+          @updateTime="updateTime"
+          @hidden-form="hiddenModal"
+          v-show="transferFormActive"
+        />
+      </modal-component>
       <!-- Button for show modal  -->
       <div class="fixed bottom-4 right-4" v-show="!modal">
         <div class="flex flex-col">
@@ -213,7 +133,8 @@
               justify-center
               w-full
               h-full
-              p-4
+              p-3
+              lg:p-4
               mb-2
               border border-emerald-700
               rounded-full
@@ -222,18 +143,11 @@
               text-white
               outline-none
               hover:bg-opacity-50 hover:border-opacity-50
-              focus:outline-transparent
-              focus:outline-hidden
-              focus:bg-emerald-600
+              focus:outline-transparent focus:outline-hidden focus:bg-emerald-600
             "
             v-show="tab === 'transacciones' && canTransferMoney"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              class="h-8 w-8 lg:h-5 lg:w-5"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-            >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
               <path
                 d="M8 5a1 1 0 100 2h5.586l-1.293 1.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L13.586 5H8zM12 15a1 1 0 100-2H6.414l1.293-1.293a1 1 0 10-1.414-1.414l-3 3a1 1 0 000 1.414l3 3a1 1 0 001.414-1.414L6.414 15H12z"
               />
@@ -249,7 +163,8 @@
               justify-center
               w-full
               h-full
-              p-4
+              p-3
+              lg:p-4
               border border-blue-700
               rounded-full
               bg-blue-600
@@ -260,12 +175,7 @@
               focus:outline-transparent focus:outline-hidden focus:bg-blue-800
             "
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              class="h-8 w-8 lg:h-5 lg:w-5"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-            >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
               <path
                 fill-rule="evenodd"
                 d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
@@ -281,63 +191,55 @@
 <script>
 import { Link } from "@inertiajs/inertia-vue3";
 import { Inertia } from "@inertiajs/inertia";
-// import Swal from "sweetalert2";
 
 import AppLayout from "@/Layouts/AppLayout.vue";
 import ShowTransactions from "@/Pages/Cashbox/Components/ShowTransactions.vue";
 import ShowBoxInfo from "@/Pages/Cashbox/Components/ShowBoxInfo.vue";
 import ShowBoxClosures from "@/Pages/Cashbox/Components/ShowBoxClosures.vue";
 import NewTransactionForm from "@/Pages/Cashbox/Components/TransactionForm.vue";
-
-import dayjs from "dayjs";
-import relativeTime from "dayjs/plugin/relativeTime";
-import locale_es_do from "dayjs/locale/es";
-import localizedFormat from "dayjs/plugin/localizedFormat";
 import TransferForm from "./Components/TransferForm.vue";
+import TabComponent from "@/Components/Tab.vue";
+import ModalComponent from "@/Components/Modal.vue";
 
 import Swal from "sweetalert2";
+import dayjs from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime";
+import "dayjs/locale/es-do";
+import localizedFormat from "dayjs/plugin/localizedFormat";
+
+import { formatCurrency } from "@/utilities";
 
 export default {
   components: {
+    Link,
     AppLayout,
     ShowTransactions,
     ShowBoxInfo,
     ShowBoxClosures,
     NewTransactionForm,
-    Link,
     TransferForm,
+    TabComponent,
+    ModalComponent,
   },
   props: ["cashbox", "boxs"],
   setup(props) {
-    //---------------------------------------------------------
-    // SE CONSTRUYE EL FORMATEADOR DE MONEDA
-    //---------------------------------------------------------
-    let fractionDigits = 0;
-    let style = "currency";
-    let currency = "COP";
-
-    let formater = new Intl.NumberFormat("es-CO", {
-      style,
-      currency,
-      minimumFractionDigits: fractionDigits,
-    });
-
     //----------------------------------------------------
     // SE ESTABLECEN LOS PARAMETROS DE dayjs
     //----------------------------------------------------
-    dayjs.locale(locale_es_do);
+    dayjs.locale("es-do");
     dayjs.extend(relativeTime);
     dayjs.extend(localizedFormat);
 
     props.cashbox.balance = parseFloat(props.cashbox.balance);
-
-    return { formater };
   },
   data() {
     return {
-      tabs: ["info", "transacciones", "cierres"],
+      tabs: ["transacciones", "info", "cierres"],
       tab: "transacciones", //info, transactions, closures
       modal: false,
+      closeableModal: true,
+      lastDate: null,
+      lastTime: null,
       transactionToUpdate: null,
       transactionFormActive: false,
       transferFormActive: false,
@@ -363,8 +265,7 @@ export default {
 
       //Se construye el mensaje al usuario
       let title = "¿Está seguro que desea eliminar esta transacción?";
-      let message =
-        "Una vez eliminado de la base de datos no puede revertirse.";
+      let message = "Una vez eliminado de la base de datos no puede revertirse.";
 
       Swal.fire({
         title,
@@ -417,18 +318,19 @@ export default {
      */
     removeTransaction(transaction) {
       //Se busca el index de la transaccion
-      let index = this.cashbox.transactions.findIndex(t => t.id === transaction.id);
-      if(index > 0){
+      let index = this.cashbox.transactions.findIndex((t) => t.id === transaction.id);
+      if (index >= 0) {
         this.cashbox.transactions.splice(index, 1);
         this.calculateBalance();
       }
     },
     /**
      * Habilita el cambio de la caja que se está mostrando
+     * @param {string} boxSlug - identificacion de la caja a visitar.
      */
-    chageBox() {
-      if (this.boxSlug) {
-        let url = route("cashbox.show", this.boxSlug);
+    chageBox(boxSlug) {
+      if (boxSlug) {
+        let url = route("cashbox.show", boxSlug);
         Inertia.get(url);
       }
     },
@@ -471,6 +373,10 @@ export default {
       this.transactionToUpdate = data;
       this.showTransactionForm();
     },
+    updateTime(time) {
+      this.lastDate = time.date;
+      this.lastTime = time.time;
+    },
     /**
      * Activa el formulario para registrar una transferencia.
      */
@@ -488,9 +394,7 @@ export default {
      * @param {number} number Numero a formatear
      * @return {string} Numero formateado
      */
-    formatCurrency(number) {
-      return this.formater.format(number);
-    },
+    formatCurrency,
     /**
      * Se encarga de agregar los propiedades necesarias
      * a las transacciones y transformar las fechas a
@@ -539,9 +443,7 @@ export default {
       if (error.status == 404) {
         message = "La transacción no existe o fue eliminada.";
       } else {
-        message = error.message
-          ? error.message
-          : "No se pudo completar la petición. Contacte con el administrador.";
+        message = error.message ? error.message : "No se pudo completar la petición. Contacte con el administrador.";
       }
 
       Swal.fire({
@@ -573,7 +475,7 @@ export default {
       }
     },
     maxDate() {
-      return dayjs().subtract(1, "day").format("YYYY-MM-DD");
+      return dayjs().format("YYYY-MM-DD");
     },
     canTransferMoney() {
       return this.cashbox.balance > 0 && this.boxs.length > 0;

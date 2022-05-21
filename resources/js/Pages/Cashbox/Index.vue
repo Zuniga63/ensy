@@ -1,67 +1,58 @@
 <template>
   <app-layout title="Cajas">
     <template #header>
-      <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-        Administración de Cajas
-      </h2>
+      <h2 class="font-semibold text-xl text-gray-800 leading-tight">Administración de Cajas</h2>
 
       <p class="text-sm lg:text-lg text-gray-400">
-        En esta sección se encuentran listadas todas las cajas registradas en la
-        plataforma.
+        En esta sección se encuentran listadas todas las cajas registradas en la plataforma.
       </p>
     </template>
 
-    <div class="pt-5">
-      <!-- Vista mobile -->
-      <div class="lg:hidden w-full min-h-screen pb-32">
-        <!-- Contendor de cajas -->
-        <div class="w-11/12 mx-auto">
-          <Box
-            v-for="box in boxs"
-            :key="box.id"
-            :box="box"
-            @delete-box="confirmDeleteBox"
-          />
-          <!-- /.end cashbox -->
-        </div>
-        <!-- /.end box container -->
+    <div class="w-full lg:w-11/12 lg:mx-auto pt-5 px-2 lg:px-0">
+      <tab-component :tabs="tabs" :tabSelected="tab" @selectTab="tab = $event">
+        <template #controls>
+          <link-new-box />
+        </template>
 
-        <div class="fixed bottom-0 w-full">
-          <div class="px-6 py-3 bg-gray-800 text-gray-100">
-            <h2 class="text-center uppercase">Capital en Efectivo</h2>
-            <p class="mb-2 text-center text-lg tracking-widest">{{ cash }}</p>
-            <Link
-              :href="route('cashbox.create')"
-              class="
-                block
-                w-full
-                px-4
-                py-2
-                border border-white
-                rounded-md
-                bg-transparent
-                hover:bg-gray-700
-                text-white text-sm text-center
-                tracking-wider
-                uppercase
-                font-bold
-              "
-            >
-              Crear Caja
-            </Link>
+        <template #cajas>
+          <!-- Vista mobile -->
+          <div class="lg:hidden w-full min-h-screen pb-32 pt-4">
+            <!-- Contendor de cajas -->
+            <Box v-for="box in boxs" :key="box.id" :box="box" @delete-box="confirmDeleteBox" />
           </div>
-        </div>
-      </div>
 
-      <!-- Vista Escritorio -->
-      <div class="hidden lg:block | max-w-7xl py-10 px-8 mx-auto shadow">
-        <BoxTable :boxs="boxs" @delete-box="confirmDeleteBox" />
+          <!-- Vista Escritorio -->
+          <div class="hidden lg:block py-5 mx-auto shadow">
+            <BoxTable :boxs="boxs" @delete-box="confirmDeleteBox" />
+          </div>
+        </template>
+
+        <template #graficas>
+          <div class="grid grid-cols-12 gap-8">
+            <annual-graph
+              :reports="annualReport[0].reports"
+              :title="annualReport[0].year"
+              class="col-span-12 2xl:col-span-6"
+            />
+            <annual-graph
+              :reports="annualReport[1].reports"
+              :title="annualReport[1].year"
+              class="col-span-12 2xl:col-span-6"
+            />
+          </div>
+        </template>
+      </tab-component>
+
+      <div class="fixed bottom-0 w-full lg:hidden">
+        <div class="px-6 py-3 bg-gray-800 text-gray-100">
+          <h2 class="text-center uppercase">Capital en Efectivo</h2>
+          <p class="text-center text-lg tracking-widest">{{ cash }}</p>
+        </div>
       </div>
     </div>
   </app-layout>
 </template>
 <script>
-import { Link } from "@inertiajs/inertia-vue3";
 import { Inertia } from "@inertiajs/inertia";
 import Swal from "sweetalert2";
 
@@ -70,35 +61,28 @@ import JetButton from "@/Jetstream/Button.vue";
 import JetDangerButton from "@/Jetstream/DangerButton.vue";
 import Box from "@/Pages/Cashbox/Box.vue";
 import BoxTable from "@/Pages/Cashbox/Table.vue";
+import TabComponent from "@/Components/Tab.vue";
+import LinkNewBox from "./Components/LinkNewBox.vue";
+import AnnualGraph from "./Components/AnnualGraph.vue";
 
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import locale_es_do from "dayjs/locale/es";
+import { formatCurrency } from "@/utilities";
 
 export default {
   components: {
     AppLayout,
     JetButton,
     JetDangerButton,
-    Link,
     Box,
     BoxTable,
+    TabComponent,
+    LinkNewBox,
+    AnnualGraph,
   },
-  props: ["boxs"],
+  props: ["boxs", "annualReport"],
   setup(props) {
-    //---------------------------------------------------------
-    // SE CONSTRUYE EL FORMATEADOR DE MONEDA
-    //---------------------------------------------------------
-    let fractionDigits = 0;
-    let style = "currency";
-    let currency = "COP";
-
-    let formater = new Intl.NumberFormat("es-CO", {
-      style,
-      currency,
-      minimumFractionDigits: fractionDigits,
-    });
-
     //----------------------------------------------------
     // SE ESTABLECEN LOS PARAMETROS DE dayjs
     //----------------------------------------------------
@@ -109,17 +93,17 @@ export default {
     //  SE AGREGA LA FECHA RELATIVA DEL ULTIMO CIERRE
     //--------------------------------------------------
     props.boxs.map((item) => {
-      item.lastClosureFromNow = item.lastClosure
-        ? dayjs(item.lastClosure).fromNow()
-        : null;
+      item.lastClosureFromNow = item.lastClosure ? dayjs(item.lastClosure).fromNow() : null;
     });
-
-    return { formater };
+  },
+  data() {
+    return {
+      tabs: ["cajas", "graficas"],
+      tab: "cajas",
+    };
   },
   methods: {
-    formatCurrency(number) {
-      return this.formater.format(number);
-    },
+    formatCurrency,
     deleteBox(boxId) {
       let url = route("cashbox.destroy", boxId);
       Inertia.delete(url, {
@@ -130,14 +114,14 @@ export default {
           let title = "¡Caja Eliminada!";
           let message = result?.message;
 
-          if(result){
-            if(!result.ok){
-              icon = 'warning';
+          if (result) {
+            if (!result.ok) {
+              icon = "warning";
               title = "¡No se puede eliminar!";
             }
-          }else{
-            icon = 'error';
-            title = '¡Oops';
+          } else {
+            icon = "error";
+            title = "¡Oops";
             message = "Algo salio mal, comuniquese con el adminsitrador.";
           }
 
@@ -172,9 +156,7 @@ export default {
      */
     setInterval(() => {
       this.boxs.map((item) => {
-        item.lastClosureFromNow = item.lastClosure
-          ? dayjs(item.lastClosure).fromNow()
-          : null;
+        item.lastClosureFromNow = item.lastClosure ? dayjs(item.lastClosure).fromNow() : null;
       });
     }, 60000);
   },
@@ -185,7 +167,7 @@ export default {
         amount += box.balance;
       });
 
-      return this.formatCurrency(amount);
+      return formatCurrency(amount);
     },
   },
 };

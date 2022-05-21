@@ -2,6 +2,13 @@
  * @license MIT */
 
 /*!
+ * @kurkle/color v0.1.9
+ * https://github.com/kurkle/color#readme
+ * (c) 2020 Jukka Kurkela
+ * Released under the MIT License
+ */
+
+/*!
  * Chart.js v3.7.1
  * https://www.chartjs.org
  * (c) 2022 Chart.js Contributors
